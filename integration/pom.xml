@@ -1,0 +1,116 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>base</artifactId>
+    <groupId>edu.berkeley.myberkeley</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.berkeley.myberkeley</groupId>
+  <artifactId>edu.berkeley.myberkeley.integration</artifactId>
+  <name>MyBerkeley integration runner and data loader</name>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.testing</artifactId>
+      <version>2.0.5-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <profiles>
+    <profile>
+      <id>clean-sling</id>
+      <activation>
+        <property>
+          <name>sling.clean</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${sakai3.home}</directory>
+                  <excludes>
+                    <exclude>load/</exclude>
+                  </excludes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.app</artifactId>
+            <version>0.3</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>start-sling</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <tasks name="sling-start" if="sling.start">
+                <mkdir dir="${sakai3.home}"/>
+                <java classname="org.apache.sling.launchpad.app.Main"
+                  fork="true" spawn="true"
+                  dir="${sakai3.home}"
+                  classpathref="maven.plugin.classpath">
+                  <jvmarg value="-Xdebug"/>
+                  <jvmarg value="-Xnoagent"/>
+                  <jvmarg value="-Xrunjdwp:transport=dt_socket,address=9001,server=y,suspend=n"/>
+                  <jvmarg value="-Xms512m"/>
+                  <jvmarg value="-Xmx1024m"/>
+                  <jvmarg value="-XX:MaxPermSize=256m"/>
+                  <sysproperty key="felix.fileinstall.dir" value="fileinstall"/>
+                  <sysproperty key="sling.home" value="sling"/>
+                  <arg value="-p"/>
+                  <arg value="8080"/>
+                  <arg value="start"/>
+                </java>
+                <echo message="Server has started; log at ${sakai3.home}/sling/logs/error.log"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>stop-sling</id>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <tasks name="sling-stop" if="sling.stop">
+                <java classname="org.apache.sling.launchpad.app.Main"
+                  fork="true"
+                  classpathref="maven.plugin.classpath">
+                  <arg value="stop"/>
+                </java>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
