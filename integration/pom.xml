@@ -80,7 +80,7 @@
                   <jvmarg value="-Xms512m"/>
                   <jvmarg value="-Xmx1024m"/>
                   <jvmarg value="-XX:MaxPermSize=256m"/>
-                  <sysproperty key="felix.fileinstall.dir" value="fileinstall"/>
+                  <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="sling.home" value="sling"/>
                   <arg value="-p"/>
                   <arg value="8080"/>
