@@ -1,0 +1,32 @@
+*** WORK IN PROGRESS ***
+
+1. To build (or rebuild) sample code:
+
+mvn clean install
+
+2. To start a fresh test server:
+
+cd integration
+mvn -Dsling.clean -Dsling.start clean install
+
+3. To stop the test server:
+
+mvn -Dsling.stop install
+
+4. To create some test content:
+
+curl -u admin:admin -F "sling:resourceType=myberkeley/scriptedsample" -F title="Some Title"  http://localhost:8080/content/firstscriptedsample
+
+5. To try the Groovy script:
+
+curl http://localhost:8080/content/firstscriptedsample.json
+
+6. To try the server-side Javascript script:
+
+curl http://localhost:8080/content/firstscriptedsample.html
+
+TO DO
+
+- Add sample servlet.
+- Add sample JSP.
+- Create initial test content on component load.
