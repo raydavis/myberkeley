@@ -15,7 +15,8 @@ mvn -Dsling.stop install
 
 4. To create some test content:
 
-curl -u admin:admin -F "sling:resourceType=myberkeley/scriptedsample" -F title="Some Title"  http://localhost:8080/content/firstscriptedsample
+curl -u admin:admin -F "sling:resourceType=myberkeley/scriptedsample" \
+  -F title="Some Title"  http://localhost:8080/content/firstscriptedsample
 
 For more on RESTful content management through Sling, see:
 http://sling.apache.org/site/manipulating-content-the-slingpostservlet.html
@@ -41,6 +42,13 @@ http://sling.apache.org/site/servlets.html
 
 For more on URL mapping:
 http://sling.apache.org/site/url-decomposition.html
+
+7. To try a normal client-side-only HTML + JavaScript view of some initially loaded content:
+
+
+
+For more on initial content loading:
+http://sling.apache.org/site/content-loading-jcrcontentloader.html
 
 TO DO
 
