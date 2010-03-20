@@ -45,7 +45,7 @@ http://sling.apache.org/site/url-decomposition.html
 
 7. To try a normal client-side-only HTML + JavaScript view of some initially loaded content:
 
-
+curl http://localhost:8080/myberkeley/index.html
 
 For more on initial content loading:
 http://sling.apache.org/site/content-loading-jcrcontentloader.html
@@ -53,4 +53,3 @@ http://sling.apache.org/site/content-loading-jcrcontentloader.html
 TO DO
 
 - Add sample JSP.
-- Create initial test content on component load.

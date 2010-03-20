@@ -21,7 +21,8 @@
             <Export-Package>edu.berkeley.myberkeley.api.*</Export-Package>
             <Private-Package>edu.berkeley.myberkeley.impl.*</Private-Package>
             <Sling-Initial-Content>
-              SLING-INF/initial-content/apps/myberkeley;overwrite:=true;path:=/apps/myberkeley
+              SLING-INF/initial-content/apps/myberkeley;overwrite:=true;path:=/apps/myberkeley,
+			  SLING-INF/initial-content/myberkeley;overwrite:=true;path:=/myberkeley
             </Sling-Initial-Content>
           </instructions>
         </configuration>

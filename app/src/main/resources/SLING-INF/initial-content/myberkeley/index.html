@@ -1,0 +1,30 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<script type="text/javascript" src="javascript/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="javascript/jquery.json-2.2.min.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				$.getJSON('/myberkeley/content/initialsample.json',
+					function(data) {
+						$("#thenode").text($.toJSON(data));
+						for (var property in data) {
+							var value = data[property];
+							if (typeof value === 'string') {
+								$('<li>' + property + " = " + value + '</li>').appendTo($("#thestringproperties"));
+							}
+						}
+						$('<li>addedProperty = from client-side Javascript</li>').appendTo($("#thestringproperties"));
+				});
+			});
+		</script>
+		<title>All client-side</title>
+	</head>
+	<body>
+		<h3>Our initial content:</h3>
+		<div id="thenode"></div>
+		<ul id="thestringproperties">
+		</ul>
+	</body>
+</html>

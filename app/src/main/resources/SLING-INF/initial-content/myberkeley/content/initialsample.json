@@ -1,0 +1,4 @@
+{
+   "sling:resourceType":"myberkeley/othersample",
+   "iwasborn":"During Component Initialization"
+}
