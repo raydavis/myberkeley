@@ -108,6 +108,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.3</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.app</artifactId>
+            <version>0.3</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <!-- maven-clean-plugin v. 2.2 ignores "excludes" -->
       <plugin>
