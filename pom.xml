@@ -14,6 +14,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <sakai3.home>${project.parent.basedir}/working</sakai3.home>
+    <sling.port>8080</sling.port>
   </properties>
   <modules>
   	<module>app</module>
@@ -124,8 +125,8 @@
             -->
             <dependency>
               <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.app</artifactId>
-              <version>0.3</version>
+              <artifactId>org.sakaiproject.nakamura.app-myberkeley</artifactId>
+              <version>0.4-SNAPSHOT</version>
             </dependency>
           </dependencies>
         </plugin>
