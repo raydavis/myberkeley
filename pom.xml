@@ -46,8 +46,21 @@
     <repository>
       <id>myberkeley-snapshots</id>
       <url>http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley-snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
       <snapshots>
         <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>myberkeley</id>
+      <url>http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
   </repositories>
@@ -127,6 +140,7 @@
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.app-myberkeley</artifactId>
               <version>0.4-SNAPSHOT</version>
+              <scope>runtime</scope>
             </dependency>
           </dependencies>
         </plugin>
