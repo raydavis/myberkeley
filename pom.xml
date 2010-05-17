@@ -17,7 +17,8 @@
     <sling.port>8080</sling.port>
   </properties>
   <modules>
-  	<module>app</module>
+    <module>app</module>
+    <module>launchpad</module>
   	<module>integration</module>
   </modules>
   <repositories>
@@ -137,9 +138,9 @@
               the parent POM.
             -->
             <dependency>
-              <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.app-myberkeley</artifactId>
-              <version>0.4-SNAPSHOT</version>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
+              <version>1.0-SNAPSHOT</version>
               <scope>runtime</scope>
             </dependency>
           </dependencies>
