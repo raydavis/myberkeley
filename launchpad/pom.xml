@@ -19,7 +19,7 @@
                     <defaultBundleList>
                          <groupId>org.sakaiproject.nakamura</groupId>
                          <artifactId>org.sakaiproject.nakamura.app</artifactId>
-                         <version>0.4-SNAPSHOT</version>
+                         <version>0.5-SNAPSHOT</version>
                     </defaultBundleList>
                     <additionalBundles>
                         <bundle>
@@ -45,7 +45,7 @@
                     <jarWebSupport>
                          <groupId>org.sakaiproject.nakamura</groupId>
                          <artifactId>org.sakaiproject.nakamura.jetty-config</artifactId>
-                         <version>0.4-SNAPSHOT</version>
+                         <version>0.5-SNAPSHOT</version>
                          <startLevel>5</startLevel>
                    </jarWebSupport>
                 </configuration>
