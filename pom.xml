@@ -64,6 +64,18 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>sakai-snapshots</id>
+      <name>Sakai Snapshots</name>
+      <layout>default</layout>
+      <url>http://source.sakaiproject.org/maven2-snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
   </repositories>
   <build>
     <plugins>
