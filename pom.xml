@@ -148,25 +148,6 @@
             </instructions>
           </configuration>
         </plugin>
-        <!-- maven-antrun-plugin v. 1.1 does not handle unset properties correctly -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.3</version>
-          <dependencies>
-            <!--
-              This is only needed for the integration module, but plug-in dependencies
-              take effect only once per Maven build and should therefore be set in
-              the parent POM.
-            -->
-            <dependency>
-              <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-              <version>1.0-SNAPSHOT</version>
-              <scope>runtime</scope>
-            </dependency>
-          </dependencies>
-        </plugin>
         <!-- maven-clean-plugin v. 2.2 ignores "excludes" -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

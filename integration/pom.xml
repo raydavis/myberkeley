@@ -56,7 +56,21 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
+        <!-- maven-antrun-plugin v. 1.1 does not handle unset properties correctly -->
 		<version>1.3</version>
+        <dependencies>
+          <!--
+            WARNING: Plug-in dependencies take effect only once per Maven build,
+            which means this can be the only use of antrun in the project.
+            TODO Find another approach to server start/stop.
+          -->
+          <dependency>
+            <groupId>edu.berkeley.myberkeley</groupId>
+            <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>start-sling</id>
