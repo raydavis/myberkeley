@@ -8,7 +8,31 @@ STRUCTURE
 
 ===
 
-COOKBOOK
+COOKBOOK - SERVER
+
+Although this directory contains the project source code, you do not have to
+actually build a new version of the application to run it. If you are on a
+shared server environment, it's preferable to use a shared build that has
+been stored in our project's Maven respository.
+
+As a convenience, the "runner" profile can be used to download, stop, and
+start an existing binary of the MyBerkeley application.
+
+1. To clean out the old server environment:
+
+mvn -P runner -Dsling.clean clean
+
+3. To start the test server:
+
+mvn -P runner -Dsling.start verify
+
+4. To stop the test server:
+
+mvn -P runner -Dsling.stop verify
+
+===
+
+COOKBOOK - DEVELOPMENT
 
 1. To build (or rebuild) sample code:
 
