@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-  <name>MyBerkeley application code and documents</name>
+  <name>MyBerkeley executable</name>
   <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <build>
@@ -33,6 +33,12 @@
                             <artifactId>edu.berkeley.myberkeley.app</artifactId>
                             <version>1.0-SNAPSHOT</version>
                             <startLevel>30</startLevel>
+                        </bundle>
+                        <bundle>
+                            <groupId>org.sakaiproject.nakamura</groupId>
+                            <artifactId>org.sakaiproject.nakamura.casauth</artifactId>
+                            <version>0.5-SNAPSHOT</version>
+                            <startLevel>15</startLevel>
                         </bundle>
                     </additionalBundles>
                     <bundleExclusions>

@@ -16,11 +16,35 @@
     <sakai3.home>${project.parent.basedir}/working</sakai3.home>
     <sling.port>8080</sling.port>
   </properties>
-  <modules>
-    <module>app</module>
-    <module>launchpad</module>
-  	<module>integration</module>
-  </modules>
+  <profiles>
+    <profile>
+      <id>myberkeleycode</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>app</module>
+      </modules>
+    </profile>
+    <profile>
+       <id>bundle</id>
+       <activation>
+        <activeByDefault>true</activeByDefault>
+       </activation>
+       <modules>
+        <module>launchpad</module>
+       </modules>
+    </profile>
+    <profile>
+      <id>runner</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>integration</module>
+      </modules>
+    </profile>
+  </profiles>
   <repositories>
     <repository>
       <id>sakai-releases</id>

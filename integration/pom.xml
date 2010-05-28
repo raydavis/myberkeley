@@ -57,7 +57,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <!-- maven-antrun-plugin v. 1.1 does not handle unset properties correctly -->
-		<version>1.3</version>
+        <version>1.3</version>
         <dependencies>
           <!--
             WARNING: Plug-in dependencies take effect only once per Maven build,
