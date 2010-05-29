@@ -1,5 +1,5 @@
 #!/usr/bin/ruby
-
+# requires environment variable NAKAMURA_SRC
 $LOAD_PATH << ENV['NAKAMURA_SRC'] + "/testscripts/SlingRuby"
 
 require 'sling/sling'
