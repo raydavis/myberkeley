@@ -122,6 +122,7 @@
         </executions>
         <configuration>
           <executable>ruby</executable>
+          <skip>true</skip>
           <workingDirectory>${project.build.scriptSourceDirectory}</workingDirectory>
           <arguments>
             <argument>-w</argument>
