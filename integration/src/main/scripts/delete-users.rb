@@ -8,8 +8,8 @@ include SlingInterface
 include SlingUsers
 
 users = <<HERE
-testuser1
-testuser2
+testuser3
+testuser4
 HERE
 
 @s = Sling.new()
