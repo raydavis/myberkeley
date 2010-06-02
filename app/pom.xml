@@ -16,9 +16,12 @@
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
+        <version>2.1.0</version>
         <configuration>
           <instructions>
+            <!--
             <Export-Package>edu.berkeley.myberkeley.api.*</Export-Package>
+            -->
             <Private-Package>edu.berkeley.myberkeley.impl.*</Private-Package>
             <Sling-Initial-Content>
               SLING-INF/initial-content/apps/myberkeley;overwrite:=true;path:=/apps/myberkeley,
@@ -30,24 +33,7 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-scr-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <configuration>
-              <tasks>
-                <echo>About to copy to FileInstall directory</echo>
-                <copy verbose="true" file="${project.build.directory}/${project.build.finalName}.jar" todir="${sakai3.home}/load" overwrite="true"/>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
+        <version>1.4.4</version>
       </plugin>
     </plugins>
   </build>
