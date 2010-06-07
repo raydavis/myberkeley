@@ -1,7 +1,5 @@
 #!/usr/bin/ruby
 
-$LOAD_PATH << ENV['NAKAMURA_SRC'] + "/testscripts/SlingRuby"
-
 require 'sling/sling'
 require 'sling/users'
 include SlingInterface

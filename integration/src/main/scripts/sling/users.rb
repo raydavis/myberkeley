@@ -250,6 +250,21 @@ module SlingUsers
       end
       return user
     end
+    
+        
+    def create_user_with_props(username, user_props)
+      puts "Creating user: #{username}"
+      user = User.new(username)
+      user_props[":name"] = username
+      user_props["pwd"] = user.password
+      user_props["pwdConfirm"] = user.password
+      result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), user_props)
+      if (result.code.to_i > 299)
+        puts "Error creating user #{username}"
+        return nil
+      end
+      return user
+    end
 
     def create_group(groupname)
       puts "Creating group: #{groupname}"
