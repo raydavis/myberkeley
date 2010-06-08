@@ -79,3 +79,45 @@ curl http://localhost:8080/myberkeley/index.html
 
 For more on initial content loading:
 http://sling.apache.org/site/content-loading-jcrcontentloader.html
+
+7. To load sample user data, you will be running ruby scripts via maven.
+You will need ruby and ruby gems installed. 
+On Unix in your .profile file - export RUBYOPT=rubygems
+On windows set thru System Control Panel Advanced tab 
+Install the json and curb ruby gems
+
+Instructions from Nakamura testscripts README --
+
+n OSX 10.5 I needed to do the following.
+
+sudo gem update 
+sudo gem install json 
+sudo gem install curb
+
+If you are running OS X 10.6, the following commands work:
+sudo gem update --system
+sudo gem update
+sudo gem install json
+sudo env ARCHFLAGS="-arch x86_64" gem install curb
+
+On Windows do either of the above, depending on whether you're running 64 bit windows
+Run a command window as Administrator then
+gem update 
+gem install json 
+gem install curb
+
+or 
+
+gem update --system
+gem update
+gem install json
+set ARCHFLAGS="-arch x86_64" 
+gem install curb
+
+8. To actually loaddate, from the myberkeley directory run
+mvn -Dsling.loaddata integration-test
+to load 20 random users, the default number plus the users defined in ./myberkeley/integration/src/main/scripts/json_data.js.
+
+or run
+mvn -Dsling.loaddata -Dloaddata.numusers=5 integration-test
+to load another number, in this case 5, of random users

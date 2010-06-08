@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-puts $LOAD_PATH
-
 require 'json'
 
 require 'sling/sling'
