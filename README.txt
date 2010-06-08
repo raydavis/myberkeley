@@ -82,13 +82,12 @@ http://sling.apache.org/site/content-loading-jcrcontentloader.html
 
 7. To load sample user data, you will be running ruby scripts via maven.
 You will need ruby and ruby gems installed. 
-On Unix in your .profile file - export RUBYOPT=rubygems
 On windows set thru System Control Panel Advanced tab 
 Install the json and curb ruby gems
 
 Instructions from Nakamura testscripts README --
 
-n OSX 10.5 I needed to do the following.
+In OSX 10.5 I needed to do the following.
 
 sudo gem update 
 sudo gem install json 
@@ -114,7 +113,7 @@ gem install json
 set ARCHFLAGS="-arch x86_64" 
 gem install curb
 
-8. To actually loaddate, from the myberkeley directory run
+8. To actually load data, from the myberkeley directory run
 mvn -Dsling.loaddata integration-test
 to load 20 random users, the default number plus the users defined in ./myberkeley/integration/src/main/scripts/json_data.js.
 

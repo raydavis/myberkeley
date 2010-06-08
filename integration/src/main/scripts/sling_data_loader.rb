@@ -1,24 +1,23 @@
 #!/usr/bin/env ruby
-
+require 'rubygems'
 require 'json'
-
 require 'sling/sling'
 require 'sling/users'
 include SlingInterface
 include SlingUsers
 
 class SlingDataLoader
-  
+
   TEST_USER_PREFIX = 'testuser'
-  
+
   @@num_users = 20
-  
+
   def initialize()
     @sling = Sling.new("http://localhost:8080/", true, true)
     @sling.do_login
     @user_manager = UserManager.new(@sling)
   end
-  
+
   def load_defined_users(json_file_name)
     all_data = JSON.load(File.open json_file_name, "r")
     users = all_data['users']
@@ -29,7 +28,7 @@ class SlingDataLoader
       load_user username, user_props
     end
   end
-  
+
   def load_random_users(first_names_file, last_names_file)
     first_names = File.open(first_names_file, "r").readlines
     last_names = File.open(last_names_file, "r").readlines
@@ -40,7 +39,7 @@ class SlingDataLoader
       load_user username, user_props
     end
   end
-  
+
   def generate_user_props(first_names, last_names)
     i = 0
     all_users_props = []
@@ -58,7 +57,7 @@ class SlingDataLoader
     end
     return all_users_props
   end
-  
+
   def load_user(username, user_props)
     target_user = @user_manager.create_user_with_props username, user_props
     # if user exists, they will not be (re)created but props may be updated
