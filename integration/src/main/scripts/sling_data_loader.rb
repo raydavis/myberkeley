@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+puts $LOAD_PATH
+
 require 'json'
 
 require 'sling/sling'
@@ -70,7 +72,10 @@ class SlingDataLoader
   end
 end
 
-if __FILE__ == $0 
+if __FILE__ == $0
+  puts "numusers ARGV[0] is #{ARGV[0]}"
+  @@num_users = ARGV[0] || 20
+  puts "will attempt to create or update #{@@num_users} users"
   sdl = SlingDataLoader.new
   sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"

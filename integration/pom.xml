@@ -64,47 +64,14 @@
 	          <workingDirectory>${project.build.scriptSourceDirectory}</workingDirectory>
 	          <arguments>
 	            <argument>-w</argument>
-	            <argument>${project.build.scriptSourceDirectory}/create-users.rb</argument>
+	            <argument>${project.build.scriptSourceDirectory}/sling_data_loader.rb</argument>
+	            <argument>${loaddata.numusers}</argument>
 	          </arguments>
 	        </configuration>
 	      </plugin>
       </plugins>
     </build>
-  </profile>    
-  <profile>
-    <id>deletedata-sling</id>
-    <activation>
-      <property>
-        <name>sling.deletedata</name>
-      </property>
-    </activation>
-    <build>
-      <plugins>
-	      <plugin>
-	        <groupId>org.codehaus.mojo</groupId>
-	        <artifactId>exec-maven-plugin</artifactId>
-	        <version>1.1</version>
-	        <executions>
-	          <execution>
-	            <id>delete-users</id>
-	            <phase>post-integration-test</phase>          
-	            <goals>
-	              <goal>exec</goal>
-	            </goals>
-	          </execution>
-	        </executions>
-	        <configuration>
-	          <executable>ruby</executable>
-	          <workingDirectory>${project.build.scriptSourceDirectory}</workingDirectory>
-	          <arguments>
-	            <argument>-w</argument>
-	            <argument>${project.build.scriptSourceDirectory}/delete-users.rb</argument>
-	          </arguments>
-	        </configuration>
-	      </plugin>
-      </plugins>
-    </build>
-  </profile>   
+  </profile>      
  </profiles>
   <build>
     <plugins>
