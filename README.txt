@@ -81,16 +81,16 @@ For more on initial content loading:
 http://sling.apache.org/site/content-loading-jcrcontentloader.html
 
 7. To load sample user data, you will be running ruby scripts via maven.
-You will need ruby and ruby gems installed. 
-On windows set thru System Control Panel Advanced tab 
+You will need ruby and ruby gems installed.
+On windows set thru System Control Panel Advanced tab
 Install the json and curb ruby gems
 
 Instructions from Nakamura testscripts README --
 
 In OSX 10.5 I needed to do the following.
 
-sudo gem update 
-sudo gem install json 
+sudo gem update
+sudo gem install json
 sudo gem install curb
 
 If you are running OS X 10.6, the following commands work:
@@ -101,16 +101,16 @@ sudo env ARCHFLAGS="-arch x86_64" gem install curb
 
 On Windows do either of the above, depending on whether you're running 64 bit windows
 Run a command window as Administrator then
-gem update 
-gem install json 
+gem update
+gem install json
 gem install curb
 
-or 
+or
 
 gem update --system
 gem update
 gem install json
-set ARCHFLAGS="-arch x86_64" 
+set ARCHFLAGS="-arch x86_64"
 gem install curb
 
 8. To actually load data, from the myberkeley directory run
@@ -119,4 +119,12 @@ to load 20 random users, the default number plus the users defined in ./myberkel
 
 or run
 mvn -Dsling.loaddata -Dloaddata.numusers=5 integration-test
-to load another number, in this case 5, of random users
+to load another number, in this case 5, of random users.
+All users will be given the password "testusers".
+
+9. The above user-load includes records keyed to the LDAP UIDs of MyBerkeley project
+members, letting us test CAS authentication. When running MyBerkeley on your own
+computer, you can log in at:
+https://auth-test.berkeley.edu/cas/login?service=http://localhost:8080/dev/index.html
+When running at portal-dev, you can use:
+https://auth-test.berkeley.edu/cas/login?service=http://portal-dev.berkeley.edu/dev/index.html
