@@ -115,11 +115,18 @@ gem install curb
 
 8. To actually load data, from the myberkeley directory run
 mvn -Dsling.loaddata integration-test
-to load 20 random users, the default number plus the users defined in ./myberkeley/integration/src/main/scripts/json_data.js.
+this will load data to the default server - http://localhost:8080/, loading the default number of random users - 20 -
+plus the users defined in ./myberkeley/integration/src/main/scripts/json_data.js.
 
-or run
-mvn -Dsling.loaddata -Dloaddata.numusers=5 integration-test
-to load another number, in this case 5, of random users.
+or to load data to another server and/or another number of random users, run
+mvn -Dsling.loaddata -Dloaddata.server=${server} -Dloaddata.numusers=${numusers} integration-test
+where ${server} should be replaced with a full server URL such as https://portal-dev.berkeley.edu/
+and ${numusers} should be replaced with the number you want, e.g. 50.
+
+These choices would user the command line:
+mvn -Dsling.loaddata -Dloaddata.server=https://portal-dev.berkeley.edu/ -Dloaddata.numusers=50 integration-test
+NOTE: the trailing slash on the server URL is required
+
 All users will be given the password "testusers".
 
 9. The above user-load includes records keyed to the LDAP UIDs of MyBerkeley project
@@ -127,4 +134,4 @@ members, letting us test CAS authentication. When running MyBerkeley on your own
 computer, you can log in at:
 https://auth-test.berkeley.edu/cas/login?service=http://localhost:8080/dev/index.html
 When running at portal-dev, you can use:
-https://auth-test.berkeley.edu/cas/login?service=http://portal-dev.berkeley.edu/dev/index.html
+https://auth-test.berkeley.edu/cas/login?service=https://portal-dev.berkeley.edu/dev/index.html

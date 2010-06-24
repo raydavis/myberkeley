@@ -10,9 +10,9 @@ class SlingDataLoader
 
   TEST_USER_PREFIX = 'testuser'
 
-  def initialize(numusers)
-    @num_users = numusers.to_i || 20
-    @sling = Sling.new("http://localhost:8080/", true, true)
+  def initialize(server="http://localhost:8080/", numusers="20")
+    @num_users = numusers.to_i
+    @sling = Sling.new(server, true, true)
     @sling.do_login
     @user_manager = UserManager.new(@sling)
   end
@@ -34,7 +34,7 @@ class SlingDataLoader
     all_users_props = generate_user_props first_names, last_names
     all_users_props.each do |user_props|
       username = user_props[':name']
-      puts "creating user: #{username} with properties: #{user_props[1].inspect}"
+      puts "creating user: #{username} with properties: #{user_props.inspect}"
       load_user username, user_props
     end
   end
@@ -68,9 +68,10 @@ class SlingDataLoader
   end
 end
 
-if __FILE__ == $0
-  puts "will attempt to create or update #{ARGV[0]} users"
-  sdl = SlingDataLoader.new ARGV[0]
+if $PROGRAM_NAME == $0
+  puts "will load data on server #{ARGV[0]}"
+  puts "will attempt to create or update #{ARGV[1]} users"
+  sdl = SlingDataLoader.new ARGV[0], ARGV[1]
   sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end

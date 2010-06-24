@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'net/http'
+require 'net/https'
 require 'cgi'
 require 'rubygems'
 require 'json'
@@ -113,16 +114,17 @@ module SlingInterface
       boundary = '349832898984244898448024464570528145'
       query = params.collect {|p| '--' + boundary + "\r\n" + p}.join('') + "--" + boundary + "--\r\n"
       req = Net::HTTP::Post.new(uri.path)
+      http = make_http_type uri
       if ( @trustedauth ) 
         if ( @trustedcookie == nil ) 
             do_login()
         end
-        res = Net::HTTP.new(uri.host, uri.port).start {|http| http.request_post(path,query,"Content-type" => "multipart/form-data; boundary=" + boundary, "Cookie" => @trustedcookie) }
+        res = http.start {|http| http.request_post(path,query,"Content-type" => "multipart/form-data; boundary=" + boundary, "Cookie" => @trustedcookie) }
       else 
         @user.do_request_auth(req)
         pwd = "#{@user.name}:#{@user.password}"
         pwd = pwd.base64_encode()
-        res = Net::HTTP.new(uri.host, uri.port).start {|http| http.request_post(path,query,"Content-type" => "multipart/form-data; boundary=" + boundary, "Authorization" => "Basic #{pwd}") }
+        res = http.start {|http| http.request_post(path,query,"Content-type" => "multipart/form-data; boundary=" + boundary, "Authorization" => "Basic #{pwd}") }
       end
       dump_response(res)
       return res
@@ -131,15 +133,16 @@ module SlingInterface
     def delete_file(path) 
       uri = URI.parse(path)
       req = Net::HTTP::Delete.new(uri.path)
+      http = make_http_type uri
       if ( @trustedauth ) 
         if ( @trustedcookie == nil ) 
             do_login()
         end
 		req["Cookie"] = @trustedcookie
-        res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req ) }
+        res = http.start { |http| http.request(req ) }
       else
         @user.do_request_auth(req)
-        res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req) }
+        res = http.start { |http| http.request(req) }
       end
       dump_response(res)
       return res
@@ -150,15 +153,16 @@ module SlingInterface
       write_log("PUTFILE: #{path} (as '#{@user.name}')")
       uri = URI.parse(path)
       req = Net::HTTP::Put.new(uri.path)
+      http = make_http_type uri
       if ( @trustedauth ) 
         if ( @trustedcookie == nil ) 
             do_login()
         end
 		req["Cookie"] = @trustedcookie
-        res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req, data) }
+        res = http.start{ |http| http.request(req, data) }
       else
         @user.do_request_auth(req)
-        res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req, data) }
+        res = http.start{ |http| http.request(req, data) }
       end
       dump_response(res)
       return res
@@ -172,17 +176,18 @@ module SlingInterface
       write_log("POST: #{path} (as '#{@user.name}')\n\tparams: #{post_params.dump}")
       uri = URI.parse(path)
       req = Net::HTTP::Post.new(uri.path)
+      http = make_http_type uri
       if ( @trustedauth ) 
         if ( @trustedcookie == nil ) 
             do_login()
         end
 		req["Cookie"] = @trustedcookie
         req.set_form_data(post_params)
-        res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req) }
+        res = http.start{ |http| http.request(req) }
       else
         @user.do_request_auth(req)
         req.set_form_data(post_params)
-        res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req) }
+        res = http.start{ |http| http.request(req) }
       end
       dump_response(res)
       return res
@@ -209,15 +214,16 @@ module SlingInterface
       path = path + "?" + uri.query if uri.query
       write_log("GET: #{path} (as '#{@user.name}')")
       req = Net::HTTP::Get.new(path)
+      http = make_http_type uri
       if ( @trustedauth ) 
         if ( @trustedcookie == nil ) 
             do_login()
         end
 		req["Cookie"] = @trustedcookie
-        res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req) }
+        res = http.start { |http| http.request(req) }
       else
         @user.do_request_auth(req)
-        res = Net::HTTP.new(uri.host, uri.port).start { |http| http.request(req) }
+        res = http.start { |http| http.request(req) }
       end
       dump_response(res)
       return res
@@ -228,7 +234,9 @@ module SlingInterface
       req = Net::HTTP::Post.new(path)
       uri = URI.parse(path)
       req.set_form_data({ "sakaiauth:un" => @user.name, "sakaiauth:pw" => @user.password, "sakaiauth:login" => 1 })
-      res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req) }
+      #res = Net::HTTP.new(uri.host, uri.port).start{ |http| http.request(req) }
+      http = make_http_type uri
+      res = http.start{ |http| http.request(req) }
       if ( res.code == "200" ) 
         @trustedcookie = res["Set-Cookie"]
 	    puts("Login Ok, cookie was  ["+@trustedcookie+"]") 
@@ -236,6 +244,13 @@ module SlingInterface
 	    puts("Failed to perform login, got "+res.code+" response code") 
 	  end
     end
+    
+    def make_http_type(uri)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true if uri.scheme == "https"  # enable SSL/TLS
+      return http
+    end
+    
     
     def write_log(s)
       if (@log)
@@ -251,15 +266,16 @@ module SlingInterface
       until found
         host, port = uri.host, uri.port if uri.host && uri.port
         req = Net::HTTP::Get.new(uri.path)
+        http = make_http_type uri
         if ( @trustedauth ) 
           if ( @trustedcookie == nil ) 
             do_login()
           end
 		  req["Cookie"] = @trustedcookie
-          res = Net::HTTP.start(host, port) {|http|  http.request(req) }
+          res = http.start(host, port) {|http|  http.request(req) }
         else 
           @user.do_request_auth(req)
-          res = Net::HTTP.start(host, port) {|http|  http.request(req) }
+          res = http.start(host, port) {|http|  http.request(req) }
         end
         if res.header['location']
           puts "Got Redirect: #{res.header['location']}"

@@ -15,6 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <sakai3.home>${project.parent.basedir}/working</sakai3.home>
     <sling.port>8080</sling.port>
+    <loaddata.server>http://localhost:8080/</loaddata.server>    
     <loaddata.numusers>20</loaddata.numusers>
   </properties>
   <profiles>
