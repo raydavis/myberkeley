@@ -26,6 +26,7 @@
       </activation>
       <modules>
         <module>app</module>
+        <module>notices</module>
       </modules>
     </profile>
     <profile>
