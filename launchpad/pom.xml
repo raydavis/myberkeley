@@ -11,7 +11,7 @@
   <name>MyBerkeley executable</name>
   <version>1.0-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.6-SNAPSHOT</nakamura.version>
+    <nakamura.version>0.6</nakamura.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -50,6 +50,10 @@
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader</artifactId>
             </bundle>
+            <bundle>
+              <groupId>org.apache.sling</groupId>
+              <artifactId>org.apache.sling.httpauth</artifactId>
+            </bundle>
           </bundleExclusions>
           <!-- Needs to be copied from nakamura.app -->
           <jarWebSupport>
@@ -87,7 +91,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.launchpad.base</artifactId>
-      <version>2.1.1-20100322</version>
+      <version>2.2.0</version>
       <classifier>webapp</classifier>
       <type>war</type>
       <scope>runtime</scope>
@@ -95,7 +99,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.launchpad.base</artifactId>
-      <version>2.1.1-20100322</version>
+      <version>2.2.0</version>
       <classifier>app</classifier>
       <scope>provided</scope>
     </dependency>
