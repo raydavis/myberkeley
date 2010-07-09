@@ -39,6 +39,12 @@
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.notices</artifactId>
+              <version>1.0-SNAPSHOT</version>
+              <startLevel>30</startLevel>
+            </bundle>            
+            <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.casauth</artifactId>
               <version>${nakamura.version}</version>
