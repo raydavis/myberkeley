@@ -29,12 +29,16 @@ import edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants;
  * Handler for notices. Needs to be started immediately to make sure it
  * registers with JCR as soon as possible.
  */
-@Component(immediate = true, label = "NoticeTransport", description = "Handler for notices.")
+
+/**
+ * Handler for chat messages.
+ */
+@Component(label = "NoticeHandler", description = "Handler for internally delivered notices.", immediate = true)
 @Services(value = { @Service(value = MessageTransport.class), @Service(value = MessageProfileWriter.class) })
 @Properties(value = { @Property(name = "service.vendor", value = "University of California, Berkeley"),
-        @Property(name = "service.description", value = "Handler for notices.") })
-public class NoticeTransport implements MessageTransport, MessageProfileWriter {
-    private static final Logger LOG = LoggerFactory.getLogger(NoticeTransport.class);
+        @Property(name = "service.description", value = "Handler for internally delivered chat messages") })
+public class NoticeHandler implements MessageTransport, MessageProfileWriter {
+    private static final Logger LOG = LoggerFactory.getLogger(NoticeHandler.class);
 
     @Reference
     protected transient SlingRepository slingRepository;
@@ -84,6 +88,22 @@ public class NoticeTransport implements MessageTransport, MessageProfileWriter {
 
     public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
 
+    }
+
+    protected void bindMessagingService(MessagingService messagingService) {
+        this.messagingService = messagingService;
+    }
+
+    protected void unbindMessagingService(MessagingService messagingService) {
+        this.messagingService = null;
+    }
+
+    protected void bindSlingRepository(SlingRepository slingRepository) {
+        this.slingRepository = slingRepository;
+    }
+
+    protected void unbindSlingRepository(SlingRepository slingRepository) {
+        this.slingRepository = null;
     }
 
     public String getType() {
