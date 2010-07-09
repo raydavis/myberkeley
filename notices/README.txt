@@ -1,6 +1,6 @@
 Module to enable sending a custom message type, notice, using the existing nakamura.messaging module to the greatest extend practicable.
 
-Currently, the is a CreateMessageServlet roughed in for possible future use in adding necessary additional functionality but it is not in use at present.
+Currently, the is a CreateNoticeServlet roughed in for possible future use in adding necessary additional functionality but it is not in use at present.
 
 There is a custom MessagePreProcessing service, the CreateNoticePreProcessor.java, MessageTransport service, the NoticeHandler.java, and a custom Route service,
 the NoticeRoute.java.
