@@ -40,8 +40,14 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.casauth</artifactId>
-              <version>${nakamura.version}</version>
+              <artifactId>org.sakaiproject.nakamura.casauth-myberkeley</artifactId>
+              <version>0.6.1-SNAPSHOT</version>
+              <startLevel>15</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.formauth-myberkeley</artifactId>
+              <version>0.6.1-SNAPSHOT</version>
               <startLevel>15</startLevel>
             </bundle>
           </additionalBundles>
@@ -53,6 +59,11 @@
             <bundle>
               <groupId>org.apache.sling</groupId>
               <artifactId>org.apache.sling.httpauth</artifactId>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.formauth</artifactId>
+              <version>0.6</version>
             </bundle>
           </bundleExclusions>
           <!-- Needs to be copied from nakamura.app -->
