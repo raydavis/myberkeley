@@ -31,12 +31,12 @@ import edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants;
  */
 
 /**
- * Handler for chat messages.
+ * Handler for notice messages.
  */
 @Component(label = "NoticeHandler", description = "Handler for internally delivered notices.", immediate = true)
 @Services(value = { @Service(value = MessageTransport.class), @Service(value = MessageProfileWriter.class) })
 @Properties(value = { @Property(name = "service.vendor", value = "University of California, Berkeley"),
-        @Property(name = "service.description", value = "Handler for internally delivered chat messages") })
+        @Property(name = "service.description", value = "Handler for internally delivered notice messages") })
 public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final Logger LOG = LoggerFactory.getLogger(NoticeHandler.class);
 
