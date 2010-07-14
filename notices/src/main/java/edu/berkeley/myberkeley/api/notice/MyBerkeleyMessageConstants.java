@@ -7,4 +7,6 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
 	   * Identifier for an a notice
 	   */
 	  public static final String TYPE_NOTICE = "notice";
+	  
+	  public static final String NOTICE_TRANSPORT = "notice";
 }

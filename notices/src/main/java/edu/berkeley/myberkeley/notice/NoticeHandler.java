@@ -57,8 +57,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             Session session = slingRepository.loginAdministrative(null);
 
             for (MessageRoute route : routes) {
-                if (MyBerkeleyMessageConstants.TYPE_NOTICE.equals(route.getTransport())) {
-                    LOG.info("Started handling a notice.");
+                if (MyBerkeleyMessageConstants.NOTICE_TRANSPORT.equals(route.getTransport())) {
+                    LOG.info("Started a notice routing.");
                     String rcpt = route.getRcpt();
                     // the path were we want to save messages in.
                     String messageId = originalNotice.getProperty(MessageConstants.PROP_SAKAI_ID).getString();
