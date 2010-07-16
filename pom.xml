@@ -25,7 +25,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>app</module>
+        <module>root</module>
         <module>notices</module>
       </modules>
     </profile>
