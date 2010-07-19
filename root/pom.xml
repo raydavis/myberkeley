@@ -6,8 +6,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
-  <artifactId>edu.berkeley.myberkeley.app</artifactId>
-  <name>MyBerkeley application code and documents</name>
+  <artifactId>edu.berkeley.myberkeley.root</artifactId>
+  <name>MyBerkeley application root configuration</name>
   <version>1.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <build>
@@ -19,14 +19,9 @@
         <version>2.1.0</version>
         <configuration>
           <instructions>
-            <!--
-            <Export-Package>edu.berkeley.myberkeley.api.*</Export-Package>
-            -->
-            <Private-Package>edu.berkeley.myberkeley.impl.*</Private-Package>
-            <Sling-Initial-Content>
-              SLING-INF/initial-content/apps/myberkeley;overwrite:=true;path:=/apps/myberkeley,
-			  SLING-INF/initial-content/myberkeley;overwrite:=true;path:=/myberkeley
-            </Sling-Initial-Content>
+            <Export-Package>edu.berkeley.myberkeley.root</Export-Package>
+            <Private-Package>edu.berkeley.myberkeley.root.impl.*</Private-Package>
+            <Sling-Initial-Content>content</Sling-Initial-Content>
           </instructions>
         </configuration>
       </plugin>
@@ -41,7 +36,7 @@
     <dependency>
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
-      <version>1.0</version>
+      <version>2.0</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -52,7 +47,12 @@
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.scr.annotations</artifactId>
-      <version>1.0.0</version>
+      <version>1.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-api</artifactId>
+      <version>2.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.sling</groupId>
@@ -65,9 +65,47 @@
       <version>2.0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.osgi</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.jcr.api</artifactId>
+      <version>2.0.6</version>
+      <type>bundle</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.jcr.api</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.jcr.resource</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.5.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.5.10</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.8.5</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
