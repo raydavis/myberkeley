@@ -9,8 +9,9 @@ All these services register with the nakamura.messaging bundle and will be calle
 handles.
 
 Here's an example curl POST that sends a notice type message from John King to Ray Davis:
-curl -u 271592:testuser -F sakai:type=notice -F sakai:category=message -F sakai:sendstate=pending -F sakai:taskstate=created -F sakai:messagebox=outbox  -F sakai:to=internal:211159 -F sakai:from=271592 \
--F sakai:subject="Testing Notices" -F sakai:body="Sending my first Notice" http://localhost:8080/_user/2/27/271592/message.create.html
+curl -u 271592:testuser -F sakai:type=notice -F sakai:sendstate=pending -F sakai:messagebox=outbox  -F sakai:to=322279 -F sakai:from=271592 -F sakai:subject="Testing Due Date parsing" \
+-F sakai:body="can I get due dates parsed?" -F sakai:category=reminder -F sakai:taskState=created -F sakai:dueDate=2010-07-20 -F sakai:dueDate@TypeHint=Date \
+http://localhost:8080/_user/2/27/271592/message.create.html
 
 See also the README for nakamura.messaging
 
