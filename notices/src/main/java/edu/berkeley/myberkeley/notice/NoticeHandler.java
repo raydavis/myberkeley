@@ -74,6 +74,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                     n.setProperty(MessageConstants.PROP_SAKAI_READ, false);
                     n.setProperty(MessageConstants.PROP_SAKAI_MESSAGEBOX, MessageConstants.BOX_INBOX);
                     n.setProperty(MessageConstants.PROP_SAKAI_SENDSTATE, MessageConstants.STATE_NOTIFIED);
+                    // only put the single recipient into this property, not all of them
+                    n.setProperty(MessageConstants.PROP_SAKAI_TO, route.getRcpt());
 
                     if (session.hasPendingChanges()) {
                         session.save();

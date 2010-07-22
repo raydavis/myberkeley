@@ -7,6 +7,7 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.request.RequestParameter;
 import org.sakaiproject.nakamura.api.message.CreateMessagePreProcessor;
 import org.sakaiproject.nakamura.api.message.MessageConstants;
 import org.sakaiproject.nakamura.api.message.MessagingException;
@@ -25,8 +26,52 @@ import edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants;
 public class CreateNoticePreProcessor implements CreateMessagePreProcessor {
 
     public void checkRequest(SlingHttpServletRequest request) throws MessagingException {
+        StringBuilder errorBuilder = null;
+        MessagingException mex = null;
         if (request.getRequestParameter(MessageConstants.PROP_SAKAI_TO) == null) {
-            throw new MessagingException(HttpServletResponse.SC_BAD_REQUEST, "The " + MessageConstants.PROP_SAKAI_TO + " parameter has to be specified.");
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MessageConstants.PROP_SAKAI_TO + " request parameter is missing. ");
+        }
+        if (request.getRequestParameter(MessageConstants.PROP_SAKAI_FROM) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append( MessageConstants.PROP_SAKAI_FROM + " request parameter is mising. ");
+        }
+        if (request.getRequestParameter(MessageConstants.PROP_SAKAI_SUBJECT) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MessageConstants.PROP_SAKAI_SUBJECT + " request parameter is missing. ");
+        }   
+        if (request.getRequestParameter(MessageConstants.PROP_SAKAI_SENDSTATE) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MessageConstants.PROP_SAKAI_SENDSTATE + " request parameter is missing. ");
+        }   
+        if (request.getRequestParameter(MessageConstants.PROP_SAKAI_MESSAGEBOX) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MessageConstants.PROP_SAKAI_MESSAGEBOX + " request parameter is missing. ");
+        }  
+        if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY + " request parameter is missing. ");
+        }  
+        if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE + " request parameter is missing. ");
+        }         
+        if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE) == null) {
+            if (errorBuilder == null) errorBuilder = new StringBuilder();
+            if (mex == null) mex = new MessagingException();
+            errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE + " request parameter is missing. ");  
+        }
+        RequestParameter param = request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE);
+//        2010-07-15T17:41:47.785-07:00
+        if (mex != null) {
+            throw new MessagingException(HttpServletResponse.SC_BAD_REQUEST, errorBuilder.toString());
         }
     }
 

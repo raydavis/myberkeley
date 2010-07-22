@@ -9,4 +9,10 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
 	  public static final String TYPE_NOTICE = "notice";
 	  
 	  public static final String NOTICE_TRANSPORT = "notice";
+	  
+	  public static final String PROP_SAKAI_CATEGORY = "sakai:category";
+	  
+	  public static final String PROP_SAKAI_TASKSTATE = "sakai:taskState";
+	  
+	  public static final String PROP_SAKAI_DUEDATE = "sakai:dueDate";
 }
