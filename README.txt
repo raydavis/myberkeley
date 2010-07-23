@@ -127,7 +127,7 @@ These choices would user the command line:
 mvn -Dsling.loaddata -Dloaddata.server=https://portal-dev.berkeley.edu/ -Dloaddata.numusers=50 integration-test
 NOTE: the trailing slash on the server URL is required
 
-All users will be given the password "testusers".
+All users will be given the password "testuser".
 
 9. The above user-load includes records keyed to the LDAP UIDs of MyBerkeley project
 members, letting us test CAS authentication. When running MyBerkeley on your own
