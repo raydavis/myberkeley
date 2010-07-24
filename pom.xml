@@ -226,5 +226,11 @@
       <url>dav:http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley-snapshots/</url>
       <uniqueVersion>false</uniqueVersion>
     </snapshotRepository>
+    <repository>
+      <id>myberkeley</id>
+      <name>MyBerkeley</name>
+      <url>dav:http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley/</url>
+      <uniqueVersion>false</uniqueVersion>
+    </repository>
   </distributionManagement>
 </project>
