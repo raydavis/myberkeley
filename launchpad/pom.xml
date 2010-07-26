@@ -46,6 +46,12 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.rootconfig</artifactId>
+              <version>${nakamura.version}</version>
+              <startLevel>15</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
               <version>0.5.0-SNAPSHOT</version>
               <startLevel>30</startLevel>
