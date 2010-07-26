@@ -50,9 +50,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
-/**
- *
- */
 @RunWith(MockitoJUnitRunner.class)
 public class ForeignPrincipalTest {
   private ForeignPrincipalManagerImpl foreignPrincipalManager;

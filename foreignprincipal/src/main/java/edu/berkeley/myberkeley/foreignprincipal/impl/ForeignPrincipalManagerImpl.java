@@ -61,7 +61,7 @@ public class ForeignPrincipalManagerImpl implements DynamicPrincipalManager {
         UserManager userManager = session.getUserManager();
         Authorizable authorizable = userManager.getAuthorizable(userId);
         if (authorizable == null) {
-          LOGGER.info("User {} not found, returning true");
+          LOGGER.info("User {} not found, returning true", userId);
           return true;
         }
       }
