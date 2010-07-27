@@ -25,7 +25,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-        <module>foreignprincipal</module>
         <module>notices</module>
         <module>root</module>
       </modules>

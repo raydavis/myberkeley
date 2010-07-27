@@ -33,9 +33,9 @@
               <startLevel>0</startLevel>
             </bundle>
             <bundle>
-              <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.foreignprincipal</artifactId>
-              <version>1.0-SNAPSHOT</version>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.foreignprincipal</artifactId>
+              <version>${nakamura.version}</version>
               <startLevel>5</startLevel>
             </bundle>
             <bundle>
