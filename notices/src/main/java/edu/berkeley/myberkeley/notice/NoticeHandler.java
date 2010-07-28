@@ -98,7 +98,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private void convertDueDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
        javax.jcr.Property dueDateProp = originalNotice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE);
        Value value = dueDateProp.getValue();
-       value.
+//       value.
        Calendar senderDueDate = dueDateProp.getDate();
        LOG.debug("setting " + MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE + " to " + senderDueDate.getTime().toString() + " in newNotice: " + newNotice.toString());
        newNotice.setProperty(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE, senderDueDate);
