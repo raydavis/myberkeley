@@ -1,8 +1,12 @@
 package edu.berkeley.myberkeley.notice;
 
+import java.util.Calendar;
+
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
@@ -59,6 +63,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             for (MessageRoute route : routes) {
                 if (MyBerkeleyMessageConstants.NOTICE_TRANSPORT.equals(route.getTransport())) {
                     LOG.info("Started a notice routing.");
+                    // put the group recipient expansion here
                     String rcpt = route.getRcpt();
                     // the path were we want to save messages in.
                     String messageId = originalNotice.getProperty(MessageConstants.PROP_SAKAI_ID).getString();
@@ -69,7 +74,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                     session.save();
                     session.getWorkspace().copy(originalNotice.getPath(), toPath);
                     Node n = JcrUtils.deepGetOrCreateNode(session, toPath);
-
+                    LOG.debug("created recipient mesaage node: " + n.toString());
+                    // need to due this convesion on new node
+                    convertDueDate(originalNotice, n);
                     // Add some extra properties on the just created node.
                     n.setProperty(MessageConstants.PROP_SAKAI_READ, false);
                     n.setProperty(MessageConstants.PROP_SAKAI_MESSAGEBOX, MessageConstants.BOX_INBOX);
@@ -86,6 +93,15 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    private void convertDueDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
+       javax.jcr.Property dueDateProp = originalNotice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE);
+       Value value = dueDateProp.getValue();
+       value.
+       Calendar senderDueDate = dueDateProp.getDate();
+       LOG.debug("setting " + MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE + " to " + senderDueDate.getTime().toString() + " in newNotice: " + newNotice.toString());
+       newNotice.setProperty(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE, senderDueDate);
     }
 
     public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
