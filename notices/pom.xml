@@ -42,18 +42,18 @@
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-	  <version>0.6-SNAPSHOT</version>
+	  <version>0.7-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
-	  <version>0.6-SNAPSHOT</version>
+	  <version>0.7-SNAPSHOT</version>
 	  <scope>provided</scope>
 	</dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.user</artifactId>
-      <version>0.6-SNAPSHOT</version>
+      <version>0.7-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
 <!-- Sling --><!--
