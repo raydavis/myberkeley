@@ -125,6 +125,7 @@ and ${numusers} should be replaced with the number you want, e.g. 50.
 
 These choices would user the command line:
 mvn -Dsling.loaddata -Dloaddata.server=https://portal-dev.berkeley.edu/ -Dloaddata.numusers=50 integration-test
+mvn -Dsling.loaddata -Dloaddata.server=http://localhost:8080/ -Dloaddata.numusers=50 integration-test
 NOTE: the trailing slash on the server URL is required
 
 All users will be given the password "testuser".
