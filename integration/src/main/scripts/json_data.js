@@ -19,6 +19,11 @@
       "lastName": "Ellison",
       "firstName": "Michael"
     },
+    "3060": {
+      "lastName": "Mcgrath",
+      "firstName": "Owen",
+      "email": "owen@media.berkeley.edu"
+    },
     "2040": {
       "lastName": "Heyer",
       "firstName": "Oliver",
@@ -39,6 +44,11 @@
       "firstName": "John f",
       "email": "johnk@media.berkeley.edu"
     },
+    "95509": {
+      "lastName": "Chan",
+      "firstName": "Kevin",
+      "email": "kevin@media.berkeley.edu"
+    },
     "750152": {
       "lastName": "Voytek",
       "firstName": "Jessica b"
@@ -51,6 +61,16 @@
       "lastName": "Hollowgrass",
       "firstName": "Rachel",
       "email": "rhollow@berkeley.edu"
+    },
+    "53791": {
+      "lastName": "Kawase",
+      "firstName": "Darlene",
+      "email": "dkawase@berkeley.edu"
+    },
+    "18437": {
+      "lastName": "German",
+      "firstName": "Greg",
+      "email": "greg@media.berkeley.edu"
     },
     "313561": {
       "lastName": "Waid",
