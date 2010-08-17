@@ -5,10 +5,11 @@ require 'digest/sha1'
 $USERMANAGER_URI="system/userManager/"
 $GROUP_URI="#{$USERMANAGER_URI}group.create.html"
 $USER_URI="#{$USERMANAGER_URI}user.create.html"
+$GET_GROUP_URI="#{$SERMANAGER_URI}group/"
 $DEFAULT_PASSWORD="testuser"
 
 module SlingUsers
-
+  
   class Principal
     attr_accessor :name
 
@@ -44,7 +45,7 @@ module SlingUsers
     end
 
     def add_member(sling, principal, type)
-      principal_path = "/#{$USERMANAGER_URI}#{type}/#{principal}"
+      principal_path = "/#{$USERMANAGER_URI}#{type}/#{principal.name}"
       return sling.execute_post(sling.url_for("#{group_url}.update.html"),
               { ":member" => principal_path })
     end
@@ -252,9 +253,13 @@ module SlingUsers
     end
     
         
-    def create_user_with_props(username, user_props)
+    def create_user_with_props(username, user_props, password=nil)
       puts "Creating user: #{username}"
-      user = User.new(username)
+      if (password)
+        user = User.new username, password
+      else
+        user = User.new username
+      end
       user_props[":name"] = username
       user_props["pwd"] = user.password
       user_props["pwdConfirm"] = user.password
@@ -276,6 +281,15 @@ module SlingUsers
       return group
     end
 
+    def group_exists?(groupname)
+      puts "Getting group: #{groupname}"
+      result = @sling.execute_post(@sling.url_for("#{$GET_GROUP_URI}#{groupname}"))
+      if (result.code.to_i > 299)
+        return false
+      end
+      return true
+    end
+    
     def get_user_props(name)
       return @sling.get_node_props(User.url_for(name))
     end

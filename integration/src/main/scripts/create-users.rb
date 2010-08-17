@@ -45,10 +45,6 @@ allUsers = generateUserProps firstNames, lastNames
 @s = Sling.new("http://localhost:8080/", true, true)
 #@s.do_login
 @um = UserManager.new(@s)
-#allUsers.each do
-#  |userProps| puts "creating user #{userProps[':name']}"
-#  targetUser = @um.create_user_with_props userProps
-#end
 
 allUsers.each do
   |userProps| puts "creating user #{userProps[':name']}"

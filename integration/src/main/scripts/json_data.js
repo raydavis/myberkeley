@@ -76,6 +76,11 @@
       "lastName": "Waid",
       "firstName": "Matthew"
     },
+    "80818": {
+      "lastName": "Hancock",
+      "firstName": "Mara",
+      "email": "mara@media.berkeley.edu"
+    },
     "760063": {
       "lastName": "Ng",
       "firstName": "Nicole",

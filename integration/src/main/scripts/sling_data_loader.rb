@@ -42,7 +42,7 @@ class SlingDataLoader
   def generate_user_props(first_names, last_names)
     i = 0
     all_users_props = []
-    while i <= @num_users
+    while i < @num_users
       user_props = {}
       username = TEST_USER_PREFIX + i.to_s
       first_name = first_names[rand(first_names.length)]
@@ -57,18 +57,23 @@ class SlingDataLoader
     return all_users_props
   end
 
-  def load_user(username, user_props)
-    target_user = @user_manager.create_user_with_props username, user_props
+  def load_user(username, user_props, password=nil)
+    target_user = @user_manager.create_user_with_props username, user_props, password
     # if user exists, they will not be (re)created but props may be updated
     if (target_user.nil?)
-      puts "user #{username} not created, may already exist, attempting ot update properties of user: #{user_props.inspect}"
-      target_user = User.new username
+      puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
+      if (password)
+        target_user = User.new username, password
+      else
+        target_user = User.new username
+      end      
       target_user.update_properties @sling, user_props
     end
+    return target_user
   end
 end
 
-if $PROGRAM_NAME == $0
+if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[1]} users"
   sdl = SlingDataLoader.new ARGV[0], ARGV[1]
