@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.integration</artifactId>
   <name>MyBerkeley integration runner and data loader</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <profiles>
     <profile>
@@ -135,7 +135,7 @@
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
       <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.8-SNAPSHOT</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
