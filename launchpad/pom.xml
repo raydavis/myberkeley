@@ -40,7 +40,7 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.casauth</artifactId>
+              <artifactId>org.sakaiproject.nakamura.auth.cas</artifactId>
               <version>${nakamura.version}</version>
               <startLevel>15</startLevel>
             </bundle>
