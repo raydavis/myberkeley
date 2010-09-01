@@ -32,6 +32,11 @@
               <version>0.8-SNAPSHOT</version>
               <startLevel>0</startLevel>
             </bundle>
+			<bundle>
+			  <groupId>org.sakaiproject.nakamura</groupId>
+			  <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
+			  <version>0.8-SNAPSHOT</version>
+			</bundle>            
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.foreignprincipal</artifactId>
