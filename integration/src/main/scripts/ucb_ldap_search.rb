@@ -22,6 +22,9 @@ module MyBerkeleyData
     puts "found #{students.length} student members"
     hits.concat students
     
+    others = UCB::LDAP::Entry.search(:base => "ou=people,dc=berkeley,dc=edu", :filter => make_others_filter)
+    puts "found #{others.length} other members"
+    hits.concat others
     #hits.sort {|x, y| x.attributes[:sn][0].slice(1) <=> y.attributes[:sn][0].slice(1) }  # this appears to not work, giving up
   
     return make_user_json hits
@@ -47,7 +50,8 @@ module MyBerkeleyData
     kevinc = make_name_filter "Kevin Kwok-Cheong", "Chan"
     gregg = make_name_filter "Greg","German"
     marah = make_name_filter "Mara","Hancock"
-    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah
+    jonh = make_name_filter "Jon", "Hays"
+    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh
   end
   
   def make_students_filter
@@ -60,6 +64,12 @@ module MyBerkeleyData
     geobiob = make_name_filter "Geobio", "Boo"
     
     return mattheww | michaele | jessicav | whitneyl | nicolen | geobiob
+  end
+  
+  def make_others_filter 
+    adamh = make_name_filter "Adam", "Hochman"
+    joshh = make_name_filter "Josh", "Holtzman"
+    return adamh | joshh
   end
   
   def make_name_filter first, last

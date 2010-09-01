@@ -1,5 +1,10 @@
 {
   "users": {
+    "226144": {
+      "lastName": "Hochman",
+      "firstName": "Adam",
+      "email": "adam@media.berkeley.edu"
+    },
     "238382": {
       "lastName": "Geuy",
       "firstName": "Bernadette",
@@ -23,6 +28,11 @@
       "lastName": "Mcgrath",
       "firstName": "Owen",
       "email": "owen@media.berkeley.edu"
+    },
+    "231693": {
+      "lastName": "Holtzman",
+      "firstName": "Josh",
+      "email": "jholtzman@berkeley.edu"
     },
     "2040": {
       "lastName": "Heyer",
@@ -80,6 +90,11 @@
     "313561": {
       "lastName": "Waid",
       "firstName": "Matthew"
+    },
+    "323487": {
+      "lastName": "Hays",
+      "firstName": "Jon",
+      "email": "jonmhays@media.berkeley.edu"
     },
     "80818": {
       "lastName": "Hancock",
