@@ -11,6 +11,9 @@
   <name>MyBerkeley integration runner and data loader</name>
   <version>0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
+  <properties>
+   <sling.repository.config.file.url>${project.parent.basedir}/working/sling/jackrabbit/repository.xml</sling.repository.config.file.url> <!-- the default location -->
+  </properties>
   <profiles>
     <profile>
       <id>clean-sling</id>
@@ -101,6 +104,7 @@
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="sling.home" value="sling"/>
                   <sysproperty key="myberkeley.home" value="${project.parent.basedir}"/>
+                  <sysproperty key="sling.repository.config.file.url" value="${sling.repository.config.file.url}"/>
                   <arg value="-p"/>
                   <arg value="${sling.port}"/>
                   <arg value="start"/>
