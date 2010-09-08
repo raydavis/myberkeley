@@ -100,7 +100,7 @@
                   <jvmarg value="-XX:MaxPermSize=256m"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="sling.home" value="sling"/>
-                  <sysproperty key="myberkeley.home" value="${project.parent.basedir}	"/>
+                  <sysproperty key="myberkeley.home" value="${project.parent.basedir}"/>
                   <arg value="-p"/>
                   <arg value="${sling.port}"/>
                   <arg value="start"/>

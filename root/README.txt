@@ -11,4 +11,7 @@ This bundle is based on the default Apache Sling root contents component
   but at least lets other services monitor the bundle's life cycle.
 - Removes some of the Sling content used for testing.
 
+OR via a curl POST:
+
+
 
