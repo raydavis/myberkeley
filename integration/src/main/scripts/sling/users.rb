@@ -138,7 +138,7 @@ module SlingUsers
     end
 
     def self.admin_user
-      return User.new("admin", "admin")
+      return User.new("admin", "3@k@1!")  #hardwired pwd for now, need to change method to take password for various servers
     end
 
     def self.anonymous
