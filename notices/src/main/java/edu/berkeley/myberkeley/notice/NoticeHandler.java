@@ -102,8 +102,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                     session.getWorkspace().copy(originalNotice.getPath(), toPath);
                     Node n = JcrUtils.deepGetOrCreateNode(session, toPath);
                     LOG.debug("created recipient mesaage node: " + n.toString());
+                    javax.jcr.Property messageProp = originalNotice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY);
+                    String messageCategory = messageProp.getString();
+                    if (MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER.equals(messageCategory)) {
                     // need to due this conversion issue on new recipient node
-                    handleDueDate(originalNotice, n);
+                        handleDueDate(originalNotice, n);
+                    }
                     // Add some extra properties on the just created node.
                     n.setProperty(MessageConstants.PROP_SAKAI_READ, false);
                     n.setProperty(MessageConstants.PROP_SAKAI_MESSAGEBOX, MessageConstants.BOX_INBOX);

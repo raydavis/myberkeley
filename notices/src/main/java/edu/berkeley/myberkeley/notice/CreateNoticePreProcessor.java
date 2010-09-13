@@ -58,17 +58,27 @@ public class CreateNoticePreProcessor implements CreateMessagePreProcessor {
             if (mex == null) mex = new MessagingException();
             errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY + " request parameter is missing. ");
         }  
-        if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE) == null) {
+        if (request.getRequestParameter(MessageConstants.PROP_SAKAI_TYPE) == null) {
             if (errorBuilder == null) errorBuilder = new StringBuilder();
             if (mex == null) mex = new MessagingException();
-            errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE + " request parameter is missing. ");
-        }         
-        if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE) == null) {
-            if (errorBuilder == null) errorBuilder = new StringBuilder();
-            if (mex == null) mex = new MessagingException();
-            errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE + " request parameter is missing. ");  
+            errorBuilder = errorBuilder.append(MessageConstants.PROP_SAKAI_TYPE + " request parameter is missing. ");
+        }  
+        else {
+            RequestParameter messageCategoryParam = request.getRequestParameter(MessageConstants.PROP_SAKAI_TYPE);
+            String messageCategory = messageCategoryParam.getString();
+            if (MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER.equalsIgnoreCase(messageCategory)) {
+                if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE) == null) {
+                    if (errorBuilder == null) errorBuilder = new StringBuilder();
+                    if (mex == null) mex = new MessagingException();
+                    errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_TASKSTATE + " request parameter is missing. ");
+                }         
+                if (request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE) == null) {
+                    if (errorBuilder == null) errorBuilder = new StringBuilder();
+                    if (mex == null) mex = new MessagingException();
+                    errorBuilder = errorBuilder.append(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE + " request parameter is missing. ");  
+                }
+            }
         }
-        RequestParameter param = request.getRequestParameter(MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE);
 //        2010-07-15T17:41:47.785-07:00
         if (mex != null) {
             throw new MessagingException(HttpServletResponse.SC_BAD_REQUEST, errorBuilder.toString());

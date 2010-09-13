@@ -12,6 +12,10 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
 	  
 	  public static final String PROP_SAKAI_CATEGORY = "sakai:category";
 	  
+	  public static final String SAKAI_CATEGORY_MESSAGE = "message";
+	  
+	  public static final String SAKAI_CATEGORY_REMINDER = "reminder";
+	  
 	  public static final String PROP_SAKAI_TASKSTATE = "sakai:taskState";
 	  
 	  public static final String PROP_SAKAI_DUEDATE = "sakai:dueDate";
