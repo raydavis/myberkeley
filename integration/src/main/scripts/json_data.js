@@ -64,6 +64,11 @@
       "firstName": "Geobio",
       "email": "geobiob@gmail.com"
     },
+    "756037": {
+      "lastName": "Kohli",
+      "firstName": "Avneesh",
+      "email": "avneesh.kohli@berkeley.edu"
+    },
     "750152": {
       "lastName": "Voytek",
       "firstName": "Jessica b"

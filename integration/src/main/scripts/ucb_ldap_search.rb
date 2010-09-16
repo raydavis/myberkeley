@@ -62,8 +62,9 @@ module MyBerkeleyData
     whitneyl = make_name_filter "Whitney", "Lai"
     nicolen = make_name_filter "Nicole", "Ng"
     geobiob = make_name_filter "Geobio", "Boo"
+    avneeshk = make_name_filter "Avneesh", "Kohli"
     
-    return mattheww | michaele | jessicav | whitneyl | nicolen | geobiob
+    return mattheww | michaele | jessicav | whitneyl | nicolen | geobiob | avneeshk
   end
   
   def make_others_filter 
