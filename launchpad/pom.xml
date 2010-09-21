@@ -11,7 +11,7 @@
   <name>MyBerkeley executable</name>
   <version>0.8-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.8-SNAPSHOT</nakamura.version>
+    <nakamura.version>0.9-SNAPSHOT</nakamura.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -35,7 +35,7 @@
 			<bundle>
 			  <groupId>org.sakaiproject.nakamura</groupId>
 			  <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
-			  <version>0.8-SNAPSHOT</version>
+			  <version>0.9-SNAPSHOT</version>
 			</bundle>            
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
