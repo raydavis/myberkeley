@@ -12,7 +12,7 @@
   <version>0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
-   <sling.repository.config.file.url>${project.parent.basedir}/working/sling/jackrabbit/repository.xml</sling.repository.config.file.url> <!-- the default location -->
+   <sling.include.nakamura>${project.parent.basedir}/working/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
   </properties>
   <profiles>
     <profile>
@@ -104,7 +104,7 @@
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="sling.home" value="sling"/>
                   <sysproperty key="myberkeley.home" value="${project.parent.basedir}"/>
-                  <sysproperty key="sling.repository.config.file.url" value="${sling.repository.config.file.url}"/>
+                  <sysproperty key="sling.include.nakamura" value="${sling.include.nakamura}"/>
                   <arg value="-p"/>
                   <arg value="${sling.port}"/>
                   <arg value="start"/>
