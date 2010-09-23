@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.integration</artifactId>
   <name>MyBerkeley integration runner and data loader</name>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
    <sling.repository.config.file.url>${project.parent.basedir}/working/sling/jackrabbit/repository.xml</sling.repository.config.file.url> <!-- the default location -->
@@ -140,7 +140,7 @@
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
       <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-      <version>0.8-SNAPSHOT</version>
+      <version>0.9-SNAPSHOT</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

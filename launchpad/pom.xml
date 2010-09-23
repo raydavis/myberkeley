@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
   <name>MyBerkeley executable</name>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <properties>
     <nakamura.version>0.9-SNAPSHOT</nakamura.version>
   </properties>
@@ -29,7 +29,7 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.root</artifactId>
-              <version>0.8-SNAPSHOT</version>
+              <version>0.9-SNAPSHOT</version>
               <startLevel>0</startLevel>
             </bundle>
 			<bundle>
@@ -64,7 +64,7 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.notices</artifactId>
-              <version>0.8-SNAPSHOT</version>
+              <version>0.9-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
           </additionalBundles>
