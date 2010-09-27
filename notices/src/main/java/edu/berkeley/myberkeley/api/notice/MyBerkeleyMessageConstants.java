@@ -19,4 +19,11 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
 	  public static final String PROP_SAKAI_TASKSTATE = "sakai:taskState";
 	  
 	  public static final String PROP_SAKAI_DUEDATE = "sakai:dueDate";
+	  
+	   public static final String BOX_ARCHIVE = "sakai:archive";
+	  
+	   public static final String BOX_DRAFTS = "sakai:drafts";
+	   
+	   public static final String BOX_QUEUE = "sakai:queue";
+	  
 }
