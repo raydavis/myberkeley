@@ -26,6 +26,7 @@ class SlingDataLoader
       puts "creating user: #{user.inspect}"
       load_user username, user_props
     end
+    return users
   end
 
   def load_random_users(first_names_file, last_names_file)

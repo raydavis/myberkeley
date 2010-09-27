@@ -107,10 +107,16 @@ module MyBerkeleyData
       return digest.hexdigest
     end
     
-    def add_user_to_groups user
+    def add_student_to_group user
       @ced_all_students_group.add_member @sling, user, "user"
       user_props = @user_manager.get_user_props user.name
     end
+    
+    def add_advisor_to_group advisor
+      @ced_advisors_group.add_member @sling, advisor, "user"
+      user_props = @user_manager.get_user_props advisor.name
+    end
+    
   end
   
 
@@ -154,6 +160,17 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
      )
 
   sdl = SlingDataLoader.new(ARGV[4], 0) # no random users, just real ones
+  #advisors = sdl.load_defined_users "json_data.js"
+    all_data = JSON.load(File.open "json_data.js", "r")
+    advisors = all_data['users']
+    advisors.each do |advisor|
+      username = advisor[0]
+      user_props = advisor[1]
+      puts "creating advisor: #{advisor.inspect}"
+      loadedAdvisor = sdl.load_user username, user_props
+      odl.add_advisor_to_group loadedAdvisor
+    end
+
   
   #ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si where si.STUDENT_LDAP_UID in \
   #                (select sm.LDAP_UID from BSPACE_STUDENT_MAJOR_VW sm where sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' \
@@ -161,17 +178,15 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   
   #ced_students = MyBerkeleyData::Student.find :all, :conditions => {}
   
-  ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
-                  left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-                  where sm.MAJOR_NAME = 'DOUBLE' and (sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')"
-  
-  i = 0
-  ced_students.each do |s|
-    #break if (i += 1) == 10
-    props = odl.make_user_props s
-    user = sdl.load_user s.student_ldap_uid, props, odl.make_password(s) 
-    odl.add_user_to_groups user
-    
-  end
-
-end
+  #ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
+  #                left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
+  #                where sm.MAJOR_NAME = 'DOUBLE' and (sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')"
+  #
+  #i = 0
+  #ced_students.each do |s|
+  #  #break if (i += 1) == 10
+  #  props = odl.make_user_props s
+  #  user = sdl.load_user s.student_ldap_uid, props, odl.make_password(s) 
+  #  odl.add_student_to_group user
+  #end
+end 
