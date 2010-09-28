@@ -77,7 +77,7 @@ public class QueuedMessageSender {
             try {
                 Session adminSession = repository.loginAdministrative(null);
 
-                Node advisorsGroup = adminSession.getNode("/_group/g-ced-advisors");
+                Node advisorsGroup = adminSession.getNode("/group/g-ced-advisors");
                 Node advisorNode;
                 Property advisorIdProp;
                 String advisorId;

@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'json'
-require 'sling/sling'
-require 'sling/users'
+require 'lib/sling/sling'
+require 'lib/sling/users'
 include SlingInterface
 include SlingUsers
 
@@ -12,7 +12,7 @@ class SlingDataLoader
 
   def initialize(server="http://localhost:8080/", numusers="20")
     @num_users = numusers.to_i
-    @sling = Sling.new(server, true, true)
+    @sling = Sling.new(server, true)
     @sling.do_login
     @user_manager = UserManager.new(@sling)
   end

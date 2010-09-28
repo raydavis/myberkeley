@@ -3,8 +3,8 @@ require 'rubygems'
 require 'active_record'
 require 'json'
 require 'digest/sha1'
-require 'sling/sling'
-require 'sling/users'
+require 'lib/sling/sling'
+require 'lib/sling/users'
 require 'sling_data_loader'
 include SlingInterface
 include SlingUsers
@@ -38,7 +38,7 @@ module MyBerkeleyData
       
       @env = env
       
-      @sling = Sling.new(target_server, true, true)
+      @sling = Sling.new(target_server, true)
       @sling.do_login
       @user_manager = UserManager.new(@sling)
     end
