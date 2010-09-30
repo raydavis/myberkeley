@@ -5,7 +5,7 @@ require 'digest/sha1'
 $USERMANAGER_URI="system/userManager/"
 $GROUP_URI="#{$USERMANAGER_URI}group.create.html"
 $USER_URI="#{$USERMANAGER_URI}user.create.html"
-$GET_GROUP_URI="#{$SERMANAGER_URI}group/"
+$GET_GROUP_URI="#{$USERMANAGER_URI}group/"
 $DEFAULT_PASSWORD="testuser"
 
 module SlingUsers

@@ -48,10 +48,19 @@ module MyBerkeleyData
       @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
     end
     
+    #def get_or_create_group(groupname)
+    #  if (!@user_manager.group_exists? groupname)
+    #    group = @user_manager.create_group groupname
+    #  else
+    #    group = Group.new groupname
+    #  end
+    #  return group
+    #end
+    #
+    
     def get_or_create_group(groupname)
-      if (!@user_manager.group_exists? groupname)
-        group = @user_manager.create_group groupname
-      else
+      group = @user_manager.create_group groupname
+      if(!group)
         group = Group.new groupname
       end
       return group
@@ -108,12 +117,12 @@ module MyBerkeleyData
     end
     
     def add_student_to_group user
-      @ced_all_students_group.add_member @sling, user, "user"
+      @ced_all_students_group.add_member @sling, user.name, "user"
       user_props = @user_manager.get_user_props user.name
     end
     
     def add_advisor_to_group advisor
-      @ced_advisors_group.add_member @sling, advisor, "user"
+      @ced_advisors_group.add_member @sling, advisor.name, "user"
       user_props = @user_manager.get_user_props advisor.name
     end
     
