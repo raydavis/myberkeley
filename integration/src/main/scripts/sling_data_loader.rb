@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'json'
-require 'lib/sling/sling'
+require 'sling/sling'
 require 'lib/sling/users'
 include SlingInterface
 include SlingUsers

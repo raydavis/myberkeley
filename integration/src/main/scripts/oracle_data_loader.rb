@@ -3,7 +3,7 @@ require 'rubygems'
 require 'active_record'
 require 'json'
 require 'digest/sha1'
-require 'lib/sling/sling'
+require 'sling/sling'
 require 'lib/sling/users'
 require 'sling_data_loader'
 include SlingInterface
