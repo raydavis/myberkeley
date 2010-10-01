@@ -3,6 +3,7 @@ package edu.berkeley.myberkeley.notice;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.BOX_ARCHIVE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.BOX_QUEUE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.GROUP_CED_ADVISORS;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.STATE_SEND_FAILED;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_OUTBOX;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.EVENT_LOCATION;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -33,6 +35,7 @@ import javax.jcr.query.QueryResult;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.Service;
 import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.jackrabbit.api.security.user.Group;
 import org.apache.jackrabbit.api.security.user.UserManager;
@@ -51,7 +54,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants;
 
-@Component(label = "QueuedMessageSender", description = "Sends queued messages when they reach their send date", immediate = true)
+@Component(label = "MyBerkeley :: QueuedMessageSender", description = "Sends queued messages when they reach their send date", immediate = true, metatype=true)
+@Service(value = edu.berkeley.myberkeley.notice.QueuedMessageSender.class)
 public class QueuedMessageSender {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
@@ -67,35 +71,56 @@ public class QueuedMessageSender {
 
     @Reference
     protected transient MessagingService messagingService;
+    
+    @org.apache.felix.scr.annotations.Property(longValue = 30, label="Poll Interval Seconds")
+    private static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
+    
+    @org.apache.felix.scr.annotations.Property(boolValue = false, label="Run Now")
+    private static final String PROP_RUN_NOW = "queuedsender.runnow";
+    
+    protected final static String JOB_NAME = "sendQueuedNoticesJob";
 
     protected void activate(ComponentContext componentContext) throws Exception {
         // executes the job every minute
-        String schedulingExpression = "0 * * * * ?";
-        Map<String, Serializable> config1 = new HashMap<String, Serializable>();
+//        String schedulingExpression = "0 * * * * ?";
+        Dictionary<?, ?> props = componentContext.getProperties();
+        Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
+        Boolean runNow = (Boolean) props.get(PROP_RUN_NOW);
+        Map<String, Serializable> config = new HashMap<String, Serializable>();
         boolean canRunConcurrently = true;
         final Job sendQueuedNoticeJob = new SendQueuedNoticesJob();
         try {
-            this.scheduler.addPeriodicJob("sendQueuedNoticesJob", sendQueuedNoticeJob, config1, 30, false);
-            // this.scheduler.addJob("sendQueuedNoticesJob",
-            // sendQueuedNoticeJob, config1, schedulingExpression,
-            // canRunConcurrently);
+            if (!runNow) {
+                this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
+            }
+            else {
+                this.scheduler.fireJob(sendQueuedNoticeJob, config);
+            }
         }
         catch (Exception e) {
             LOGGER.error("sendQueuedNoticesJob Failed", e);
         }
     }
+    
+    protected void dectivate(ComponentContext componentContext) throws Exception {
+        this.scheduler.removeJob(JOB_NAME);
+    }
 
     /**
-     * A Scheduler Job that will send all notices for all members of the g-ced-advisors group that are in the sakai:messagebox=queue
-     * whose sakai:sendDate has come, then move all the notices into the sakai:messagebox=archive
+     * A Scheduler Job that will send all notices for all members of the
+     * g-ced-advisors group that are in the sakai:messagebox=queue whose
+     * sakai:sendDate has come, then move all the notices into the
+     * sakai:messagebox=archive
+     * 
      * @author johnk
-     *
+     * 
      */
     public class SendQueuedNoticesJob implements Job {
         public void execute(JobContext context) {
             LOGGER.info("Executing SendQueuedNoticesJob");
+            Session adminSession = null;
             try {
-                Session adminSession = repository.loginAdministrative(null);
+                adminSession = repository.loginAdministrative(null);
                 UserManager um = AccessControlUtil.getUserManager(adminSession);
                 Authorizable au = um.getAuthorizable(GROUP_CED_ADVISORS);
                 Iterator<Authorizable> membersIter;
@@ -106,39 +131,61 @@ public class QueuedMessageSender {
                     while (membersIter.hasNext()) {
                         userAuth = membersIter.next();
                         advisorId = userAuth.getID();
-                        // notice messages live in individual authors message store currently
-                        if (!userAuth.isGroup()) {
-                            QueryResult queuedNoticesQR = findQueuedNotices(userAuth.getID(), adminSession);
-                            NodeIterator noticeIter = queuedNoticesQR.getNodes();
-                            Node notice;
-                            while (noticeIter.hasNext()) {
-                                notice = noticeIter.nextNode();
-                                if (timeToSend(notice)) {
-                                    // move it to outbox for std sending mechanism and so next search will not find it
-                                    notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_OUTBOX);
-                                    if (adminSession.hasPendingChanges()) {
-                                        adminSession.save();
+                        if ("271592".equals(advisorId)) {  // for development only
+                            // notice messages live in individual authors
+                            // message store currently
+                            if (!userAuth.isGroup()) {
+                                QueryResult queuedNoticesQR = findQueuedNotices(advisorId, adminSession);
+                                NodeIterator noticeIter = queuedNoticesQR.getNodes();
+                                Node notice = null;
+                                while (noticeIter.hasNext()) {
+                                    try {
+                                        notice = noticeIter.nextNode();
+                                        LOGGER.debug("at noticeIter position: {} found notice: {}",
+                                                        new Object[] { noticeIter.getPosition(), notice.getPath() });
+                                        if (timeToSend(notice)) {
+                                            // move it to outbox for std sending
+                                            // mechanism and so next search will not find it
+                                            notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_OUTBOX);
+                                            if (adminSession.hasPendingChanges()) {
+                                                adminSession.save();
+                                            }
+                                            sendNotice(notice, advisorId);
+                                            // now more it archive box per user
+                                            // interaction spec so it shows up in UI Archive
+                                            notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_ARCHIVE);
+                                            if (adminSession.hasPendingChanges()) {
+                                                adminSession.save();
+                                            }
+                                        }
                                     }
-                                    sendNotice(notice, advisorId);
-                                    // now more it archive box per user interaction spec so it shows up in UI
-                                    notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_ARCHIVE);
-                                    if (adminSession.hasPendingChanges()) {
-                                        adminSession.save();
+                                    catch (RepositoryException e) {
+                                        // put in failed sendState so it won't be found again and repeated failures occur
+                                        LOGGER.error("Could not send notice {}, putting in sendState: {}", new Object[]{notice.getPath(), STATE_SEND_FAILED});
+                                        notice.setProperty(PROP_SAKAI_SENDSTATE, STATE_SEND_FAILED);
+                                        if (adminSession.hasPendingChanges()) {
+                                            adminSession.save();
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                adminSession.logout();
             }
             catch (RepositoryException e) {
                 LOGGER.error("sendQueuedNoticeJob Failed", e);
             }
+            finally {
+                if (adminSession != null)
+                    adminSession.logout();
+            }
         }
 
         /**
-         * find all the notices for this advisor that are of sakai:type=notice and sakai:messagebox=queue
+         * find all the notices for this advisor that are of sakai:type=notice
+         * and sakai:messagebox=queue
+         * 
          * @param advisorId
          * @param adminSession
          * @return
@@ -150,7 +197,7 @@ public class QueuedMessageSender {
             // and @sakai:type="notice and @sakai:messagebox="sakai:queue
             StringBuilder queryString = new StringBuilder("/jcr:root").append(messageStorePath).append("//*[@sling:resourceType=\"sakai/message\" and @")
                     .append(PROP_SAKAI_TYPE).append("=\"").append(TYPE_NOTICE).append("\" and @").append(PROP_SAKAI_MESSAGEBOX).append("=\"").append(BOX_QUEUE)
-                    .append("\"]");
+                    .append("\" and @").append(PROP_SAKAI_SENDSTATE).append("=\"").append(STATE_PENDING).append("\"]");
             LOGGER.info("findQueuedNotices() Using QUery {} ", queryString.toString());
             // find all the notices in the queue for this advisor
             QueryManager queryManager = adminSession.getWorkspace().getQueryManager();
@@ -158,35 +205,49 @@ public class QueuedMessageSender {
             QueryResult result = query.execute();
             return result;
         }
-        
+
         /**
-         * if the time when job is run is earlier or equal to the sakai:sendDate,
-         * then it is time(or past time) to send the notice
+         * if the time when job is run is earlier or equal to the
+         * sakai:sendDate, then it is time(or past time) to send the notice
+         * 
          * @param notice
          * @return
          * @throws RepositoryException
          */
         private boolean timeToSend(Node notice) throws RepositoryException {
             boolean timeToSend = false;
-            Property sendDateProp = notice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_SENDDATE);
-            Calendar sendDate = sendDateProp != null ? sendDateProp.getDate() : null;
-            if (sendDate != null) {
-                Calendar now = Calendar.getInstance();
-                if (now.compareTo(sendDate) <= 0) {
-                    LOGGER.debug("timeToSend() sendDate: {} is earlier than now: {}, sending notice: {}", 
-                            new Object[]{sendDate.getTime(), now.getTime(), notice.getPath()});
-                    timeToSend = true;
+            try {
+                Property sendDateProp = notice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_SENDDATE);
+                Calendar sendDate = sendDateProp != null ? sendDateProp.getDate() : null;
+                if (sendDate != null) {
+                    Calendar now = Calendar.getInstance();
+                    if (now.compareTo(sendDate) >= 0) {
+                        LOGGER.debug("timeToSend() sendDate: {} is earlier than or same as now: {}, sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
+                                notice.getPath() });
+                        timeToSend = true;
+                    }
+                    else {
+                        LOGGER.debug("timeToSend() sendDate: {} is later than now: {}, NOT sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
+                                notice.getPath() });
+                    }
+                }
+                else {
+                    String msg = "timeToSend() sendDate is null, cannot send notice: " + notice.getPath();                    
+                    throw new RepositoryException(msg);
                 }
             }
-            else {
-                LOGGER.error("timeToSend() sendDate is null, cannot send notice: " + notice.getPath());
+            catch (PathNotFoundException e) {
+                LOGGER.error("timeToSend() sendDate not found, cannot send notice: " + notice.getPath(), e);
+                throw e;
             }
             return timeToSend;
         }
 
         /**
-         * send the notice using the method employed by the MessagePostProcessor so as to do
-         * things the messaging bundle way, the actual notice node copying will be done by the NoticeHandler
+         * send the notice using the method employed by the MessagePostProcessor
+         * so as to do things the messaging bundle way, the actual notice node
+         * copying will be done by the NoticeHandler
+         * 
          * @param noticeNode
          * @param advisorId
          * @throws RepositoryException

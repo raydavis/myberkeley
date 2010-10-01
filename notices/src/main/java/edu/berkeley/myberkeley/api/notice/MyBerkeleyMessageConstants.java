@@ -31,5 +31,7 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
     public static final String BOX_QUEUE = "queue";
     
     public static final String GROUP_CED_ADVISORS = "g-ced-advisors";
+    
+    public static final String STATE_SEND_FAILED = "failed";
 
 }
