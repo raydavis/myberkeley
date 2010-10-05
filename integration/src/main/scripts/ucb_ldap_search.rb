@@ -51,7 +51,8 @@ module MyBerkeleyData
     gregg = make_name_filter "Greg","German"
     marah = make_name_filter "Mara","Hancock"
     jonh = make_name_filter "Jon", "Hays"
-    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh
+    romans = make_name_filter "Roman V", "Shumikhin"
+    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh | romans
   end
   
   def make_students_filter

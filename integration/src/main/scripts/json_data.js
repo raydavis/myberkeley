@@ -24,6 +24,11 @@
       "lastName": "Ellison",
       "firstName": "Michael"
     },
+    "892685": {
+      "lastName": "Shumikhin",
+      "firstName": "Roman v",
+      "email": "roman@berkeley.edu"
+    },
     "3060": {
       "lastName": "Mcgrath",
       "firstName": "Owen",
