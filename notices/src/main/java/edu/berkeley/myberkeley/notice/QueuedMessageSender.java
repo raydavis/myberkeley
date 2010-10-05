@@ -79,14 +79,23 @@ public class QueuedMessageSender {
     private static final String PROP_RUN_NOW = "queuedsender.runnow";
     
     protected final static String JOB_NAME = "sendQueuedNoticesJob";
-
+    
+    @org.apache.felix.scr.annotations.Property(value = "prod", label="Runtime Environment")
+    private static final String PROP_RUNTIME_ENVIRONMENT = "queuedsender.environment"; 
+    
+    private static final String ENVVIRONMENT_DEV = "dev";    
+    
+    private static final String DEV_USER_ID = "271592"; 
+    
     protected void activate(ComponentContext componentContext) throws Exception {
         // executes the job every minute
 //        String schedulingExpression = "0 * * * * ?";
         Dictionary<?, ?> props = componentContext.getProperties();
         Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
         Boolean runNow = (Boolean) props.get(PROP_RUN_NOW);
+        String runtimeEnvironment= (String) props.get(PROP_RUNTIME_ENVIRONMENT);
         Map<String, Serializable> config = new HashMap<String, Serializable>();
+        config.put(PROP_RUNTIME_ENVIRONMENT, runtimeEnvironment);
         boolean canRunConcurrently = true;
         final Job sendQueuedNoticeJob = new SendQueuedNoticesJob();
         try {
@@ -121,17 +130,22 @@ public class QueuedMessageSender {
             Session adminSession = null;
             try {
                 adminSession = repository.loginAdministrative(null);
+                Map<String, Serializable> config =context.getConfiguration();
+                String runtimeEnvironment = (String) config.get(PROP_RUNTIME_ENVIRONMENT);
                 UserManager um = AccessControlUtil.getUserManager(adminSession);
                 Authorizable au = um.getAuthorizable(GROUP_CED_ADVISORS);
                 Iterator<Authorizable> membersIter;
                 Authorizable userAuth;
                 String advisorId;
-                if (au.isGroup()) {
+                if (au == null) {
+                    LOGGER.error("Group {} doesn't exist", new Object[]{GROUP_CED_ADVISORS});
+                }
+                else if (au.isGroup()) {
                     membersIter = ((Group) au).getMembers();
                     while (membersIter.hasNext()) {
                         userAuth = membersIter.next();
                         advisorId = userAuth.getID();
-                        if ("271592".equals(advisorId)) {  // for development only
+                        if (!ENVVIRONMENT_DEV.equals(runtimeEnvironment) || DEV_USER_ID.equals(advisorId)) {  // for development only
                             // notice messages live in individual authors
                             // message store currently
                             if (!userAuth.isGroup()) {
