@@ -61,16 +61,16 @@ public class QueuedMessageSender {
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Reference
-    protected transient SlingRepository repository;
+    protected SlingRepository repository;
 
     @Reference
-    protected transient Scheduler scheduler;
+    protected Scheduler scheduler;
 
     @Reference
-    protected transient EventAdmin eventAdmin;
+    protected EventAdmin eventAdmin;
 
     @Reference
-    protected transient MessagingService messagingService;
+    protected MessagingService messagingService;
     
     @org.apache.felix.scr.annotations.Property(longValue = 30, label="Poll Interval Seconds")
     private static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
@@ -96,11 +96,11 @@ public class QueuedMessageSender {
         String runtimeEnvironment= (String) props.get(PROP_RUNTIME_ENVIRONMENT);
         Map<String, Serializable> config = new HashMap<String, Serializable>();
         config.put(PROP_RUNTIME_ENVIRONMENT, runtimeEnvironment);
-        boolean canRunConcurrently = true;
+        boolean canRunConcurrently = false;
         final Job sendQueuedNoticeJob = new SendQueuedNoticesJob();
         try {
             if (!runNow) {
-                this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
+                this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, canRunConcurrently);
             }
             else {
                 this.scheduler.fireJob(sendQueuedNoticeJob, config);
@@ -281,4 +281,37 @@ public class QueuedMessageSender {
             }
         }
     }
+    
+    public void bindRepository(SlingRepository repository) {
+        this.repository = repository;
+    }
+    
+    public void unbindRepository() {
+        this.repository = null;
+    }
+    
+    public void bindScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+    
+    public void unbindScheduler() {
+        this.scheduler = null;
+    }
+    
+    public void bindEventAdmin(EventAdmin eventAdmin) {
+        this.eventAdmin = eventAdmin;
+    }
+    
+    public void unbindEventAdmin() {
+        this.eventAdmin = null;
+    }
+    
+    public void bindMessagingService(MessagingService messagingService) {
+        this.messagingService = messagingService;
+    }
+    
+    public void unbindMessagingService() {
+        this.messagingService = null;
+    }
+    
 }
