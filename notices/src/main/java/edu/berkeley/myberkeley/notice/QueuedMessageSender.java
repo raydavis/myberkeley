@@ -130,7 +130,7 @@ public class QueuedMessageSender {
             Session adminSession = null;
             try {
                 adminSession = repository.loginAdministrative(null);
-                Map<String, Serializable> config =context.getConfiguration();
+                Map<String, Serializable> config = context.getConfiguration();
                 String runtimeEnvironment = (String) config.get(PROP_RUNTIME_ENVIRONMENT);
                 UserManager um = AccessControlUtil.getUserManager(adminSession);
                 Authorizable au = um.getAuthorizable(GROUP_CED_ADVISORS);

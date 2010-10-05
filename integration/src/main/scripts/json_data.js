@@ -24,6 +24,11 @@
       "lastName": "Ellison",
       "firstName": "Michael"
     },
+    "892685": {
+      "lastName": "Shumikhin",
+      "firstName": "Roman v",
+      "email": "roman@berkeley.edu"
+    },
     "3060": {
       "lastName": "Mcgrath",
       "firstName": "Owen",
@@ -63,6 +68,11 @@
       "lastName": "Boo",
       "firstName": "Geobio",
       "email": "geobiob@gmail.com"
+    },
+    "756037": {
+      "lastName": "Kohli",
+      "firstName": "Avneesh",
+      "email": "avneesh.kohli@berkeley.edu"
     },
     "750152": {
       "lastName": "Voytek",

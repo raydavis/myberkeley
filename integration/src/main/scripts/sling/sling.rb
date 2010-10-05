@@ -68,7 +68,7 @@ module SlingInterface
     attr_accessor :log
     attr_accessor :trustedauth
     
-    def initialize(server="http://localhost:8080/", debug=false, trustedauth=false)
+def initialize(server="http://localhost:8080/", admin_password="admin", debug=false, trustedauth=false)
       @server = server
       @debug = debug
       @log = false
