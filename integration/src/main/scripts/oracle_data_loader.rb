@@ -72,6 +72,9 @@ module MyBerkeleyData
       user_props['firstName'] = ced_student.first_name
       user_props['lastName'] = ced_student.last_name
       user_props['email'] = make_email ced_student
+      user_props['sakai:contexts'] = ['ced']
+      user_props['sakai:participant'] = true
+      determine_current_status user_props, ced_student
       if ('U'.eql?ced_student.ug_grad_flag.strip )
         user_props['sakai:standing'] = 'undergrad'
       elsif ('G'.eql?ced_student.ug_grad_flag.strip)
@@ -98,6 +101,10 @@ module MyBerkeleyData
       else
         user_props['major'] = ced_student.major_name.strip
       end
+    end
+    
+    def determine_current_status(user_props, ced_student)
+      user_props['sakai:current'] = true;
     end
     
     def make_email ced_student

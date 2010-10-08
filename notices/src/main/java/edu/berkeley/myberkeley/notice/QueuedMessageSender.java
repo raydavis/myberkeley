@@ -3,6 +3,7 @@ package edu.berkeley.myberkeley.notice;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.BOX_ARCHIVE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.BOX_QUEUE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.GROUP_CED_ADVISORS;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_SENDDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.STATE_SEND_FAILED;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_OUTBOX;
@@ -51,8 +52,6 @@ import org.osgi.service.event.EventAdmin;
 import org.sakaiproject.nakamura.api.message.MessagingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants;
 
 @Component(label = "MyBerkeley :: QueuedMessageSender", description = "Sends queued messages when they reach their send date", immediate = true, metatype=true)
 @Service(value = edu.berkeley.myberkeley.notice.QueuedMessageSender.class)
@@ -231,7 +230,7 @@ public class QueuedMessageSender {
         private boolean timeToSend(Node notice) throws RepositoryException {
             boolean timeToSend = false;
             try {
-                Property sendDateProp = notice.getProperty(MyBerkeleyMessageConstants.PROP_SAKAI_SENDDATE);
+                Property sendDateProp = notice.getProperty(PROP_SAKAI_SENDDATE);
                 Calendar sendDate = sendDateProp != null ? sendDateProp.getDate() : null;
                 if (sendDate != null) {
                     Calendar now = Calendar.getInstance();
