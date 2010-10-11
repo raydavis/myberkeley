@@ -1,12 +1,16 @@
 package edu.berkeley.myberkeley.notice;
 
-import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.GROUP_CED_STUDENTS;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_DATA_NODE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_PREFIX;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_QUERY;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_ROOT_NODE_NAME;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
+import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_FROM;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_ID;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_MESSAGEBOX;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_READ;
@@ -17,8 +21,6 @@ import static org.sakaiproject.nakamura.api.message.MessageConstants.STATE_NOTIF
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
@@ -33,6 +35,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -46,18 +49,18 @@ import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.Services;
-import org.apache.jackrabbit.util.ISO9075;
+import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
-import org.sakaiproject.nakamura.api.message.MessageConstants;
 import org.sakaiproject.nakamura.api.message.MessageProfileWriter;
 import org.sakaiproject.nakamura.api.message.MessageRoute;
 import org.sakaiproject.nakamura.api.message.MessageRoutes;
 import org.sakaiproject.nakamura.api.message.MessageTransport;
 import org.sakaiproject.nakamura.api.message.MessagingService;
+import org.sakaiproject.nakamura.api.personal.PersonalUtils;
 import org.sakaiproject.nakamura.util.JcrUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,21 +95,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
-    
-    @org.apache.felix.scr.annotations.Property(value = { "sakai:context", "sakai:standing", "sakai:major1", "sakai:major2"}, description = "the dynamic list query parameter names")
-    private static final String PROP_QUERY_PARAM_NAMES = "notice.queryParamNames"; 
-    
-    private List<String> queryParamNames;
-    
-    @org.apache.felix.scr.annotations.Property(value = { "sakai:major2"}, description = "query parameter names which can be missing or void")
-    private static final String PROP_OPTIONAL_QUERY_PARAM_NAMES = "notice.optionalQueryParamNames"; 
-    
-    private List<String> optionalQueryParamNames;
-    
-    @org.apache.felix.scr.annotations.Property(value = {GROUP_CED_STUDENTS}, description = "the target groups for dynamic list queries")
-    private static final String PROP_DYNAMIC_LIST_GROUPS = "notice.dynamicListGroups";   
-    
-    private List<String> dynamicListGroups;
 
     /**
      * {@inheritDoc}
@@ -123,8 +111,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                     LOG.info("Started a notice routing.");
                     // put the group recipient expansion here
                     rcpt = route.getRcpt();
-                    if (this.dynamicListGroups.contains(rcpt.trim())) {
-                        Set<String> recipients = findRecipients(rcpt, originalNotice, session);
+                    if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
+                        Node targetListQueryNode = findTargetListQuery(rcpt, originalNotice, session);
+                        Set<String> recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
                         for (Iterator<String> iterator = recipients.iterator(); iterator.hasNext();) {
                             String recipient = (String) iterator.next();
                             sendNotice(recipient, originalNotice, session);
@@ -139,6 +128,35 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
         }
+    }
+
+    private Node findTargetListQuery(String rcpt, Node originalNotice, Session session) throws RepositoryException {
+        Node targetListQuery = null;
+        Node listsNode = findDynamicLists(originalNotice, session);
+        NodeIterator listIter = listsNode.getNodes();
+        while (listIter.hasNext()) {
+            Node listNode = listIter.nextNode();
+            String thisListId = listNode.getProperty("id").getString();
+            if (thisListId.equals(rcpt.trim())) {
+                targetListQuery = listNode.getNode(DYNAMIC_LISTS_QUERY);
+            }
+        }
+        return targetListQuery;
+    }
+
+    private Node findDynamicLists(Node originalNotice, Session session) throws RepositoryException {
+        Property senderIdProp = originalNotice.getProperty(PROP_SAKAI_FROM);
+        String senderId = senderIdProp.getValue().getString();
+        Authorizable au = PersonalUtils.getAuthorizable(session, senderId);
+        String homePath = PersonalUtils.getHomeFolder(au);
+        StringBuilder linksPathSB = new StringBuilder(homePath)
+                                    .append("/private/")
+                                    .append(DYNAMIC_LISTS_ROOT_NODE_NAME)
+                                    .append("/")
+                                    .append(DYNAMIC_LISTS_DATA_NODE_NAME);
+        LOG.debug("loading dynamic lists from " + linksPathSB.toString());
+        Node listsNode = session.getNode(linksPathSB.toString());
+        return listsNode;
     }
 
     private void sendNotice(String recipient, Node originalNotice, Session session) {
@@ -178,13 +196,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     }
 
-    private Set<String> findRecipients(String rcpt, Node originalNotice, Session session) throws  RepositoryException {
+    private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws  RepositoryException {
         Set<String> recipients = new HashSet<String>();
-        Property senderIdProp = originalNotice.getProperty(MessageConstants.PROP_SAKAI_FROM);
-        String senderId = senderIdProp.getValue().getString();
-        String messageStorePath = ISO9075.encodePath(messagingService.getFullPathToStore(senderId, session));
-        
-        String queryString = buildQuery(originalNotice);
+        String queryString = buildQuery(originalNotice, queryNode);
         
         // /jcr:root/_user/_x0032_/_x0032_0/_x0032_040/message//*[@sling:resourceType="sakai/message"
         // and @sakai:type="notice and @sakai:messagebox="sakai:queue
@@ -210,52 +224,55 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         return recipients;
     }
 
-    private String buildQuery(Node originalNotice) throws RepositoryException{
+    private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException{
         StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile'");
-        for (Iterator<String> iterator = this.queryParamNames.iterator(); iterator.hasNext();) {
-            String paramName = iterator.next();
-            Property paramProp = originalNotice.getProperty(paramName);
-            boolean isOptionalParam = this.optionalQueryParamNames.contains(paramName.trim());
-            if (paramProp != null) {
-                if (isOptionalParam) {
-                    querySB.append(" or ");                                        
-                }
-                else {
-                    querySB.append(" and ");                    
-                }
-                String paramValue = null;
-                if (paramProp.isMultiple()) {
-                    boolean isFirstValue = true;
-                    boolean isLastValue = false;
-                    Value[] paramVals = paramProp.getValues();
-                    for (int i = 0; i < paramVals.length; i++) {
-                        if (i > 0) isFirstValue = false;
-                        if (i == paramVals.length - 1) isLastValue = true;
-                        paramValue = paramVals[i].getString();
-                        addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
-                    }
-                }
-                else {
-                    paramValue = paramProp.getValue().getString();
-                    addParamToQuery(querySB, paramName, paramValue, true, true);
+        NodeIterator queryNodesIter = queryNode.getNodes();
+        while (queryNodesIter.hasNext()) {
+            Node queryParamNode = queryNodesIter.nextNode();
+            String paramName = queryParamNode.getName();
+            Node paramNode = queryNode.getNode(paramName);
+            if ("major".equalsIgnoreCase(paramName)) paramName = "major1";
+            querySB.append(" and "); 
+            PropertyIterator paramValuePropsIter = paramNode.getProperties();
+            Set<String> paramValues = new HashSet<String>();
+
+            // need to copy Nodes into array because of jcr:primaryType node breaks isLastValue
+            while (paramValuePropsIter.hasNext()) {
+                Property prop = paramValuePropsIter.nextProperty();
+                if (prop.getName().startsWith("__array")) {
+                    String paramValue = prop.getValue().getString();
+                    paramValue = new StringBuffer("'").append(paramValue).append("'").toString();
+                    paramValues.add(paramValue);
                 }
             }
-            else if (!isOptionalParam) {
-                StringBuilder sb = new StringBuilder("buildQuery() required query parameter: ")
-                                    .append(paramName)
-                                    .append(" is missing from notice: ")
-                                    .append(originalNotice.getPath())
-                                    .append(" cannot find recipients to send notice");
-                throw new RepositoryException(sb.toString());
+            boolean isFirstValue = true;
+            boolean isLastValue = false;
+            for (Iterator<String> paramValuesIter = paramValues.iterator(); paramValuesIter.hasNext();) {
+                String paramValue = paramValuesIter.next();
+                if (!paramValuesIter.hasNext())
+                    isLastValue = true;
+                addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
+                isFirstValue = false;
             }
+
+//            while (paramValueIter.hasNext()) {
+//                Property prop = paramValueIter.nextProperty();
+//                if (prop.getName().startsWith("__array")) {
+//                    if (!paramValueIter.hasNext())
+//                        isLastValue = true;
+//                    String paramValue = prop.getValue().getString();
+//                    addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
+//                    isFirstValue = false;
+//                }
+//            }
         }
         querySB.append("]");
         return querySB.toString();
-    }
+    }     
 
     private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
         if (isFirstValue) querySB.append("(");
-        querySB.append("@").append(paramName).append(" = ").append(paramValue);
+        querySB.append("@sakai:").append(paramName).append(" = ").append(paramValue);
         if (!isLastValue) {
             querySB.append(" or ");
         }
@@ -386,18 +403,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
-        String[] queryParamNamesArr = OsgiUtil.toStringArray(props.get(PROP_QUERY_PARAM_NAMES));
-        this.queryParamNames = Arrays.asList(queryParamNamesArr);
-        String[] optionalQueryParamNamesArr = OsgiUtil.toStringArray(props.get(PROP_OPTIONAL_QUERY_PARAM_NAMES));
-        this.optionalQueryParamNames = Arrays.asList(optionalQueryParamNamesArr);
-        String[] dynamicListGroupsArr = OsgiUtil.toStringArray(props.get(PROP_DYNAMIC_LIST_GROUPS));
-        this.dynamicListGroups = Arrays.asList(dynamicListGroupsArr);
     }
 
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
-        this.queryParamNames = null;
-        this.optionalQueryParamNames = null;
-        this.dynamicListGroups = null;
     }
 }

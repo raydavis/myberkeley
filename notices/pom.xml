@@ -56,6 +56,12 @@
       <version>0.9-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.personal</artifactId>
+      <version>0.9-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>    
 <!-- Sling -->
     <dependency>
       <groupId>org.apache.sling</groupId>

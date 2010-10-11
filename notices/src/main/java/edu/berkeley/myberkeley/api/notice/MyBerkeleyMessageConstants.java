@@ -35,5 +35,15 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
     public static final String GROUP_CED_STUDENTS = "g-ced-students";
     
     public static final String STATE_SEND_FAILED = "failed";
+    
+    public static final String DYNAMIC_LISTS_ROOT_NODE_NAME = "dynamic_lists";
+    
+    public static final String DYNAMIC_LISTS_DATA_NODE_NAME = "lists";
+    
+    public static final String DYNAMIC_LISTS_LIST_ID = "sakai:listId";
+    
+    public static final String DYNAMIC_LISTS_QUERY = "query";
+    
+    public static final String DYNAMIC_LISTS_PREFIX = "dl-";
 
 }

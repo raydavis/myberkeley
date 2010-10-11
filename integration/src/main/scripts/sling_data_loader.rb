@@ -9,6 +9,7 @@ include SlingUsers
 class SlingDataLoader
 
   TEST_USER_PREFIX = 'testuser'
+  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LANDSCAPE ARCH", "LAND ARCH & ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
 
   def initialize(server="http://localhost:8080/", numusers="20")
     @num_users = numusers.to_i
@@ -52,6 +53,13 @@ class SlingDataLoader
       user_props['firstName'] = first_name.chomp!
       user_props['lastName'] = last_name.chomp!
       user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
+      user_props['sakai:context'] = 'g-ced-students'
+      if ( i % 2 == 0)
+        user_props['sakai:standing'] = 'undergrad'
+      else
+        user_props['sakai:standing'] = 'grad'  
+      end
+      user_props['sakai:major1'] = MAJORS[i % 7]
       all_users_props[i] = user_props
       i = i + 1
     end

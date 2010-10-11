@@ -1,5 +1,5 @@
 select distinct sm.MAJOR_NAME from SAKAI_JOHNK.BSPACE_STUDENT_MAJOR_VW sm
-where sm.COLLEGE_ABBR = 'ENV DSGN';
+where sm.COLLEGE_ABBR = 'ENV DSGN' order by sm.MAJOR_NAME asc;
 
 select * from SAKAI_JOHNK.BSPACE_STUDENT_MAJOR_VW sm
 where sm.MAJOR_NAME = 'ARCHITECTURE' and sm.COLLEGE_ABBR != 'ENV DSGN';
