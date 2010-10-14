@@ -108,9 +108,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
-                    LOG.info("Started a notice routing.");
-                    // put the group recipient expansion here
+                    
                     rcpt = route.getRcpt();
+                    LOG.info("Started a notice routing to: " + rcpt);
                     if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
                         Node targetListQueryNode = findTargetListQuery(rcpt, originalNotice, session);
                         Set<String> recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
@@ -130,9 +130,18 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
     }
 
+    /**
+     * find the list that this notice is being sent to.  sakai:sendto=notice:${id}
+     * id must the the list id.
+     * @param rcpt
+     * @param originalNotice
+     * @param session
+     * @return
+     * @throws RepositoryException
+     */
     private Node findTargetListQuery(String rcpt, Node originalNotice, Session session) throws RepositoryException {
         Node targetListQuery = null;
-        Node listsNode = findDynamicLists(originalNotice, session);
+        Node listsNode = getDynamicLists(originalNotice, session);
         NodeIterator listIter = listsNode.getNodes();
         while (listIter.hasNext()) {
             Node listNode = listIter.nextNode();
@@ -144,7 +153,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         return targetListQuery;
     }
 
-    private Node findDynamicLists(Node originalNotice, Session session) throws RepositoryException {
+    /**
+     * retrieve the dynamic_links node
+     * @param originalNotice
+     * @param session
+     * @return
+     * @throws RepositoryException
+     */
+    private Node getDynamicLists(Node originalNotice, Session session) throws RepositoryException {
         Property senderIdProp = originalNotice.getProperty(PROP_SAKAI_FROM);
         String senderId = senderIdProp.getValue().getString();
         Authorizable au = PersonalUtils.getAuthorizable(session, senderId);
@@ -159,6 +175,13 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         return listsNode;
     }
 
+    /**
+     * send a notice to one "real user" as the dynamic list has been expanded
+     * at this poing
+     * @param recipient
+     * @param originalNotice
+     * @param session
+     */
     private void sendNotice(String recipient, Node originalNotice, Session session) {
         // the path were we want to save messages in.
         String messageId;
@@ -196,10 +219,19 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     }
 
+    /**
+     * find the users that meet the search criteria in the query subnode of the dynamic_lists/list node
+     * @param rcpt
+     * @param originalNotice
+     * @param queryNode
+     * @param session
+     * @return
+     * @throws RepositoryException
+     */
     private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws  RepositoryException {
         Set<String> recipients = new HashSet<String>();
-        String queryString = buildQuery(originalNotice, queryNode);
-        
+//        String queryString = buildQuery(originalNotice, queryNode);
+        String queryString =   "/jcr:root//*[@sling:resourceType='sakai/user-profile' and (jcr:contains(@sakai:context, 'g-ced-students')) and (jcr:contains(@sakai:major, '\"ARCHITECTURE\" OR \"ENV DESIGN\"'))]";
         // /jcr:root/_user/_x0032_/_x0032_0/_x0032_040/message//*[@sling:resourceType="sakai/message"
         // and @sakai:type="notice and @sakai:messagebox="sakai:queue
         
@@ -221,22 +253,30 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 LOG.error("findRecipients() failed for {}", new Object[]{recipientProfileNode.getPath()}, e);
             }
         }
+        LOG.debug("Dynamic List Notice recipients are: " + recipients);
         return recipients;
     }
+    
+    /**
+     * build an xpath query from the list query node subnodes and values
+     * @param originalNotice
+     * @param queryNode
+     * @return
+     * @throws RepositoryException
+     */
 
     private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException{
-        StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile'");
+        StringBuilder querySB = new StringBuilder( );
         NodeIterator queryNodesIter = queryNode.getNodes();
         while (queryNodesIter.hasNext()) {
             Node queryParamNode = queryNodesIter.nextNode();
             String paramName = queryParamNode.getName();
             Node paramNode = queryNode.getNode(paramName);
-            if ("major".equalsIgnoreCase(paramName)) paramName = "major1";
             querySB.append(" and "); 
             PropertyIterator paramValuePropsIter = paramNode.getProperties();
             Set<String> paramValues = new HashSet<String>();
 
-            // need to copy Nodes into array because of jcr:primaryType node breaks isLastValue
+            // need to copy Properties into array because jcr:primaryType property breaks isLastValue
             while (paramValuePropsIter.hasNext()) {
                 Property prop = paramValuePropsIter.nextProperty();
                 if (prop.getName().startsWith("__array")) {
@@ -254,17 +294,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
                 isFirstValue = false;
             }
-
-//            while (paramValueIter.hasNext()) {
-//                Property prop = paramValueIter.nextProperty();
-//                if (prop.getName().startsWith("__array")) {
-//                    if (!paramValueIter.hasNext())
-//                        isLastValue = true;
-//                    String paramValue = prop.getValue().getString();
-//                    addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
-//                    isFirstValue = false;
-//                }
-//            }
         }
         querySB.append("]");
         return querySB.toString();
