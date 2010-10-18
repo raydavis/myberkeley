@@ -154,8 +154,8 @@ module SlingUsers
       @password = password
     end
 
-    def self.admin_user
-      return User.new("admin", "admin")
+    def self.admin_user(admin_password = "admin")
+      return User.new("admin", admin_password)
     end
 
     def self.anonymous
@@ -177,11 +177,20 @@ module SlingUsers
     def update_properties(sling, props)
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), props)
     end
+    
+    def update_profile_properties(sling, user_props)
+      firstname = user_props['firstName']
+      lastname = user_props['lastName']
+      email = user_props['email']
+      data = {}
+      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
+      return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
+    end
 	
 	
-	def change_password(sling, newpassword)
-	   return sling.execute_post(sling.url_for("#{user_url}.changePassword.html"), "oldPwd" => @password, "newPwd" => newpassword, "newPwdConfirm" => newpassword)     
-	end
+    def change_password(sling, newpassword)
+       return sling.execute_post(sling.url_for("#{user_url}.changePassword.html"), "oldPwd" => @password, "newPwd" => newpassword, "newPwdConfirm" => newpassword)     
+    end
 	
 
     # Get the home folder of a group.
@@ -282,10 +291,12 @@ module SlingUsers
       user_props[":name"] = username
       user_props["pwd"] = user.password
       user_props["pwdConfirm"] = user.password
-      firstname = user_props["firstName"]
-      lastname = user_props["lastName"]
+      firstname = user_props['firstName']
+      lastname = user_props['lastName']
+      email = user_props['email']
+      data = {}
       if (!firstname.nil? and !lastname.nil?)
-        user_props[":sakai:profile-import"] = "{'basic': {'access': 'everybody', 'elements': {'email': {'value': '#{username}@sakai.invalid'}, 'firstName': {'value': '#{firstname}'}, 'lastName': {'value': '#{lastname}'}}}}"
+        data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
       end
       result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), user_props)
       if (result.code.to_i > 299)

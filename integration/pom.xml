@@ -69,6 +69,7 @@
 	            <argument>-w</argument>
 	            <argument>${project.build.scriptSourceDirectory}/sling_data_loader.rb</argument>
 	            <argument>${loaddata.server}</argument>
+	            <argument>${loaddata.password}</argument>
 	            <argument>${loaddata.numusers}</argument>
 	          </arguments>
 	        </configuration>

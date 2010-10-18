@@ -43,6 +43,11 @@ import javax.jcr.Value;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlList;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.AccessControlPolicyIterator;
+import javax.jcr.security.Privilege;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
@@ -53,6 +58,7 @@ import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
 import org.sakaiproject.nakamura.api.message.MessageProfileWriter;
@@ -95,6 +101,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
+    
+
 
     /**
      * {@inheritDoc}
@@ -103,8 +111,19 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      *      org.osgi.service.event.Event, javax.jcr.Node)
      */
     public void send(MessageRoutes routes, Event event, Node originalNotice) {
-        try {
+        try {            
             Session session = slingRepository.loginAdministrative(null);
+            AccessControlManager acm = AccessControlUtil.getAccessControlManager(session);
+            Privilege[] privileges = acm.getSupportedPrivileges("/dev/inboxnotifier.html");
+            for (Privilege privilege : privileges) {
+                LOG.debug(privilege.getName());
+            }
+            AccessControlPolicyIterator acpiter = acm.getApplicablePolicies("/apps/sling/group");
+            AccessControlEntry[] entries;
+            while(acpiter.hasNext()) {
+                AccessControlList acl = (AccessControlList) acpiter.nextAccessControlPolicy();
+                entries = acl.getAccessControlEntries();
+            }
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
@@ -432,6 +451,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
+        
     }
 
     protected void deactivate(ComponentContext context) {

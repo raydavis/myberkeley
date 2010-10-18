@@ -9,11 +9,11 @@ include SlingUsers
 class SlingDataLoader
 
   TEST_USER_PREFIX = 'testuser'
-  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LANDSCAPE ARCH", "LAND ARCH & ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
+  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH & ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
 
-  def initialize(server="http://localhost:8080/", numusers="20")
+  def initialize(server, admin_password="admin", numusers="20")
     @num_users = numusers.to_i
-    @sling = Sling.new(server, true)
+    @sling = Sling.new(server, admin_password, true)
     @sling.do_login
     @user_manager = UserManager.new(@sling)
   end
@@ -24,6 +24,11 @@ class SlingDataLoader
     users.each do |user|
       username = user[0]
       user_props = user[1]
+      user_props['context'] = ['g-ced-advisors'] 
+      user_props['standing'] = 'advisor'  
+      user_props['major'] = ["N/A"]
+      user_props['current'] = true
+      user_props['participant'] = true
       puts "creating user: #{user.inspect}"
       load_user username, user_props
     end
@@ -53,13 +58,15 @@ class SlingDataLoader
       user_props['firstName'] = first_name.chomp!
       user_props['lastName'] = last_name.chomp!
       user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
-      user_props['sakai:context'] = 'g-ced-students'
+      user_props['context'] = ['g-ced-students']
       if ( i % 2 == 0)
-        user_props['sakai:standing'] = 'undergrad'
+        user_props['standing'] = 'undergrad'
       else
-        user_props['sakai:standing'] = 'grad'  
+        user_props['standing'] = 'grad'  
       end
-      user_props['sakai:major'] = ["ARCHITECTURE", "DESIGN"]
+      user_props['major'] = ["ARCHITECTURE", "DESIGN"]
+      user_props['current'] = true
+      user_props['participant'] = true
       all_users_props[@num_users - i] = user_props
       i = i + 1
     end
@@ -76,7 +83,7 @@ class SlingDataLoader
       else
         target_user = User.new username
       end      
-      target_user.update_properties @sling, user_props
+      target_user.update_profile_properties @sling, user_props
     end
     return target_user
   end
@@ -84,8 +91,8 @@ end
 
 if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
-  puts "will attempt to create or update #{ARGV[1]} users"
-  sdl = SlingDataLoader.new ARGV[0], ARGV[1]
-  #sdl.load_defined_users "json_data.js"
+  puts "will attempt to create or update #{ARGV[2]} users"
+  sdl = SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
+  sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end

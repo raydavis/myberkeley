@@ -6,7 +6,7 @@ require 'rubygems'
 require 'json'
 require 'curb'
 require 'yaml'
-require 'sling/users'
+require 'lib/sling/users'
 require 'sling/sites'
 
 class String
@@ -72,7 +72,7 @@ def initialize(server="http://localhost:8080/", admin_password="admin", debug=fa
       @server = server
       @debug = debug
       @log = false
-      @user = SlingUsers::User.admin_user()
+      @user = SlingUsers::User.admin_user(admin_password)
       @trustedauth = trustedauth
       @trustedcookie == nil
     end
