@@ -93,6 +93,6 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[2]} users"
   sdl = SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
-  #sdl.load_defined_users "json_data.js"
+  sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
