@@ -298,7 +298,7 @@ module SlingUsers
       if (!firstname.nil? and !lastname.nil?)
         data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
       end
-      result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), user_props)
+      result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), data)
       if (result.code.to_i > 299)
         puts "Error creating user #{username}"
         return nil

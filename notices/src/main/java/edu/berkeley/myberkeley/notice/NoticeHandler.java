@@ -113,17 +113,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     public void send(MessageRoutes routes, Event event, Node originalNotice) {
         try {            
             Session session = slingRepository.loginAdministrative(null);
-            AccessControlManager acm = AccessControlUtil.getAccessControlManager(session);
-            Privilege[] privileges = acm.getSupportedPrivileges("/dev/inboxnotifier.html");
-            for (Privilege privilege : privileges) {
-                LOG.debug(privilege.getName());
-            }
-            AccessControlPolicyIterator acpiter = acm.getApplicablePolicies("/apps/sling/group");
-            AccessControlEntry[] entries;
-            while(acpiter.hasNext()) {
-                AccessControlList acl = (AccessControlList) acpiter.nextAccessControlPolicy();
-                entries = acl.getAccessControlEntries();
-            }
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
@@ -164,7 +153,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         NodeIterator listIter = listsNode.getNodes();
         while (listIter.hasNext()) {
             Node listNode = listIter.nextNode();
-            String thisListId = listNode.getProperty("id").getString();
+            String thisListId = listNode.getProperty(PROP_SAKAI_ID).getString();
             if (thisListId.equals(rcpt.trim())) {
                 targetListQuery = listNode.getNode(DYNAMIC_LISTS_QUERY);
             }
@@ -249,8 +238,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      */
     private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws  RepositoryException {
         Set<String> recipients = new HashSet<String>();
-//        String queryString = buildQuery(originalNotice, queryNode);
-        String queryString =   "/jcr:root//*[@sling:resourceType='sakai/user-profile' and (jcr:contains(@sakai:context, 'g-ced-students')) and (jcr:contains(@sakai:major, '\"ARCHITECTURE\" OR \"ENV DESIGN\"'))]";
+        String queryString = buildQuery(originalNotice, queryNode);
+//        String queryString =   "/jcr:root//*[@sling:resourceType='sakai/user-profile' and (jcr:contains(., 'g-ced-students'))]";
         // /jcr:root/_user/_x0032_/_x0032_0/_x0032_040/message//*[@sling:resourceType="sakai/message"
         // and @sakai:type="notice and @sakai:messagebox="sakai:queue
         
@@ -285,7 +274,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      */
 
     private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException{
-        StringBuilder querySB = new StringBuilder( );
+        StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile'");
         NodeIterator queryNodesIter = queryNode.getNodes();
         while (queryNodesIter.hasNext()) {
             Node queryParamNode = queryNodesIter.nextNode();
@@ -320,12 +309,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
         if (isFirstValue) querySB.append("(");
-        querySB.append("@sakai:").append(paramName).append(" = ").append(paramValue);
+          querySB.append("jcr:contains(.,").append(paramValue);
         if (!isLastValue) {
-            querySB.append(" or ");
+            querySB.append(") or ");
         }
         else {
-            querySB.append(")");
+            querySB.append("))");
         }
     }
 

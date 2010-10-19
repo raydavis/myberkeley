@@ -260,14 +260,16 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
                   where sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN'"
   i = 0
   ced_students.each do |s|
-    break if (i += 1) == odl.num_students
     props = odl.make_user_props s
     if (odl.user_password_key)
       user_password = odl.make_password(s)
     else
       user_password = "testuser"
     end
-    user = sdl.load_user s.student_ldap_uid, props, user_password
-    odl.add_student_to_group user
+    if (user_props['current'])
+      user = sdl.load_user s.student_ldap_uid, props, user_password
+      odl.add_student_to_group user
+      break if (i += 1) == odl.num_students
+    end
   end
 end 

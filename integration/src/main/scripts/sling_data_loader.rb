@@ -47,7 +47,7 @@ class SlingDataLoader
   end
 
   def generate_user_props(first_names, last_names)
-    i = 21
+    i = 31
     all_users_props = []
     while i <= @num_users
       user_props = {}
@@ -64,7 +64,7 @@ class SlingDataLoader
       else
         user_props['standing'] = 'grad'  
       end
-      user_props['major'] = ["ARCHITECTURE", "DESIGN"]
+      user_props['major'] = MAJORS[i % 8]
       user_props['current'] = true
       user_props['participant'] = true
       all_users_props[@num_users - i] = user_props
@@ -93,6 +93,6 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[2]} users"
   sdl = SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
-  sdl.load_defined_users "json_data.js"
+  #sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
