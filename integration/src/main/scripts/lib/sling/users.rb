@@ -295,6 +295,9 @@ module SlingUsers
       lastname = user_props['lastName']
       email = user_props['email']
       data = {}
+      data[":name"] = username
+      data["pwd"] = user.password
+      data["pwdConfirm"] = user.password
       if (!firstname.nil? and !lastname.nil?)
         data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
       end
