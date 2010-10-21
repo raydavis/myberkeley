@@ -208,8 +208,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
       :database => odl.oracle_sid
      )
   odl.sling_data_loader.get_or_create_groups
-  sdl.load_advisors
-  #advisors = sdl.load_defined_users "json_data.js"
+  odl.sling_data_loader.load_advisors
   odl.load_ced_students
   
 end 
