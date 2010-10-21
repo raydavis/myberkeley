@@ -39,6 +39,7 @@ module MyBerkeleyData
       @ced_advisors_group = get_or_create_group CED_ADVISORS_GROUP_NAME
       @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
     end
+  
     
     def get_or_create_group(groupname)
       group = @user_manager.create_group groupname
