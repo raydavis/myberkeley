@@ -39,34 +39,32 @@ module MyBerkeleyData
       @ced_advisors_group = get_or_create_group CED_ADVISORS_GROUP_NAME
       @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
     end
-<<<<<<< HEAD
-  end
 
-  def generate_user_props(first_names, last_names)
-    i = 0
-    all_users_props = []
-    while i <= @num_users
-      user_props = {}
-      username = TEST_USER_PREFIX + i.to_s
-      first_name = first_names[rand(first_names.length)]
-      last_name = last_names[rand(last_names.length)]
-      user_props[':name'] = username
-      user_props['firstName'] = first_name.chomp!
-      user_props['lastName'] = last_name.chomp!
-      user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
-      user_props['context'] = ['g-ced-students']
-      if ( i % 2 == 0)
-        user_props['standing'] = 'undergrad'
-      else
-        user_props['standing'] = 'grad'  
+    def generate_user_props(first_names, last_names)
+      i = 0
+      all_users_props = []
+      while i <= @num_users
+        user_props = {}
+        username = TEST_USER_PREFIX + i.to_s
+        first_name = first_names[rand(first_names.length)]
+        last_name = last_names[rand(last_names.length)]
+        user_props[':name'] = username
+        user_props['firstName'] = first_name.chomp!
+        user_props['lastName'] = last_name.chomp!
+        user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
+        user_props['context'] = ['g-ced-students']
+        if ( i % 2 == 0)
+          user_props['standing'] = 'undergrad'
+        else
+          user_props['standing'] = 'grad'  
+        end
+        user_props['major'] = MAJORS[i % 8]
+        user_props['current'] = true
+        user_props['participant'] = true
+        all_users_props[i] = user_props
+        i = i + 1
       end
-      user_props['major'] = MAJORS[i % 8]
-      user_props['current'] = true
-      user_props['participant'] = true
-      all_users_props[i] = user_props
-      i = i + 1
-=======
-  
+    end
     
     def get_or_create_group(groupname)
       group = @user_manager.create_group groupname
@@ -74,7 +72,6 @@ module MyBerkeleyData
         group = Group.new groupname
       end
       return group
->>>>>>> dataload
     end
     
     def make_password (ed_student, key)
