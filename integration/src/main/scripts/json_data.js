@@ -115,6 +115,11 @@
       "lastName": "Ng",
       "firstName": "Nicole",
       "email": "nicole.ng@berkeley.edu"
+    },
+    "904715": {
+      "lastName": "Tweney",
+      "firstName": "Chris",
+      "email": "chris@media.berkeley.edu"
     }
   }
 }
