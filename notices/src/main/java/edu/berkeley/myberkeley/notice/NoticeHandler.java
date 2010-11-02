@@ -1,6 +1,14 @@
 package edu.berkeley.myberkeley.notice;
 
-import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.*;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_DATA_NODE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_PREFIX;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_QUERY;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_ROOT_NODE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_FROM;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_ID;
@@ -23,10 +31,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.jcr.*;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlList;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.AccessControlPolicyIterator;
+import javax.jcr.security.Privilege;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
@@ -34,8 +55,6 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.Services;
 import org.apache.jackrabbit.api.security.user.Authorizable;
-import org.apache.jackrabbit.api.security.user.Group;
-import org.apache.jackrabbit.api.security.user.UserManager;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
@@ -67,8 +86,6 @@ import org.slf4j.LoggerFactory;
 public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final Logger LOG = LoggerFactory.getLogger(NoticeHandler.class);
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
     @Reference
     protected transient SlingRepository slingRepository;
 
@@ -96,11 +113,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     public void send(MessageRoutes routes, Event event, Node originalNotice) {
         try {            
             Session session = slingRepository.loginAdministrative(null);
-            
-            if ( !canUserSendNotices(session, event)) {
-                throw new AccessDeniedException("User does not have necessary group membership to send notices");
-            }
-
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
@@ -124,25 +136,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
         }
-    }
-
-    private boolean canUserSendNotices(Session session, Event event) throws RepositoryException {
-        Object uid = event.getProperty("user");
-        if ( uid == null ) {
-            LOGGER.error("user not found on the passed event");
-        }
-
-        UserManager um = AccessControlUtil.getUserManager(session);
-        Authorizable advisors = um.getAuthorizable(GROUP_CED_ADVISORS);
-        Authorizable currentUser = um.getAuthorizable((String) uid);
-
-        if (advisors == null) {
-            LOGGER.error("Group {} doesn't exist", new Object[]{GROUP_CED_ADVISORS});
-        } else if (advisors.isGroup()) {
-            Group advisorsGroup = (Group) advisors;
-            return advisorsGroup.isMember(currentUser);
-        }
-        return false;
     }
 
     /**
