@@ -17,6 +17,7 @@ import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_SENDSTATE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_TO;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.STATE_NOTIFIED;
+import static org.sakaiproject.nakamura.api.profile.ProfileConstants.USER_IDENTIFIER_PROPERTY;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -43,11 +44,6 @@ import javax.jcr.Value;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
-import javax.jcr.security.AccessControlEntry;
-import javax.jcr.security.AccessControlList;
-import javax.jcr.security.AccessControlManager;
-import javax.jcr.security.AccessControlPolicyIterator;
-import javax.jcr.security.Privilege;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
@@ -58,7 +54,6 @@ import org.apache.jackrabbit.api.security.user.Authorizable;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
-import org.apache.sling.jcr.base.util.AccessControlUtil;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
 import org.sakaiproject.nakamura.api.message.MessageProfileWriter;
@@ -239,22 +234,22 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws  RepositoryException {
         Set<String> recipients = new HashSet<String>();
         String queryString = buildQuery(originalNotice, queryNode);
-//        String queryString =   "/jcr:root//*[@sling:resourceType='sakai/user-profile' and (jcr:contains(., 'g-ced-students'))]";
-        // /jcr:root/_user/_x0032_/_x0032_0/_x0032_040/message//*[@sling:resourceType="sakai/message"
-        // and @sakai:type="notice and @sakai:messagebox="sakai:queue
-        
-        LOG.info("findQueuedNotices() Using Query {} ", queryString);
+        //String queryString = "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
+        LOG.info("findRecipients() Using Query {} ", queryString);
         // find all the notices in the queue for this advisor
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query query = queryManager.createQuery(queryString, "xpath");
         QueryResult result = query.execute();
         NodeIterator recpientIter = result.getNodes();
+        Node contextNode = null;
         Node recipientProfileNode = null;
         String recipientId = null;
         while (recpientIter.hasNext()) {
             try {
-                recipientProfileNode = recpientIter.nextNode();
-                recipientId = recipientProfileNode.getProperty("rep:userId").getString();
+                contextNode = recpientIter.nextNode();
+                // now get the parent authprofile node that has the rep:userId in it
+                recipientProfileNode = contextNode.getNode("../../../");
+                recipientId = recipientProfileNode.getProperty(USER_IDENTIFIER_PROPERTY).getString();
                 recipients.add(recipientId);                
             }
             catch (RepositoryException e) {
@@ -274,13 +269,13 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      */
 
     private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException{
-        StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile'");
+        StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/../participant[@value='true']/..");
         NodeIterator queryNodesIter = queryNode.getNodes();
         while (queryNodesIter.hasNext()) {
             Node queryParamNode = queryNodesIter.nextNode();
             String paramName = queryParamNode.getName();
             Node paramNode = queryNode.getNode(paramName);
-            querySB.append(" and "); 
+            querySB.append("/").append(paramName); 
             PropertyIterator paramValuePropsIter = paramNode.getProperties();
             Set<String> paramValues = new HashSet<String>();
 
@@ -302,19 +297,19 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
                 isFirstValue = false;
             }
+            if (queryNodesIter.hasNext()) querySB.append("/..");
         }
-        querySB.append("]");
         return querySB.toString();
     }     
 
     private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
-        if (isFirstValue) querySB.append("(");
-          querySB.append("jcr:contains(.,").append(paramValue);
+        if (isFirstValue) querySB.append("[");
+        querySB.append("@value=").append(paramValue);
         if (!isLastValue) {
-            querySB.append(") or ");
+            querySB.append(" or ");
         }
         else {
-            querySB.append("))");
+            querySB.append("]");
         }
     }
 
