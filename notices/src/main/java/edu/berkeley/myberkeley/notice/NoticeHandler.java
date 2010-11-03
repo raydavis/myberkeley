@@ -7,6 +7,7 @@ import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNA
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_EVENTDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
@@ -202,7 +203,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             String messageCategory = messageProp.getString();
             if (SAKAI_CATEGORY_REMINDER.equals(messageCategory)) {
                 // need to due this conversion issue on new recipient node
-                handleDueDate(originalNotice, n);
+                handleRequiredDate(originalNotice, n);
             }
             // Add some extra properties on the just created node.
             n.setProperty(PROP_SAKAI_READ, false);
@@ -319,42 +320,59 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * point, assuming that's a concurrency issue with the SlingPostServlet's
      * date parsing running before or after this method. Haven't tracked it down
      * exactly but this logic fixes the issue making sure the recipient notice
-     * has a Date dueDate
+     * has a Date dueDate or a Date eventDate.  
+     * enforces necessity of having either a dueDate or an eventDate
      * 
      * @param originalNotice
      * @param newNotice
      * @throws PathNotFoundException
      * @throws RepositoryException
      */
-    private void handleDueDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
-        javax.jcr.Property dueDateProp = originalNotice.getProperty(PROP_SAKAI_DUEDATE);
-        if (dueDateProp != null) {
-            LOG.debug("handleDueDate() got source dueDateProp: " + dueDateProp);
-            Value value = dueDateProp.getValue();
-            int dueDateValueType = value.getType();
-            LOG.debug("handleDueDate() got source dueDateProp Value Type: " + dueDateValueType);
-            Calendar senderDueDate = null;
-            if (PropertyType.STRING == dueDateValueType) {
-                senderDueDate = parse(value.getString());
-            }
-            else if (PropertyType.DATE == dueDateValueType) {
-                senderDueDate = dueDateProp.getDate();
-            }
-            else {
-                LOG.error("handleDueDate() sourceDueDate is not a String or Date, is PropertyType: " + dueDateValueType);
-            }
-            if (senderDueDate != null) {
-                LOG.debug("setting " + PROP_SAKAI_DUEDATE + " to " + senderDueDate.getTime().toString() + " in newNotice: "
-                        + newNotice.toString());
-                newNotice.setProperty(PROP_SAKAI_DUEDATE, senderDueDate);
-            }
-            else {
-                LOG.error("handleDueDate() sourceDueDate is null");
-            }
+    private void handleRequiredDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
+        javax.jcr.Property dueDateProp = null;
+        javax.jcr.Property eventDateProp = null;
+        Calendar requiredDate = null;
+        if (originalNotice.hasProperty(PROP_SAKAI_DUEDATE)) {
+            dueDateProp = originalNotice.getProperty(PROP_SAKAI_DUEDATE);
+            LOG.debug("handleRequiredDate() got source dueDateProp: " + dueDateProp);
+            requiredDate = buildRequiredDate(dueDateProp);
+            LOG.debug("setting {} to {} in newNotice {}", new Object[]{PROP_SAKAI_DUEDATE, requiredDate.getTime(), newNotice.getPath()});
+            newNotice.setProperty(PROP_SAKAI_DUEDATE, requiredDate);
+        }
+        else if (originalNotice.hasProperty(PROP_SAKAI_EVENTDATE)) {
+            eventDateProp = originalNotice.getProperty(PROP_SAKAI_EVENTDATE);
+            LOG.debug("handleRequiredDate() got source eventDateProp: " + eventDateProp);
+            requiredDate = buildRequiredDate(eventDateProp);
+            LOG.debug("setting {} to {} in newNotice {}", new Object[]{PROP_SAKAI_EVENTDATE, requiredDate.getTime(), newNotice.getPath()});
+            newNotice.setProperty(PROP_SAKAI_EVENTDATE, requiredDate);            
         }
         else {
-            LOG.info("handleDueDate() no dueDate in sender's originalNotice, perhaps it's not a Reminder?");
+            StringBuilder sb = new StringBuilder("handleRequiredDate() A required Reminder must have either a ")
+                                .append(PROP_SAKAI_DUEDATE)
+                                .append(" or a ")
+                                .append(PROP_SAKAI_EVENTDATE)
+                                .append(", not sending Notice ")
+                                .append(originalNotice.getPath());
+            throw new RepositoryException(sb.toString());
         }
+    }
+
+    private Calendar buildRequiredDate(Property requiredDateProp) throws RepositoryException {
+        Calendar requiredDateCal = null;
+        Value value = requiredDateProp.getValue();
+        int requiredDateValueType = value.getType();
+        LOG.debug("handleRequiredDate() got source requiredDateProp Value Type: " + requiredDateValueType);
+        if (PropertyType.STRING == requiredDateValueType) {
+            requiredDateCal = parse(value.getString());
+        }
+        else if (PropertyType.DATE == requiredDateValueType) {
+            requiredDateCal = requiredDateProp.getDate();
+        }
+        else {
+            String message = "handleRequiredDate() requiredDate is not a String or Date, is PropertyType: " + requiredDateValueType + " cannot handle";
+            throw new RepositoryException(message);
+        }
+        return requiredDateCal;
     }
 
     /**
