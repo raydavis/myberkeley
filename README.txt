@@ -115,7 +115,7 @@ gem install curb
 
 8. To actually load data, from the myberkeley directory run
 mvn -Dsling.loaddata integration-test
-this will load data to the default server - http://localhost:8080/, using password - "admin, loading the default number of random users - 20 -
+this will load data to the default server - http://localhost:8080/, using password - "admin, loading the default number of random users - 32 -
 plus the users defined in ./myberkeley/integration/src/main/scripts/json_data.js.
 
 or to load data to another server and/or another number of random users, run
@@ -124,7 +124,7 @@ where ${server} should be replaced with a full server URL such as https://portal
 and ${numusers} should be replaced with the number you want, e.g. 50.
 
 These choices would user the command line:
-mvn -Dsling.loaddata -Dloaddata.server=https://portal-dev.berkeley.edu/ -Dloaddata.password=admin -Dloaddata.numusers=20 integration-test
+mvn -Dsling.loaddata -Dloaddata.server=https://portal-dev.berkeley.edu/ -Dloaddata.password=admin -Dloaddata.numusers=50 integration-test
 mvn -Dsling.loaddata -Dloaddata.server=http://localhost:8080/ -Dloaddata.password=admin -Dloaddata.numusers=50 integration-test
 NOTE: the trailing slash on the server URL is required
 

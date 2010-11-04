@@ -148,7 +148,7 @@ end
 if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   
   options = {}
-  optparse = OptionParser.new do |opts|
+  optparser = OptionParser.new do |opts|
     opts.banner = "Usage: oracle_data_loader.rb [options]"
 
     opts.on("-h", "--oraclehost OHOST", "Oracle Host") do |oh|
@@ -193,7 +193,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
     end      
   end
   
-  optparse.parse ARGV
+  optparser.parse ARGV
   
   odl = MyBerkeleyData::OracleDataLoader.new options
   #initialize(oracle_host, oracle_user, oracle_password, oracle_sid, target_server="http://localhost:8080", env="dev")
@@ -208,7 +208,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
       :database => odl.oracle_sid
      )
   odl.sling_data_loader.get_or_create_groups
-  odl.sling_data_loader.load_advisors
+  odl.sling_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 
