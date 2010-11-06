@@ -2,6 +2,7 @@
 require 'rubygems'
 require 'optparse'
 require 'active_record'
+require 'oci8'
 require 'json'
 require 'digest/sha1'
 require 'sling/sling'
@@ -11,6 +12,7 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
+  PARTICIPANT_UIDS = ['308541','538733','772931','311120','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
   
   class OracleDataLoader
 
@@ -69,13 +71,13 @@ module MyBerkeleyData
     def determine_major(user_props, ced_student)
       if ('DOUBLE'.eql?ced_student.major_name.strip)
         if ('ENV DSGN'.eql?ced_student.college_abbr2.strip)
-          user_props['major'] = [ced_student.major_name2.strip]
+          user_props['major'] = [ced_student.major_name2.strip.sub(/&/, 'AND')]
         end
         if (('ENV DSGN'.eql?ced_student.college_abbr3.strip))
-          user_props['major'] = [ced_student.major_name3.strip]
+          user_props['major'] = [ced_student.major_name3.strip.sub(/&/, 'AND')]
         end
       else
-        user_props['major'] = [ced_student.major_name.strip]
+        user_props['major'] = [ced_student.major_name.strip.sub(/&/, 'AND')]
       end
     end
     
@@ -111,9 +113,12 @@ module MyBerkeleyData
           user_password = "testuser"
         end
         if (props['current'])
-          user = @sling_data_loader.load_user s.student_ldap_uid, props, user_password
-          @sling_data_loader.add_student_to_group user
-          break if (i += 1) >= @num_students
+          student_ldap_uid = s.student_ldap_uid
+          if (PARTICIPANT_UIDS.include? student_ldap_uid.to_s)
+            user = @sling_data_loader.load_user student_ldap_uid, props, user_password
+            @sling_data_loader.add_student_to_group user
+          end
+          #break if (i += 1) >= @num_students
         end
       end
     end
@@ -196,19 +201,20 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   optparser.parse ARGV
   
   odl = MyBerkeleyData::OracleDataLoader.new options
-  #initialize(oracle_host, oracle_user, oracle_password, oracle_sid, target_server="http://localhost:8080", env="dev")
-  #odl = MyBerkeleyData::OracleDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4], ARGV[5]
-    
+  
   ActiveRecord::Base.logger = Logger.new(STDOUT)
+  #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
   conn = ActiveRecord::Base.establish_connection(
       :adapter  => "oracle_enhanced",
-      :host     => odl.oracle_host,
+      #:host     => odl.oracle_host,
+      #:port     => 1523,
       :username => odl.oracle_user,
       :password => odl.oracle_password,
       :database => odl.oracle_sid
      )
+  
   odl.sling_data_loader.get_or_create_groups
-  odl.sling_data_loader.load_defined_user_advisors
+  #odl.sling_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 

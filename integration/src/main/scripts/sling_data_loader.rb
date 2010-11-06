@@ -121,7 +121,7 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp!
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
-        user_props['major'] = MAJORS[i % 8]
+        user_props['major'] = MAJORS[i % 8].sub(/&/, 'AND')
         if ( i < @num_students/2)
           user_props['standing'] = 'undergrad'
         else
