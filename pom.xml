@@ -17,7 +17,7 @@
     <sling.port>8080</sling.port>
     <loaddata.server>http://localhost:8080/</loaddata.server>
     <loaddata.password>admin</loaddata.password>
-    <loaddata.numusers>20</loaddata.numusers>
+    <loaddata.numusers>32</loaddata.numusers>
   </properties>
   <profiles>
     <profile>

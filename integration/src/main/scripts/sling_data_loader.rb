@@ -27,7 +27,7 @@ module MyBerkeleyData
       
     attr_reader :user_password_key, :num_students, :ced_advisors_group, :ced_all_students_group
   
-    def initialize(server, admin_password="admin", numusers="20", user_password_key=nil)
+    def initialize(server, admin_password="admin", numusers="32", user_password_key=nil)
       @num_students = numusers.to_i
       @user_password_key = user_password_key
       @sling = Sling.new(server, admin_password, true)
@@ -61,19 +61,14 @@ module MyBerkeleyData
     end
     
     def add_advisor_to_group advisor
-      @ced_advisors_group.add_member @sling, advisor.name, "user"
-      user_props = @user_manager.get_user_props advisor.name
+      @ced_advisors_group.add_member @sling, advisor[1][':name'], "user"
+      user_props = @user_manager.get_user_props advisor[1][':name']
     end
     
-    def load_advisors
-      all_data = JSON.load(File.open "json_data.js", "r")
-      advisors = all_data['users']
-      advisors.each do |advisor|
-        username = advisor[0]
-        user_props = advisor[1]
-        puts "creating advisor: #{advisor.inspect}"
-        loadedAdvisor = load_user username, user_props
-        add_advisor_to_group loadedAdvisor
+    def load_defined_user_advisors
+      loaded_advisors = load_defined_users "json_data.js"
+      loaded_advisors.each do |loaded_advisor|
+        add_advisor_to_group loaded_advisor
       end      
     end
       
@@ -81,6 +76,14 @@ module MyBerkeleyData
       all_data = JSON.load(File.open json_file_name, "r")
       users = all_data['users']
       users.each do |user|
+        puts "creating user: #{user.inspect}"
+        loaded_user = load_defined_user user
+        puts "loaded user: #{loaded_user.inspect}"
+      end
+      return users
+    end
+    
+    def load_defined_user user
         username = user[0]
         user_props = user[1]
         user_props['context'] = ['g-ced-advisors'] 
@@ -90,8 +93,7 @@ module MyBerkeleyData
         user_props['participant'] = true
         puts "creating user: #{user.inspect}"
         loaded_user = load_user username, user_props
-      end
-      return users
+        return loaded_user
     end
   
     def load_random_users(first_names_file, last_names_file)
@@ -109,7 +111,7 @@ module MyBerkeleyData
     def generate_user_props(first_names, last_names)
       i = 0
       all_users_props = []
-      while i <= @num_students
+      while i < @num_students
         user_props = {}
         username = TEST_USER_PREFIX + i.to_s
         first_name = first_names[rand(first_names.length)]
@@ -119,20 +121,18 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp!
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
-        if ( i % 2 == 0)
+        user_props['major'] = MAJORS[i % 8].sub(/&/, 'AND')
+        if ( i < @num_students/2)
           user_props['standing'] = 'undergrad'
-          user_props['major'] = MAJORS[i % 8]
         else
-          user_props['standing'] = 'grad'
-          index = (i % 8) - 1
-          index = 7 if (index == -1)
-          user_props['major'] = MAJORS[index]      
+          user_props['standing'] = 'grad'     
         end
         user_props['current'] = true
         user_props['participant'] = true
         all_users_props[i] = user_props
         i = i + 1
       end
+      puts all_users_props.inspect
       return all_users_props
     end
   
@@ -158,7 +158,7 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will attempt to create or update #{ARGV[2]} users"
   sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
   sdl.get_or_create_groups
-  sdl.load_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
-  sdl.load_defined_users "json_data.js"
+  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  #sdl.load_defined_users "json_data.js"
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end

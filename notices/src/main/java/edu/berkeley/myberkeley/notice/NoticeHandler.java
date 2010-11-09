@@ -7,6 +7,7 @@ import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNA
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_EVENTDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handler for notice messages.
  */
-@Component(label = "MyBerkeley :: NoticeHandler", description = "Handler for internally delivered notices.", immediate = true, metatype=true)
+@Component(label = "MyBerkeley :: NoticeHandler", description = "Handler for internally delivered notices.", immediate = true, metatype = true)
 @Services(value = { @Service(value = MessageTransport.class), @Service(value = MessageProfileWriter.class) })
 @Properties(value = { @org.apache.felix.scr.annotations.Property(name = "service.vendor", value = "University of California, Berkeley"),
         @org.apache.felix.scr.annotations.Property(name = "service.description", value = "Handler for internally delivered notice messages") })
@@ -89,15 +90,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     @Reference
     protected transient MessageProfileWriter messageProfileWriter;
-    
 
-    @org.apache.felix.scr.annotations.Property(value = { "EEE MMM dd yyyy HH:mm:ss 'GMT'Z", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ss", "yyyy-MM-dd", "dd.MM.yyyy HH:mm:ss",
-            "dd.MM.yyyy" })
+    @org.apache.felix.scr.annotations.Property(value = { "EEE MMM dd yyyy HH:mm:ss 'GMT'Z", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd", "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy" })
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
-    
-
 
     /**
      * {@inheritDoc}
@@ -106,12 +104,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      *      org.osgi.service.event.Event, javax.jcr.Node)
      */
     public void send(MessageRoutes routes, Event event, Node originalNotice) {
-        try {            
+        try {
             Session session = slingRepository.loginAdministrative(null);
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
-                    
+
                     rcpt = route.getRcpt();
                     LOG.info("Started a notice routing to: " + rcpt);
                     if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
@@ -134,8 +132,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     }
 
     /**
-     * find the list that this notice is being sent to.  sakai:sendto=notice:${id}
-     * id must the the list id.
+     * find the list that this notice is being sent to.
+     * sakai:sendto=notice:${id} id must the the list id.
+     * 
      * @param rcpt
      * @param originalNotice
      * @param session
@@ -158,6 +157,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     /**
      * retrieve the dynamic_links node
+     * 
      * @param originalNotice
      * @param session
      * @return
@@ -168,19 +168,17 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         String senderId = senderIdProp.getValue().getString();
         Authorizable au = PersonalUtils.getAuthorizable(session, senderId);
         String homePath = PersonalUtils.getHomeFolder(au);
-        StringBuilder linksPathSB = new StringBuilder(homePath)
-                                    .append("/private/")
-                                    .append(DYNAMIC_LISTS_ROOT_NODE_NAME)
-                                    .append("/")
-                                    .append(DYNAMIC_LISTS_DATA_NODE_NAME);
+        StringBuilder linksPathSB = new StringBuilder(homePath).append("/private/").append(DYNAMIC_LISTS_ROOT_NODE_NAME).append("/").append(
+                DYNAMIC_LISTS_DATA_NODE_NAME);
         LOG.debug("loading dynamic lists from " + linksPathSB.toString());
         Node listsNode = session.getNode(linksPathSB.toString());
         return listsNode;
     }
 
     /**
-     * send a notice to one "real user" as the dynamic list has been expanded
-     * at this poing
+     * send a notice to one "real user" as the dynamic list has been expanded at
+     * this poing
+     * 
      * @param recipient
      * @param originalNotice
      * @param session
@@ -202,7 +200,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             String messageCategory = messageProp.getString();
             if (SAKAI_CATEGORY_REMINDER.equals(messageCategory)) {
                 // need to due this conversion issue on new recipient node
-                handleDueDate(originalNotice, n);
+                handleRequiredDate(originalNotice, n);
             }
             // Add some extra properties on the just created node.
             n.setProperty(PROP_SAKAI_READ, false);
@@ -223,7 +221,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     }
 
     /**
-     * find the users that meet the search criteria in the query subnode of the dynamic_lists/list node
+     * find the users that meet the search criteria in the query subnode of the
+     * dynamic_lists/list node
+     * 
      * @param rcpt
      * @param originalNotice
      * @param queryNode
@@ -231,10 +231,11 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * @return
      * @throws RepositoryException
      */
-    private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws  RepositoryException {
+    private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
         Set<String> recipients = new HashSet<String>();
         String queryString = buildQuery(originalNotice, queryNode);
-        //String queryString = "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
+        // String queryString =
+        // "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
         LOG.info("findRecipients() Using Query {} ", queryString);
         // find all the notices in the queue for this advisor
         QueryManager queryManager = session.getWorkspace().getQueryManager();
@@ -247,39 +248,43 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         while (recpientIter.hasNext()) {
             try {
                 contextNode = recpientIter.nextNode();
-                // now get the parent authprofile node that has the rep:userId in it
+                // now get the parent authprofile node that has the rep:userId
+                // in it
                 recipientProfileNode = contextNode.getNode("../../../");
                 recipientId = recipientProfileNode.getProperty(USER_IDENTIFIER_PROPERTY).getString();
-                recipients.add(recipientId);                
+                recipients.add(recipientId);
             }
             catch (RepositoryException e) {
-                LOG.error("findRecipients() failed for {}", new Object[]{recipientProfileNode.getPath()}, e);
+                LOG.error("findRecipients() failed for {}", new Object[] { recipientProfileNode.getPath() }, e);
             }
         }
         LOG.debug("Dynamic List Notice recipients are: " + recipients);
         return recipients;
     }
-    
+
     /**
      * build an xpath query from the list query node subnodes and values
+     * 
      * @param originalNotice
      * @param queryNode
      * @return
      * @throws RepositoryException
      */
 
-    private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException{
-        StringBuilder querySB = new StringBuilder("/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/../participant[@value='true']/..");
+    private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException {
+        StringBuilder querySB = new StringBuilder(
+                "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/../participant[@value='true']/..");
         NodeIterator queryNodesIter = queryNode.getNodes();
         while (queryNodesIter.hasNext()) {
             Node queryParamNode = queryNodesIter.nextNode();
             String paramName = queryParamNode.getName();
             Node paramNode = queryNode.getNode(paramName);
-            querySB.append("/").append(paramName); 
+            querySB.append("/").append(paramName);
             PropertyIterator paramValuePropsIter = paramNode.getProperties();
             Set<String> paramValues = new HashSet<String>();
 
-            // need to copy Properties into array because jcr:primaryType property breaks isLastValue
+            // need to copy Properties into array because jcr:primaryType
+            // property breaks isLastValue
             while (paramValuePropsIter.hasNext()) {
                 Property prop = paramValuePropsIter.nextProperty();
                 if (prop.getName().startsWith("__array")) {
@@ -297,13 +302,15 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
                 isFirstValue = false;
             }
-            if (queryNodesIter.hasNext()) querySB.append("/..");
+            if (queryNodesIter.hasNext())
+                querySB.append("/..");
         }
         return querySB.toString();
-    }     
+    }
 
     private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
-        if (isFirstValue) querySB.append("[");
+        if (isFirstValue)
+            querySB.append("[");
         querySB.append("@value=").append(paramValue);
         if (!isLastValue) {
             querySB.append(" or ");
@@ -319,42 +326,55 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * point, assuming that's a concurrency issue with the SlingPostServlet's
      * date parsing running before or after this method. Haven't tracked it down
      * exactly but this logic fixes the issue making sure the recipient notice
-     * has a Date dueDate
+     * has a Date dueDate or a Date eventDate. enforces necessity of having
+     * either a dueDate or an eventDate
      * 
      * @param originalNotice
      * @param newNotice
      * @throws PathNotFoundException
      * @throws RepositoryException
      */
-    private void handleDueDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
-        javax.jcr.Property dueDateProp = originalNotice.getProperty(PROP_SAKAI_DUEDATE);
-        if (dueDateProp != null) {
-            LOG.debug("handleDueDate() got source dueDateProp: " + dueDateProp);
-            Value value = dueDateProp.getValue();
-            int dueDateValueType = value.getType();
-            LOG.debug("handleDueDate() got source dueDateProp Value Type: " + dueDateValueType);
-            Calendar senderDueDate = null;
-            if (PropertyType.STRING == dueDateValueType) {
-                senderDueDate = parse(value.getString());
-            }
-            else if (PropertyType.DATE == dueDateValueType) {
-                senderDueDate = dueDateProp.getDate();
-            }
-            else {
-                LOG.error("handleDueDate() sourceDueDate is not a String or Date, is PropertyType: " + dueDateValueType);
-            }
-            if (senderDueDate != null) {
-                LOG.debug("setting " + PROP_SAKAI_DUEDATE + " to " + senderDueDate.getTime().toString() + " in newNotice: "
-                        + newNotice.toString());
-                newNotice.setProperty(PROP_SAKAI_DUEDATE, senderDueDate);
-            }
-            else {
-                LOG.error("handleDueDate() sourceDueDate is null");
-            }
+    private void handleRequiredDate(Node originalNotice, Node newNotice) throws PathNotFoundException, RepositoryException {
+        javax.jcr.Property dueDateProp = null;
+        javax.jcr.Property eventDateProp = null;
+        Calendar requiredDate = null;
+        if (originalNotice.hasProperty(PROP_SAKAI_DUEDATE)) {
+            dueDateProp = originalNotice.getProperty(PROP_SAKAI_DUEDATE);
+            LOG.debug("handleRequiredDate() got source dueDateProp: " + dueDateProp);
+            requiredDate = buildRequiredDate(dueDateProp);
+            LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_DUEDATE, requiredDate.getTime(), newNotice.getPath() });
+            newNotice.setProperty(PROP_SAKAI_DUEDATE, requiredDate);
+        }
+        else if (originalNotice.hasProperty(PROP_SAKAI_EVENTDATE)) {
+            eventDateProp = originalNotice.getProperty(PROP_SAKAI_EVENTDATE);
+            LOG.debug("handleRequiredDate() got source eventDateProp: " + eventDateProp);
+            requiredDate = buildRequiredDate(eventDateProp);
+            LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_EVENTDATE, requiredDate.getTime(), newNotice.getPath() });
+            newNotice.setProperty(PROP_SAKAI_EVENTDATE, requiredDate);
         }
         else {
-            LOG.info("handleDueDate() no dueDate in sender's originalNotice, perhaps it's not a Reminder?");
+            StringBuilder sb = new StringBuilder("handleRequiredDate() A required Reminder must have either a ").append(PROP_SAKAI_DUEDATE).append(" or a ")
+                    .append(PROP_SAKAI_EVENTDATE).append(", not sending Notice ").append(originalNotice.getPath());
+            throw new RepositoryException(sb.toString());
         }
+    }
+
+    private Calendar buildRequiredDate(Property requiredDateProp) throws RepositoryException {
+        Calendar requiredDateCal = null;
+        Value value = requiredDateProp.getValue();
+        int requiredDateValueType = value.getType();
+        LOG.debug("handleRequiredDate() got source requiredDateProp Value Type: " + requiredDateValueType);
+        if (PropertyType.STRING == requiredDateValueType) {
+            requiredDateCal = parse(value.getString());
+        }
+        else if (PropertyType.DATE == requiredDateValueType) {
+            requiredDateCal = requiredDateProp.getDate();
+        }
+        else {
+            String message = "handleRequiredDate() requiredDate is not a String or Date, is PropertyType: " + requiredDateValueType + " cannot handle";
+            throw new RepositoryException(message);
+        }
+        return requiredDateCal;
     }
 
     /**
@@ -393,14 +413,16 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     }
 
     /**
-     * delegate to the InternalMessageHandler for now
-     * {@inheritDoc}
+     * delegate to the InternalMessageHandler for now {@inheritDoc}
      * 
      * @see org.sakaiproject.nakamura.api.message.MessageProfileWriter#writeProfileInformation(javax.jcr.Session,
      *      java.lang.String, org.apache.sling.commons.json.io.JSONWriter)
      */
     public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
-        this.messageProfileWriter.writeProfileInformation(session, recipient, write);
+        // can't write a profile as dynamic list doesn't have a profile
+        if (!recipient.startsWith(DYNAMIC_LISTS_PREFIX)) {
+            this.messageProfileWriter.writeProfileInformation(session, recipient, write);
+        }
     }
 
     protected void bindMessagingService(MessagingService messagingService) {
@@ -418,11 +440,11 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     protected void unbindSlingRepository(SlingRepository slingRepository) {
         this.slingRepository = null;
     }
-    
+
     protected void bindMessageProfileWriter(MessageProfileWriter messageProfileWriter) {
         this.messageProfileWriter = messageProfileWriter;
     }
-    
+
     protected void unbindMessageProfileWriter(MessageProfileWriter messageProfileWriter) {
         this.messageProfileWriter = null;
     }
@@ -435,7 +457,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
-        
+
     }
 
     protected void deactivate(ComponentContext context) {
