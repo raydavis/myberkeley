@@ -104,6 +104,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      *      org.osgi.service.event.Event, javax.jcr.Node)
      */
     public void send(MessageRoutes routes, Event event, Node originalNotice) {
+        long startMillis = System.currentTimeMillis();
         try {
             Session session = slingRepository.loginAdministrative(null);
             String rcpt = null;
@@ -117,7 +118,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                         Set<String> recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
                         for (Iterator<String> iterator = recipients.iterator(); iterator.hasNext();) {
                             String recipient = (String) iterator.next();
+                            long sendMessageStartMillis = System.currentTimeMillis();
                             sendNotice(recipient, originalNotice, session);
+                            long sendMessageEndMillis = System.currentTimeMillis();
+                            if (LOG.isDebugEnabled()) LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
                         }
                     }
                     else {
@@ -128,6 +132,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
         catch (RepositoryException e) {
             LOG.error(e.getMessage(), e);
+        }
+        finally {
+            long endMillis = System.currentTimeMillis();
+            if (LOG.isDebugEnabled()) LOG.debug("NoticeHandler.send() execution milliseconds: " + (endMillis - startMillis));
         }
     }
 
@@ -193,9 +201,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             // Copy the node into the recipient's folder.
             JcrUtils.deepGetOrCreateNode(session, toPath.substring(0, toPath.lastIndexOf("/")));
             session.save();
+            long copyStartMillis = System.currentTimeMillis();
             session.getWorkspace().copy(originalNotice.getPath(), toPath);
             Node n = JcrUtils.deepGetOrCreateNode(session, toPath);
-            LOG.debug("created recipient mesaage node: " + n.toString());
+            long copyEndMillis = System.currentTimeMillis();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("sendNotice() created recipient mesaage node: " + n.toString());
+                LOG.debug("sendNotice() copying notice node execution milliseconds: " + (copyEndMillis - copyStartMillis));
+            }
             javax.jcr.Property messageProp = originalNotice.getProperty(PROP_SAKAI_CATEGORY);
             String messageCategory = messageProp.getString();
             if (SAKAI_CATEGORY_REMINDER.equals(messageCategory)) {
@@ -211,7 +224,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             n.setProperty(PROP_SAKAI_TO, recipient);
 
             if (session.hasPendingChanges()) {
+                long saveStartMillis = System.currentTimeMillis();
                 session.save();
+                long saveEndMillis = System.currentTimeMillis();
+                if (LOG.isDebugEnabled()) LOG.debug("sendNotice() saving session execution milliseconds: " + (saveEndMillis - saveStartMillis));
             }
         }
         catch (RepositoryException e) {
@@ -236,11 +252,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         String queryString = buildQuery(originalNotice, queryNode);
         // String queryString =
         // "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
-        LOG.info("findRecipients() Using Query {} ", queryString);
+        if (LOG.isDebugEnabled()) LOG.info("findRecipients() Using Query {} ", queryString);
         // find all the notices in the queue for this advisor
+        long startMillis = System.currentTimeMillis();
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query query = queryManager.createQuery(queryString, "xpath");
         QueryResult result = query.execute();
+        long endMillis = System.currentTimeMillis();
+        if (LOG.isDebugEnabled()) LOG.debug("NoticeHandler.findRecipients() execution milliseconds: " + (endMillis - startMillis));
         NodeIterator recpientIter = result.getNodes();
         Node contextNode = null;
         Node recipientProfileNode = null;
@@ -258,7 +277,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 LOG.error("findRecipients() failed for {}", new Object[] { recipientProfileNode.getPath() }, e);
             }
         }
-        LOG.debug("Dynamic List Notice recipients are: " + recipients);
+        if (LOG.isDebugEnabled()) LOG.debug("Dynamic List Notice recipients are: " + recipients);
         return recipients;
     }
 
@@ -340,16 +359,16 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         Calendar requiredDate = null;
         if (originalNotice.hasProperty(PROP_SAKAI_DUEDATE)) {
             dueDateProp = originalNotice.getProperty(PROP_SAKAI_DUEDATE);
-            LOG.debug("handleRequiredDate() got source dueDateProp: " + dueDateProp);
+            if (LOG.isDebugEnabled()) LOG.debug("handleRequiredDate() got source dueDateProp: " + dueDateProp);
             requiredDate = buildRequiredDate(dueDateProp);
-            LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_DUEDATE, requiredDate.getTime(), newNotice.getPath() });
+            if (LOG.isDebugEnabled()) LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_DUEDATE, requiredDate.getTime(), newNotice.getPath() });
             newNotice.setProperty(PROP_SAKAI_DUEDATE, requiredDate);
         }
         else if (originalNotice.hasProperty(PROP_SAKAI_EVENTDATE)) {
             eventDateProp = originalNotice.getProperty(PROP_SAKAI_EVENTDATE);
-            LOG.debug("handleRequiredDate() got source eventDateProp: " + eventDateProp);
+            if (LOG.isDebugEnabled()) LOG.debug("handleRequiredDate() got source eventDateProp: " + eventDateProp);
             requiredDate = buildRequiredDate(eventDateProp);
-            LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_EVENTDATE, requiredDate.getTime(), newNotice.getPath() });
+            if (LOG.isDebugEnabled()) LOG.debug("setting {} to {} in newNotice {}", new Object[] { PROP_SAKAI_EVENTDATE, requiredDate.getTime(), newNotice.getPath() });
             newNotice.setProperty(PROP_SAKAI_EVENTDATE, requiredDate);
         }
         else {
@@ -363,7 +382,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         Calendar requiredDateCal = null;
         Value value = requiredDateProp.getValue();
         int requiredDateValueType = value.getType();
-        LOG.debug("handleRequiredDate() got source requiredDateProp Value Type: " + requiredDateValueType);
+        if (LOG.isDebugEnabled()) LOG.debug("handleRequiredDate() got source requiredDateProp Value Type: " + requiredDateValueType);
         if (PropertyType.STRING == requiredDateValueType) {
             requiredDateCal = parse(value.getString());
         }
