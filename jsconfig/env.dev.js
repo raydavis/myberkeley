@@ -1,4 +1,4 @@
 var sakai = sakai || {};
 
-sakai.env = "prod";
+sakai.isDev = true;
 
