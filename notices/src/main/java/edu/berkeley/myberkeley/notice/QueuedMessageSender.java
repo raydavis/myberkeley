@@ -126,6 +126,7 @@ public class QueuedMessageSender {
     public class SendQueuedNoticesJob implements Job {
         public void execute(JobContext context) {
             LOGGER.info("Executing SendQueuedNoticesJob");
+            long startMillis = System.currentTimeMillis();
             Session adminSession = null;
             try {
                 adminSession = repository.loginAdministrative(null);
@@ -154,7 +155,7 @@ public class QueuedMessageSender {
                                 while (noticeIter.hasNext()) {
                                     try {
                                         notice = noticeIter.nextNode();
-                                        LOGGER.debug("at noticeIter position: {} found notice: {}",
+                                        if (LOGGER.isDebugEnabled()) LOGGER.debug("at noticeIter position: {} found notice: {}",
                                                         new Object[] { noticeIter.getPosition(), notice.getPath() });
                                         if (timeToSend(notice)) {
                                             // move it to outbox for std sending
@@ -190,6 +191,8 @@ public class QueuedMessageSender {
                 LOGGER.error("sendQueuedNoticeJob Failed", e);
             }
             finally {
+                long endMillis = System.currentTimeMillis();
+                if (LOGGER.isDebugEnabled()) LOGGER.debug("SendQueuedNoticesJob.execute() execution milliseconds: " + (endMillis - startMillis));
                 if (adminSession != null)
                     adminSession.logout();
             }
@@ -235,12 +238,12 @@ public class QueuedMessageSender {
                 if (sendDate != null) {
                     Calendar now = Calendar.getInstance();
                     if (now.compareTo(sendDate) >= 0) {
-                        LOGGER.debug("timeToSend() sendDate: {} is earlier than or same as now: {}, sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
+                        if (LOGGER.isDebugEnabled()) LOGGER.debug("timeToSend() sendDate: {} is earlier than or same as now: {}, sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
                                 notice.getPath() });
                         timeToSend = true;
                     }
                     else {
-                        LOGGER.debug("timeToSend() sendDate: {} is later than now: {}, NOT sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
+                        if (LOGGER.isDebugEnabled()) LOGGER.debug("timeToSend() sendDate: {} is later than now: {}, NOT sending notice: {}", new Object[] { sendDate.getTime(), now.getTime(),
                                 notice.getPath() });
                     }
                 }
