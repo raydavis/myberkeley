@@ -53,7 +53,8 @@ module MyBerkeleyData
     jonh = make_name_filter "Jon", "Hays"
     romans = make_name_filter "Roman V", "Shumikhin"
     ctweney = make_name_filter "Chris", "Tweney"
-    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh | romans | ctweney
+    susanh = make_name_filter "Susan Janan", "HAGSTROM"
+    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh | romans | ctweney | susanh
   end
   
   def make_students_filter

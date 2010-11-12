@@ -27,6 +27,8 @@ module MyBerkeleyData
     @oracle_password = nil
     @oracle_sid = nil
     
+    @sling_data_loader = nil
+    
     attr_reader :oracle_host, :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :num_students, :sling_data_loader
     
     def initialize(options)
@@ -117,6 +119,7 @@ module MyBerkeleyData
           if (PARTICIPANT_UIDS.include? student_ldap_uid.to_s)
             user = @sling_data_loader.load_user student_ldap_uid, props, user_password
             @sling_data_loader.add_student_to_group user
+            @sling_data_loader.apply_student_aces user
           end
           #break if (i += 1) >= @num_students
         end

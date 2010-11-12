@@ -82,6 +82,11 @@
       "lastName": "Lai",
       "firstName": "Whitney"
     },
+    "904715": {
+      "lastName": "Tweney",
+      "firstName": "Chris",
+      "email": "chris@media.berkeley.edu"
+    },
     "675750": {
       "lastName": "Hollowgrass",
       "firstName": "Rachel",
@@ -111,15 +116,15 @@
       "firstName": "Mara",
       "email": "mara@media.berkeley.edu"
     },
+    "12005": {
+      "lastName": "Hagstrom",
+      "firstName": "Susan janan",
+      "email": "hagstrom@berkeley.edu"
+    },
     "760063": {
       "lastName": "Ng",
       "firstName": "Nicole",
       "email": "nicole.ng@berkeley.edu"
-    },
-    "904715": {
-      "lastName": "Tweney",
-      "firstName": "Chris",
-      "email": "chris@media.berkeley.edu"
     }
   }
 }
