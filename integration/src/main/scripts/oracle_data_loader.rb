@@ -12,7 +12,7 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
-  PARTICIPANT_UIDS = ['308541','538733','772931','311120','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
+  PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
   
   class OracleDataLoader
 
@@ -217,7 +217,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
      )
   
   odl.sling_data_loader.get_or_create_groups
-  #odl.sling_data_loader.load_defined_user_advisors
+  odl.sling_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 

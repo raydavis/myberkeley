@@ -129,9 +129,9 @@ module MyBerkeleyData
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
         loaded_calnet_test_user = load_user uid, user_props
-
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
+        i = i + 1
       end
     end
     
