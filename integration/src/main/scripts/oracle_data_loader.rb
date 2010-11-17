@@ -21,6 +21,7 @@ module MyBerkeleyData
     @user_manager = nil
     @sling = nil
     @num_students = nil
+    @user_password_key = nil
     
     @oracle_host = nil
     @oracle_user = nil
@@ -53,7 +54,11 @@ module MyBerkeleyData
       user_props['lastName'] = ced_student.last_name
       user_props['email'] = make_email ced_student
       user_props['context'] = ['g-ced-students']
-      user_props['participant'] = true
+      if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid)
+        user_props['participant'] = true
+      else
+        user_props['participant'] = false        
+      end
       if (is_current ced_student )
         user_props['current'] = true;
       else
@@ -105,22 +110,21 @@ module MyBerkeleyData
 
       ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
                       left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-                      where sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN'"
+                      where (sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
+                      and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
       i = 0
       ced_students.each do |s|
         props = make_user_props s
-        if (user_password_key)
-          user_password = sdl.make_password(s)
+        if (@user_password_key)
+          user_password = sling_data_loader.make_password s.stu_name, @user_password_key
         else
           user_password = "testuser"
         end
-        if (props['current'])
+        if (props['current'] == true)
           student_ldap_uid = s.student_ldap_uid
-          if (PARTICIPANT_UIDS.include? student_ldap_uid.to_s)
-            user = @sling_data_loader.load_user student_ldap_uid, props, user_password
-            @sling_data_loader.add_student_to_group user
-            @sling_data_loader.apply_student_aces user
-          end
+          user = @sling_data_loader.load_user student_ldap_uid, props, user_password
+          @sling_data_loader.add_student_to_group user
+          @sling_data_loader.apply_student_aces user
           #break if (i += 1) >= @num_students
         end
       end
@@ -217,7 +221,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
      )
   
   odl.sling_data_loader.get_or_create_groups
-  odl.sling_data_loader.load_defined_user_advisors
+  #odl.sling_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 

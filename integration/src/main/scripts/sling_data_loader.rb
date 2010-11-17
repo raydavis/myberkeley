@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 require 'json'
+require 'digest/sha1'
 require 'sling/sling'
 require 'lib/sling/users'
 require 'lib/sling/authz'
@@ -34,7 +35,7 @@ module MyBerkeleyData
     @authz = nil
     attr_reader :user_password_key, :num_students, :ced_advisors_group, :ced_all_students_group, :authz
   
-    def initialize(server, admin_password="admin", numusers="32", user_password_key=nil)
+    def initialize(server, admin_password="admin", numusers="32", user_password_key='testuser')
       @num_students = numusers.to_i
       @user_password_key = user_password_key
       @sling = Sling.new(server, admin_password, true)
@@ -57,9 +58,9 @@ module MyBerkeleyData
       return group
     end
     
-    def make_password (ed_student, key)
+    def make_password(name, key)
       digest = Digest::SHA1.new
-      digest.update(ced_student.stu_name).update(key)
+      digest.update(name).update(key)
       return digest.hexdigest
     end
     
@@ -128,7 +129,7 @@ module MyBerkeleyData
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
-        loaded_calnet_test_user = load_user uid, user_props
+        loaded_calnet_test_user = load_user uid, user_props, make_password(uid, @user_password_key)
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
         i = i + 1
@@ -200,22 +201,18 @@ module MyBerkeleyData
     def apply_student_aces(student)
       home_path = student.home_path_for @sling
       @authz.delete(home_path, "everyone")
-      @authz.grant(home_path,"everyone","jcr:read" => "denied")
-      @authz.grant(home_path,"everyone","jcr:write" => "denied")
+      @authz.grant(home_path,"everyone","jcr:read" => "denied","jcr:write" => "denied")
       @authz.delete(home_path, "anonymous")
-      @authz.grant(home_path,"anonymous","jcr:read" => "denied")
-      @authz.grant(home_path,"anonymous","jcr:write" => "denied")
+      @authz.grant(home_path,"anonymous","jcr:read" => "denied","jcr:write" => "denied")
       @authz.grant(home_path,"g-ced-advisors","jcr:read" => "granted")
     end
     
     def apply_advisor_aces(advisor)
       home_path = advisor.home_path_for @sling
       @authz.delete(home_path, "everyone")
-      @authz.grant(home_path,"everyone","jcr:read" => "denied")
-      @authz.grant(home_path,"everyone","jcr:write" => "denied")
+      @authz.grant(home_path,"everyone","jcr:read" => "denied","jcr:write" => "denied")
       @authz.delete(home_path, "anonymous")
-      @authz.grant(home_path,"anonymous","jcr:read" => "denied")
-      @authz.grant(home_path,"anonymous","jcr:write" => "denied")
+      @authz.grant(home_path,"anonymous","jcr:read" => "denied","jcr:write" => "denied")
       @authz.grant(home_path,"g-ced-students","jcr:read" => "granted") #needed so message search results can include sender's profile info
       @authz.grant(home_path,"g-ced-advisors","jcr:all" => "granted")
     end
@@ -226,9 +223,9 @@ end
 if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[2]} users"
-  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
+  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
   sdl.get_or_create_groups
-  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  #sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   #sdl.load_defined_users "json_data.js"
   sdl.load_calnet_test_users
   #sdl.load_random_users "firstNames.txt", "lastNames.txt"

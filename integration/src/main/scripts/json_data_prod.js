@@ -9,6 +9,6 @@
       "lastName": "Hagstrom",
       "firstName": "Susan janan",
       "email": "hagstrom@berkeley.edu"
-    },
+    }
   }
 }

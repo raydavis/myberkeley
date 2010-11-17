@@ -36,9 +36,15 @@ select * from BSPACE_STUDENT_INFO_VW si
 left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sM.LDAP_UID
 where sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN';
 
-select * from BSPACE_STUDENT_INFO_VW si where si.STUDENT_LDAP_UID in 
+select count(*) from BSPACE_STUDENT_INFO_VW si where si.STUDENT_LDAP_UID in 
                  (select sm.LDAP_UID from BSPACE_STUDENT_MAJOR_VW sm where sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' 
-                 or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN');
+                 or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
+                and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%';
+
+select count(*) from BSPACE_STUDENT_INFO_VW si
+                      left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
+                      where (sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
+                      and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%';
 
 
 select * from SAKAI_JOHNK.BSPACE_STUDENT_INFO_VW si
