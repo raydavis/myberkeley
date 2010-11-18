@@ -221,7 +221,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
      )
   
   odl.sling_data_loader.get_or_create_groups
-  #odl.sling_data_loader.load_defined_user_advisors
+  odl.sling_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 
