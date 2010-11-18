@@ -439,7 +439,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      */
     public void writeProfileInformation(Session session, String recipient, JSONWriter write) {
         // can't write a profile as dynamic list doesn't have a profile
-        if (!recipient.startsWith(DYNAMIC_LISTS_PREFIX)) {
+        if (recipient != null && !recipient.startsWith(DYNAMIC_LISTS_PREFIX)) {
             this.messageProfileWriter.writeProfileInformation(session, recipient, write);
         }
     }

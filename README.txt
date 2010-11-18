@@ -20,8 +20,6 @@ start an existing binary of the MyBerkeley application.
 
 1. To clean out the old server environment:
 
-mvn -P runner -Dsling.clean clean
-
 3. To start the test server:
 
 mvn -P runner -Dsling.start verify
