@@ -292,7 +292,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException {
         StringBuilder querySB = new StringBuilder(
-                "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/../participant[@value='true']/..");
+                "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..");
         NodeIterator queryNodesIter = queryNode.getNodes();
         while (queryNodesIter.hasNext()) {
             Node queryParamNode = queryNodesIter.nextNode();
