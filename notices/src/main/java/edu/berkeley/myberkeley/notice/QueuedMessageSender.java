@@ -78,23 +78,14 @@ public class QueuedMessageSender {
     private static final String PROP_RUN_NOW = "queuedsender.runnow";
     
     protected final static String JOB_NAME = "sendQueuedNoticesJob";
-    
-    @org.apache.felix.scr.annotations.Property(value = "prod", label="Runtime Environment")
-    private static final String PROP_RUNTIME_ENVIRONMENT = "queuedsender.environment"; 
-    
-    private static final String ENVVIRONMENT_DEV = "dev";    
-    
-    private static final String DEV_USER_ID = "271592"; 
-    
+
     protected void activate(ComponentContext componentContext) throws Exception {
         // executes the job every minute
 //        String schedulingExpression = "0 * * * * ?";
         Dictionary<?, ?> props = componentContext.getProperties();
         Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
         Boolean runNow = (Boolean) props.get(PROP_RUN_NOW);
-        String runtimeEnvironment= (String) props.get(PROP_RUNTIME_ENVIRONMENT);
         Map<String, Serializable> config = new HashMap<String, Serializable>();
-        config.put(PROP_RUNTIME_ENVIRONMENT, runtimeEnvironment);
         boolean canRunConcurrently = false;
         final Job sendQueuedNoticeJob = new SendQueuedNoticesJob();
         try {
@@ -130,8 +121,6 @@ public class QueuedMessageSender {
             Session adminSession = null;
             try {
                 adminSession = repository.loginAdministrative(null);
-                Map<String, Serializable> config = context.getConfiguration();
-                String runtimeEnvironment = (String) config.get(PROP_RUNTIME_ENVIRONMENT);
                 UserManager um = AccessControlUtil.getUserManager(adminSession);
                 Authorizable au = um.getAuthorizable(GROUP_CED_ADVISORS);
                 Iterator<Authorizable> membersIter;
@@ -145,45 +134,45 @@ public class QueuedMessageSender {
                     while (membersIter.hasNext()) {
                         userAuth = membersIter.next();
                         advisorId = userAuth.getID();
-                        if (!ENVVIRONMENT_DEV.equals(runtimeEnvironment) || DEV_USER_ID.equals(advisorId)) {  // for development only
-                            // notice messages live in individual authors
-                            // message store currently
-                            if (!userAuth.isGroup()) {
-                                QueryResult queuedNoticesQR = findQueuedNotices(advisorId, adminSession);
-                                NodeIterator noticeIter = queuedNoticesQR.getNodes();
-                                Node notice = null;
-                                while (noticeIter.hasNext()) {
-                                    try {
-                                        notice = noticeIter.nextNode();
-                                        if (LOGGER.isDebugEnabled()) LOGGER.debug("at noticeIter position: {} found notice: {}",
-                                                        new Object[] { noticeIter.getPosition(), notice.getPath() });
-                                        if (timeToSend(notice)) {
-                                            // move it to outbox for std sending
-                                            // mechanism and so next search will not find it
-                                            notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_OUTBOX);
-                                            if (adminSession.hasPendingChanges()) {
-                                                adminSession.save();
-                                            }
-                                            sendNotice(notice, advisorId);
-                                            // now more it archive box per user
-                                            // interaction spec so it shows up in UI Archive
-                                            notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_ARCHIVE);
-                                            if (adminSession.hasPendingChanges()) {
-                                                adminSession.save();
-                                            }
+                    
+                        // notice messages live in individual authors
+                        // message store currently
+                        if (!userAuth.isGroup()) {
+                            QueryResult queuedNoticesQR = findQueuedNotices(advisorId, adminSession);
+                            NodeIterator noticeIter = queuedNoticesQR.getNodes();
+                            Node notice = null;
+                            while (noticeIter.hasNext()) {
+                                try {
+                                    notice = noticeIter.nextNode();
+                                    if (LOGGER.isDebugEnabled()) LOGGER.debug("at noticeIter position: {} found notice: {}",
+                                                    new Object[] { noticeIter.getPosition(), notice.getPath() });
+                                    if (timeToSend(notice)) {
+                                        // move it to outbox for std sending
+                                        // mechanism and so next search will not find it
+                                        notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_OUTBOX);
+                                        if (adminSession.hasPendingChanges()) {
+                                            adminSession.save();
                                         }
-                                    }
-                                    catch (RepositoryException e) {
-                                        // put in failed sendState so it won't be found again and repeated failures occur
-                                        LOGGER.error("Could not send notice {}, putting in sendState: {}", new Object[]{notice.getPath(), STATE_SEND_FAILED});
-                                        notice.setProperty(PROP_SAKAI_SENDSTATE, STATE_SEND_FAILED);
+                                        sendNotice(notice, advisorId);
+                                        // now more it archive box per user
+                                        // interaction spec so it shows up in UI Archive
+                                        notice.setProperty(PROP_SAKAI_MESSAGEBOX, BOX_ARCHIVE);
                                         if (adminSession.hasPendingChanges()) {
                                             adminSession.save();
                                         }
                                     }
                                 }
+                                catch (RepositoryException e) {
+                                    // put in failed sendState so it won't be found again and repeated failures occur
+                                    LOGGER.error("Could not send notice {}, putting in sendState: {}", new Object[]{notice.getPath(), STATE_SEND_FAILED});
+                                    notice.setProperty(PROP_SAKAI_SENDSTATE, STATE_SEND_FAILED);
+                                    if (adminSession.hasPendingChanges()) {
+                                        adminSession.save();
+                                    }
+                                }
                             }
                         }
+
                     }
                 }
             }
