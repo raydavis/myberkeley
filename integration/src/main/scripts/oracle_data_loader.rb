@@ -54,7 +54,7 @@ module MyBerkeleyData
       user_props['lastName'] = ced_student.last_name
       user_props['email'] = make_email ced_student
       user_props['context'] = ['g-ced-students']
-      if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid)
+      if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid.to_s)
         user_props['participant'] = true
       else
         user_props['participant'] = false        
