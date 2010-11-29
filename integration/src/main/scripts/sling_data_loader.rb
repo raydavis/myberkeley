@@ -35,9 +35,8 @@ module MyBerkeleyData
     @authz = nil
     attr_reader :user_password_key, :num_students, :ced_advisors_group, :ced_all_students_group, :authz
   
-    def initialize(server, admin_password="admin", numusers="32", user_password_key='testuser')
+    def initialize(server, admin_password="admin", numusers="32")
       @num_students = numusers.to_i
-      @user_password_key = user_password_key
       @sling = Sling.new(server, admin_password, true)
       @sling.do_login
       @user_manager = UserManager.new(@sling)
@@ -129,7 +128,7 @@ module MyBerkeleyData
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
-        loaded_calnet_test_user = load_user uid, user_props, make_password(uid, @user_password_key)
+        loaded_calnet_test_user = load_user uid, user_props
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
         i = i + 1
@@ -223,10 +222,10 @@ end
 if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[2]} users"
-  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
+  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
   sdl.get_or_create_groups
-  #sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   #sdl.load_defined_users "json_data.js"
   sdl.load_calnet_test_users
-  #sdl.load_random_users "firstNames.txt", "lastNames.txt"
+  sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
