@@ -7,7 +7,7 @@ import javax.jcr.RepositoryException;
 
 import org.apache.jackrabbit.core.RepositoryCopier;
 
-public class RepoMover {
+public class RepoCopierUtil {
 
 	/**
 	 * @param args
