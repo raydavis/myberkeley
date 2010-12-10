@@ -4,10 +4,12 @@ import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNA
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_PREFIX;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_QUERY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_ROOT_NODE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NODE_PATH_PROPERTY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_EVENTDATE;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
@@ -23,6 +25,7 @@ import static org.sakaiproject.nakamura.api.profile.ProfileConstants.USER_IDENTI
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
@@ -57,12 +60,17 @@ import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants.EventDeliveryMode;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants.EventMessageMode;
 import org.sakaiproject.nakamura.api.message.MessageProfileWriter;
 import org.sakaiproject.nakamura.api.message.MessageRoute;
 import org.sakaiproject.nakamura.api.message.MessageRoutes;
 import org.sakaiproject.nakamura.api.message.MessageTransport;
 import org.sakaiproject.nakamura.api.message.MessagingService;
 import org.sakaiproject.nakamura.api.personal.PersonalUtils;
+import org.sakaiproject.nakamura.email.outgoing.OutgoingEmailMessageListener;
 import org.sakaiproject.nakamura.util.JcrUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,12 +98,20 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     @Reference
     protected transient MessageProfileWriter messageProfileWriter;
+    
+    @Reference
+    protected transient EventAdmin eventAdmin;
 
     @org.apache.felix.scr.annotations.Property(value = { "EEE MMM dd yyyy HH:mm:ss 'GMT'Z", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy-MM-dd", "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy" })
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
+    
+    @org.apache.felix.scr.annotations.Property(boolValue = true)
+    private static final String PROP_SEND_EMAIL = "notice.sendEmail";
+    
+    private boolean sendEmail;
 
     /**
      * {@inheritDoc}
@@ -112,20 +128,25 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
 
                     rcpt = route.getRcpt();
+                    Set<String> recipients = null;
                     LOG.info("Started a notice routing to: " + rcpt);
                     if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
                         Node targetListQueryNode = findTargetListQuery(rcpt, originalNotice, session);
-                        Set<String> recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
+                        recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
                         for (Iterator<String> iterator = recipients.iterator(); iterator.hasNext();) {
                             String recipient = (String) iterator.next();
                             long sendMessageStartMillis = System.currentTimeMillis();
-                            sendNotice(recipient, originalNotice, session);
+                            sendNotice(recipient, originalNotice, event, session);
                             long sendMessageEndMillis = System.currentTimeMillis();
                             if (LOG.isDebugEnabled()) LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
                         }
+                        if (this.sendEmail) sendEmail(recipients, event, originalNotice);
                     }
                     else {
-                        sendNotice(rcpt, originalNotice, session);
+                        sendNotice(rcpt, originalNotice, event, session);
+                        recipients = new HashSet<String>();
+                        recipients.add(rcpt);
+                        if (this.sendEmail) sendEmail(recipients, event, originalNotice);
                     }
                 }
             }
@@ -189,9 +210,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * 
      * @param recipient
      * @param originalNotice
+     * @param event 
      * @param session
      */
-    private void sendNotice(String recipient, Node originalNotice, Session session) {
+    private void sendNotice(String recipient, Node originalNotice, Event event, Session session) {
         // the path were we want to save messages in.
         String messageId;
         try {
@@ -235,6 +257,42 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
 
     }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.sakaiproject.nakamura.api.message.MessageTransport#send(org.sakaiproject.nakamura.api.message.MessageRoutes,
+     *      org.osgi.service.event.Event, javax.jcr.Node)
+     */
+    protected void sendEmail(Set<String> recipients, Event event, Node n) {
+      LOG.debug("Started handling an email message");
+
+      if (recipients != null) {
+        java.util.Properties props = new java.util.Properties();
+        try {
+          if ( event != null ) {
+            for( String propName : event.getPropertyNames()) {
+              Object propValue = event.getProperty(propName);
+              props.put(propName, propValue);
+            }
+          }
+          // make the message deliver to one listener, that means the desination must be a queue.
+          props.put(EventDeliveryConstants.DELIVERY_MODE, EventDeliveryMode.P2P);
+          // make the message persistent to survive restarts.
+          props.put(EventDeliveryConstants.MESSAGE_MODE, EventMessageMode.PERSISTENT);
+          // email listener wants a list
+          props.put(OutgoingEmailMessageListener.RECIPIENTS, new ArrayList<String>(recipients));
+          props.put(NODE_PATH_PROPERTY, n.getPath());
+          Event emailEvent = new Event(QUEUE_NAME, props);
+
+          LOG.debug("Sending event [" + emailEvent + "]");
+          eventAdmin.postEvent(emailEvent);
+        } catch (RepositoryException e) {
+          LOG.error(e.getMessage(), e);
+        }
+      }
+    }
+
 
     /**
      * find the users that meet the search criteria in the query subnode of the
@@ -467,6 +525,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     protected void unbindMessageProfileWriter(MessageProfileWriter messageProfileWriter) {
         this.messageProfileWriter = null;
     }
+    
+    protected void bindEventAdmin(EventAdmin eventAdmin) {
+    	this.eventAdmin = eventAdmin;
+    }
+    
+    protected void unbindEventAdmin(EventAdmin eventAdmin) {
+    	this.eventAdmin = null;
+    }    
 
     protected void activate(ComponentContext context) {
         Dictionary<?, ?> props = context.getProperties();
@@ -476,10 +542,11 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
-
+        this.sendEmail = (Boolean) props.get(PROP_SEND_EMAIL);
     }
 
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
+        this.sendEmail = false;
     }
 }
