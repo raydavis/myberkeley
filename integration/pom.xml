@@ -40,6 +40,31 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>purge-sling</id>
+      <activation>
+        <property>
+          <name>sling.purge</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${sakai3.home}/sling/startup</directory>
+                </fileset>
+                <fileset>
+                  <directory>${sakai3.home}/sling/felix</directory>
+                </fileset>                
+              </filesets>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>    
   <profile>
     <id>loaddata-sling</id>
     <activation>
