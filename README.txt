@@ -18,7 +18,11 @@ been stored in our project's Maven respository.
 As a convenience, the "runner" profile can be used to download, stop, and
 start an existing binary of the MyBerkeley application.
 
-1. To clean out the old server environment:
+1. To clean out the old server environment including repository:
+mvn -P runner -Dsling.clean clean
+
+2) To purge the server of deployed and cached bundles while leaving repository and data intact:
+mvn -P runner -Dsling.purge clean
 
 mvn -P runner -Dsling.clean clean
 
