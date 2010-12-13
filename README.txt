@@ -38,6 +38,12 @@ mvn -P runner -Dsling.start verify
 
 mvn -P runner -Dsling.stop verify
 
+5. To stop the server, download new sources from Git, reinstall everything except the repository data,
+restart, and upload the new bundles to the Berkeley Maven repo (you'll need to have both myberkeley and 3akai-ux
+checked out):
+
+./update_build_and_reinstall source_root sling_password
+
 ===
 
 COOKBOOK - DEVELOPMENT
