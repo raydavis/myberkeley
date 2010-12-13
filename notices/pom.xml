@@ -2,13 +2,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.90-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.notices</artifactId>
   <name>MyBerkeley notices bundle</name>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.90-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,26 +42,38 @@
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-	  <version>0.9-SNAPSHOT</version>
+	  <version>0.90-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
-	  <version>0.9-SNAPSHOT</version>
+	  <version>0.90-SNAPSHOT</version>
 	  <scope>provided</scope>
 	</dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.user</artifactId>
-      <version>0.9-SNAPSHOT</version>
+      <version>0.90-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.personal</artifactId>
-      <version>0.9-SNAPSHOT</version>
+      <version>0.90-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>    
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.events</artifactId>
+      <version>0.90-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>   
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.email.outgoing</artifactId>
+      <version>0.90-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>  
 <!-- Sling -->
     <dependency>
       <groupId>org.apache.sling</groupId>
@@ -73,11 +85,6 @@
 	   <artifactId>org.apache.sling.commons.scheduler</artifactId>     
 	   <version>2.2.0</version>
 	</dependency>    
-	<dependency>
-      <groupId>javax.jcr</groupId>
-      <artifactId>jcr</artifactId>
-      <version>2.0</version>
-    </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
