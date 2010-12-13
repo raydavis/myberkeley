@@ -128,25 +128,34 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
 
                     rcpt = route.getRcpt();
-                    Set<String> recipients = null;
+                    Set<Recipient> recipients = null;
                     LOG.info("Started a notice routing to: " + rcpt);
                     if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
                         Node targetListQueryNode = findTargetListQuery(rcpt, originalNotice, session);
                         recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
-                        for (Iterator<String> iterator = recipients.iterator(); iterator.hasNext();) {
-                            String recipient = (String) iterator.next();
+                        for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
+                            Recipient recipient = iterator.next();
                             long sendMessageStartMillis = System.currentTimeMillis();
-                            sendNotice(recipient, originalNotice, event, session);
+                            sendNotice(recipient.getRecipientId(), originalNotice, event, session);
                             long sendMessageEndMillis = System.currentTimeMillis();
-                            if (LOG.isDebugEnabled()) LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
+                            if (LOG.isDebugEnabled())
+                                LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
                         }
-                        if (this.sendEmail) sendEmail(recipients, event, originalNotice);
+                        List<String> emailRecipientIds = new ArrayList<String>();
+                        Recipient recipient = null;
+                        for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
+                            recipient = iterator.next();
+                            if (recipient.isCurrentParticipant()) {
+                                emailRecipientIds.add(recipient.getRecipientId());
+                            }
+                        }
+                        sendEmail(emailRecipientIds, event, originalNotice);
                     }
                     else {
                         sendNotice(rcpt, originalNotice, event, session);
-                        recipients = new HashSet<String>();
-                        recipients.add(rcpt);
-                        if (this.sendEmail) sendEmail(recipients, event, originalNotice);
+                        List<String> emailRecipientIds = new ArrayList<String>();
+                        emailRecipientIds.add(rcpt);
+                        sendEmail(emailRecipientIds, event, originalNotice);
                     }
                 }
             }
@@ -156,11 +165,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
         finally {
             long endMillis = System.currentTimeMillis();
-            if (LOG.isDebugEnabled()) LOG.debug("NoticeHandler.send() execution milliseconds: " + (endMillis - startMillis));
+            if (LOG.isDebugEnabled())
+                LOG.debug("NoticeHandler.send() execution milliseconds: " + (endMillis - startMillis));
         }
     }
 
-    /**
+	/**
      * find the list that this notice is being sent to.
      * sakai:sendto=notice:${id} id must the the list id.
      * 
@@ -255,19 +265,18 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         catch (RepositoryException e) {
             LOG.error("sendNotice() failed", e);
         }
-
     }
     
     /**
-     * {@inheritDoc}
-     *
-     * @see org.sakaiproject.nakamura.api.message.MessageTransport#send(org.sakaiproject.nakamura.api.message.MessageRoutes,
-     *      org.osgi.service.event.Event, javax.jcr.Node)
+     * 
+     * @param recipients
+     * @param event
+     * @param n
      */
-    protected void sendEmail(Set<String> recipients, Event event, Node n) {
+    protected void sendEmail(List<String> recipients, Event event, Node n) {
       LOG.debug("Started handling an email message");
 
-      if (recipients != null) {
+      if (recipients != null && this.sendEmail) {
         java.util.Properties props = new java.util.Properties();
         try {
           if ( event != null ) {
@@ -281,16 +290,18 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
           // make the message persistent to survive restarts.
           props.put(EventDeliveryConstants.MESSAGE_MODE, EventMessageMode.PERSISTENT);
           // email listener wants a list
-          props.put(OutgoingEmailMessageListener.RECIPIENTS, new ArrayList<String>(recipients));
+          props.put(OutgoingEmailMessageListener.RECIPIENTS, recipients);
           props.put(NODE_PATH_PROPERTY, n.getPath());
           Event emailEvent = new Event(QUEUE_NAME, props);
 
           LOG.debug("Sending event [" + emailEvent + "]");
-          eventAdmin.postEvent(emailEvent);
+          eventAdmin.sendEvent(emailEvent);
         } catch (RepositoryException e) {
           LOG.error(e.getMessage(), e);
         }
       }
+      LOG.info("sendEmail is false or no recipients, not sending Email");
+      LOG.info("would have sent email to recipientIds: " + recipients);
     }
 
 
@@ -305,8 +316,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * @return
      * @throws RepositoryException
      */
-    private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
-        Set<String> recipients = new HashSet<String>();
+    private Set<Recipient> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
+        Set<Recipient> recipients = new HashSet<Recipient>();
         String queryString = buildQuery(originalNotice, queryNode);
         // String queryString =
         // "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
@@ -329,7 +340,9 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 // in it
                 recipientProfileNode = contextNode.getNode("../../../");
                 recipientId = recipientProfileNode.getProperty(USER_IDENTIFIER_PROPERTY).getString();
-                recipients.add(recipientId);
+                boolean isCurrentParticipant = isCurrentParticipant(contextNode);
+                Recipient recipient = new Recipient(recipientId, isCurrentParticipant);
+                recipients.add(recipient);
             }
             catch (RepositoryException e) {
                 LOG.error("findRecipients() failed for {}", new Object[] { recipientProfileNode.getPath() }, e);
@@ -339,7 +352,21 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         return recipients;
     }
 
-    /**
+    private boolean isCurrentParticipant(Node contextNode) {
+    	boolean isCurrentParticipant = false;
+		try {
+			Node participantNode = contextNode.getNode("../participant");
+			String value = participantNode.getProperty("value").getString();
+			isCurrentParticipant = value != null && "true".equals(value) ? true : false;
+		} catch (PathNotFoundException e) {
+			e.printStackTrace();
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+		return isCurrentParticipant;
+	}
+
+	/**
      * build an xpath query from the list query node subnodes and values
      * 
      * @param originalNotice
@@ -548,5 +575,50 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
         this.sendEmail = false;
+    }
+    
+    private class Recipient {
+    	private String recipientId = "";
+    	private boolean currentParticipant = false;
+    	
+    	private Recipient(String recipientId, boolean currentParticipant) {
+    		this.recipientId = recipientId;
+    		this.currentParticipant = currentParticipant;
+    	}
+
+		public String getRecipientId() {
+			return recipientId;
+		}
+
+		public boolean isCurrentParticipant() {
+			return currentParticipant;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+
+			result = prime * result
+					+ ((recipientId == null) ? 0 : recipientId.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Recipient other = (Recipient) obj;
+			if (recipientId == null) {
+				if (other.recipientId != null)
+					return false;
+			} else if (!recipientId.equals(other.recipientId))
+				return false;
+			return true;
+		}
     }
 }
