@@ -58,7 +58,13 @@
                 </fileset>
                 <fileset>
                   <directory>${sakai3.home}/sling/felix</directory>
-                </fileset>                
+                </fileset>     
+                <fileset>
+                  <directory>${sakai3.home}/sling</directory>
+                  <includes>
+		            <include>org.apache.sling.launchpad.base.jar</include>
+		          </includes>                  
+                </fileset> 
               </filesets>
             </configuration>
           </plugin>
