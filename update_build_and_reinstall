@@ -20,7 +20,6 @@ mvn -q -Dsling.stop -P runner verify
 
 echo "Cleaning sling directories..."
 mvn -q -P runner -Dsling.purge clean
-rm -f working/sling/org.apache.sling.launchpad.base*
 
 echo "Fetching new sources for myberkeley..."
 git pull
