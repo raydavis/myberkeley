@@ -30,6 +30,8 @@ mvn -P runner -Dsling.clean clean
 
 mvn -P runner -Dsling.purge clean
 
+mvn -P runner -Dsling.clean clean
+
 3. To start the test server:
 
 mvn -P runner -Dsling.start verify
