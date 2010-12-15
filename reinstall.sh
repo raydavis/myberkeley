@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script to reinstall myberkeley on portal-dev/portal-qa
+# script to reinstall myberkeley on portal-dev/portal-qa, while preserving content repository
 
 if [ -z "$1" ]; then
     echo "Usage: $0 source_root sling_password"
@@ -45,11 +45,6 @@ mvn -q -Dsling.start -P runner verify
 echo "Redeploying UX..."
 cd ../3akai-ux
 mvn -q -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD 1>/dev/null
-
-echo "Uploading new bundles to Maven repo..."
-mvn -q deploy 1>/dev/null
-cd ../myberkeley
-mvn -q deploy 1>/dev/null
 
 echo
 
