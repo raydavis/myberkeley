@@ -19,6 +19,7 @@ package edu.berkeley.myberkeley.notice;
 
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Dictionary;
@@ -42,6 +43,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailException;
@@ -82,6 +85,10 @@ public class OutgoingEmailNoticeListener implements MessageListener {
     @Property(intValue = 30)
     private static final String RETRY_INTERVAL = "sakai.email.retryIntervalMinutes";
 
+    @Property(boolValue = true)
+    private static final String PROP_SEND_EMAIL = "notice.sendEmail";
+    private boolean sendEmail;
+    
     @Reference
     protected SlingRepository repository;
     @Reference
@@ -149,11 +156,15 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                         MultiPartEmail email = null;
                         try {
                             email = constructMessage(messageNode, recipients);
-
+                            email.setDebug(true);
                             email.setSmtpPort(smtpPort);
                             email.setHostName(smtpServer);
-
-                            email.send();
+                            if (this.sendEmail) {
+                                email.sendMimeMessage();
+                            }
+                            else {
+                                LOGGER.info("not sending email");
+                            }
                         }
                         catch (EmailException e) {
                             String exMessage = e.getMessage();
@@ -237,16 +248,16 @@ public class OutgoingEmailNoticeListener implements MessageListener {
             bccRecipients.add(convertToEmail(r.trim(), session));
         }
 
-        if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_TO)) {
-            String[] tor = StringUtils.split(messageNode.getProperty(MessageConstants.PROP_SAKAI_TO).getString(), ',');
-            for (String r : tor) {
-                r = convertToEmail(r.trim(), session);
-                if (bccRecipients.contains(r)) {
-                    toRecipients.add(r);
-                    bccRecipients.remove(r);
-                }
-            }
-        }
+//        if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_TO)) {
+//            String[] tor = StringUtils.split(messageNode.getProperty(MessageConstants.PROP_SAKAI_TO).getString(), ',');
+//            for (String r : tor) {
+//                r = convertToEmail(r.trim(), session);
+//                if (bccRecipients.contains(r)) {
+//                    toRecipients.add(r);
+//                    bccRecipients.remove(r);
+//                }
+//            }
+//        }
         for (String r : toRecipients) {
             try {
                 email.addTo(convertToEmail(r, session));
@@ -321,8 +332,8 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                     String profilePath = PersonalUtils.getProfilePath(user);
                     if (profilePath != null && session.itemExists(profilePath)) {
                         Node profileNode = session.getNode(profilePath);
-                        emailAddress = PersonalUtils.getPrimaryEmailAddress(profileNode);
-
+                        Node emailNode = profileNode.getNode("basic/elements/email/");
+                        emailAddress = emailNode.getProperty("value").getString();
                     }
                 }
             }
@@ -432,7 +443,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         else {
             LOGGER.error("No SMTP server set");
         }
-
+        this.sendEmail = (Boolean) props.get(PROP_SEND_EMAIL);
         try {
             connection = connFactoryService.getDefaultConnectionFactory().createConnection();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

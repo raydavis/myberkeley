@@ -107,11 +107,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
-    
-    @org.apache.felix.scr.annotations.Property(boolValue = true)
-    private static final String PROP_SEND_EMAIL = "notice.sendEmail";
-    
-    private boolean sendEmail;
 
     /**
      * {@inheritDoc}
@@ -276,7 +271,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     protected void sendEmail(List<String> recipients, Event event, Node n) {
       LOG.debug("Started handling an email message");
 
-      if (recipients != null && this.sendEmail) {
+      if (recipients != null) {
         java.util.Properties props = new java.util.Properties();
         try {
           if ( event != null ) {
@@ -300,8 +295,6 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
           LOG.error(e.getMessage(), e);
         }
       }
-      LOG.info("sendEmail is false or no recipients, not sending Email");
-      LOG.info("would have sent email to recipientIds: " + recipients);
     }
 
 
@@ -569,12 +562,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
-        this.sendEmail = (Boolean) props.get(PROP_SEND_EMAIL);
     }
 
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
-        this.sendEmail = false;
     }
     
     private class Recipient {
