@@ -160,7 +160,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                             email.setSmtpPort(smtpPort);
                             email.setHostName(smtpServer);
                             if (this.sendEmail) {
-                                email.sendMimeMessage();
+                                email.send();
                             }
                             else {
                                 LOGGER.info("not sending email");
