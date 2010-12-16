@@ -19,7 +19,6 @@ package edu.berkeley.myberkeley.notice;
 
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Dictionary;
@@ -43,8 +42,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailException;
@@ -76,6 +73,8 @@ import org.slf4j.LoggerFactory;
 public class OutgoingEmailNoticeListener implements MessageListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingEmailNoticeListener.class);
 
+    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients:;";
+    
     @Property(value = "localhost")
     private static final String SMTP_SERVER = "sakai.smtp.server";
     @Property(intValue = 25, label = "%sakai.smtp.port.name")
@@ -156,10 +155,12 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                         MultiPartEmail email = null;
                         try {
                             email = constructMessage(messageNode, recipients);
+                            LOGGER.debug("");
                             email.setDebug(true);
                             email.setSmtpPort(smtpPort);
                             email.setHostName(smtpServer);
                             if (this.sendEmail) {
+                                LOGGER.info("sending email w. Subject: " + email.getSubject());
                                 email.send();
                             }
                             else {
@@ -180,16 +181,12 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                                 String smtpError = cause.getMessage().trim();
                                 try {
                                     int errorCode = Integer.parseInt(smtpError.substring(0, 3));
-                                    // All retry-able SMTP errors should have
-                                    // codes starting
-                                    // with 4
+                                    // All retry-able SMTP errors should have codes starting with 4
                                     scheduleRetry(errorCode, messageNode);
                                     rescheduled = true;
                                 }
                                 catch (NumberFormatException nfe) {
-                                    // smtpError didn't start with an error
-                                    // code, let's dig for
-                                    // it
+                                    // smtpError didn't start with an error code, let's dig for it
                                     String searchFor = "response:";
                                     int rindex = smtpError.indexOf(searchFor);
                                     if (rindex > -1 && (rindex + searchFor.length()) < smtpError.length()) {
@@ -238,40 +235,25 @@ public class OutgoingEmailNoticeListener implements MessageListener {
             PathNotFoundException, ValueFormatException {
         MultiPartEmail email = new MultiPartEmail();
         javax.jcr.Session session = messageNode.getSession();
-        // TODO: the SAKAI_TO may make no sense in an email context
-        // and there does not appear to be any distinction between Bcc and To in
-        // java mail.
 
-        Set<String> toRecipients = new HashSet<String>();
         Set<String> bccRecipients = new HashSet<String>();
         for (String r : recipients) {
             bccRecipients.add(convertToEmail(r.trim(), session));
         }
-
-//        if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_TO)) {
-//            String[] tor = StringUtils.split(messageNode.getProperty(MessageConstants.PROP_SAKAI_TO).getString(), ',');
-//            for (String r : tor) {
-//                r = convertToEmail(r.trim(), session);
-//                if (bccRecipients.contains(r)) {
-//                    toRecipients.add(r);
-//                    bccRecipients.remove(r);
-//                }
-//            }
-//        }
-        for (String r : toRecipients) {
-            try {
-                email.addTo(convertToEmail(r, session));
-            }
-            catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid To Address [" + r + "], message is being dropped :" + e.getMessage(), e);
-            }
+        // for notice/reminder emails will only have bcc recipients
+        // but we need one To: to avoid spam filters
+        try {
+            email.addTo(UNDISCLOSED_RECIPIENTS);
+        }
+        catch (EmailException e) {
+            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], address is being dropped :" + e.getMessage(), e);
         }
         for (String r : bccRecipients) {
             try {
                 email.addBcc(convertToEmail(r, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid Bcc Address [" + r + "], message is being dropped :" + e.getMessage(), e);
+                throw new EmailDeliveryException("Invalid Bcc Address [" + r + "], address is being dropped :" + e.getMessage(), e);
             }
         }
 
@@ -281,7 +263,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                 email.setFrom(convertToEmail(from, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid From Address [" + from + "], message is being dropped :" + e.getMessage(), e);
+                throw new EmailDeliveryException("Invalid From Address [" + from + "], address is being dropped :" + e.getMessage(), e);
             }
         }
         else {
