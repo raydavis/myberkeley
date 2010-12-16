@@ -164,7 +164,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                                 LOGGER.info("sending email w. Subject: " + email.getSubject());
                                 email.send();
                                 MimeMessage mimeMessage = email.getMimeMessage();
-                                mimeMessage.addHeader(name, value)
+//                                mimeMessage.addHeader(name, value)
                             }
                             else {
                                 LOGGER.info("not sending email");
