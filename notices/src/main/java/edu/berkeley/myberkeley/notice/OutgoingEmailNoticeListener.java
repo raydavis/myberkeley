@@ -73,7 +73,7 @@ import org.slf4j.LoggerFactory;
 public class OutgoingEmailNoticeListener implements MessageListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingEmailNoticeListener.class);
 
-    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients:;";
+    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients:";
     
     @Property(value = "localhost")
     private static final String SMTP_SERVER = "sakai.smtp.server";
