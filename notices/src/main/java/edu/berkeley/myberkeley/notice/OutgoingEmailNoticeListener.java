@@ -42,6 +42,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.StringUtils;
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
 public class OutgoingEmailNoticeListener implements MessageListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingEmailNoticeListener.class);
 
-    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients";
+    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients:;";
     
     @Property(value = "localhost")
     private static final String SMTP_SERVER = "sakai.smtp.server";
@@ -160,11 +161,13 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                             email.setDebug(true);
                             email.setSmtpPort(smtpPort);
                             email.setHostName(smtpServer);
+                            email.buildMimeMessage();
+                            MimeMessage mimeMessage = email.getMimeMessage();
+                            mimeMessage.addHeader("To", UNDISCLOSED_RECIPIENTS);
                             if (this.sendEmail) {
                                 LOGGER.info("sending email w. Subject: " + email.getSubject());
-                                email.send();
-                                MimeMessage mimeMessage = email.getMimeMessage();
-//                                mimeMessage.addHeader(name, value)
+                                String messageId = email.sendMimeMessage();
+                                LOGGER.info("successfully send email w. messageId: " + messageId);
                             }
                             else {
                                 LOGGER.info("not sending email");
@@ -206,6 +209,10 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                                 LOGGER.error("Unable to reschedule email for delivery: " + e.getMessage(), e);
                             }
                         }
+                        catch (MessagingException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
                     else {
                         setError(messageNode, "Message must have a to and from set");
@@ -245,12 +252,12 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         }
         // for notice/reminder emails will only have bcc recipients
         // but we need one To: to avoid spam filters
-        try {
-            email.addTo("johnk@media.berkeley.edu", "Undisclosed Recipients");
-        }
-        catch (EmailException e) {
-            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], message is being dropped :" + e.getMessage(), e);
-        }
+//        try {
+//            email.addTo("johnk@media.berkeley.edu", "Undisclosed Recipients");
+//        }
+//        catch (EmailException e) {
+//            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], message is being dropped :" + e.getMessage(), e);
+//        }
         for (String r : bccRecipients) {
             try {
                 email.addBcc(convertToEmail(r, session));
