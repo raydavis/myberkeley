@@ -42,6 +42,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.mail.EmailException;
@@ -162,6 +163,8 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                             if (this.sendEmail) {
                                 LOGGER.info("sending email w. Subject: " + email.getSubject());
                                 email.send();
+                                MimeMessage mimeMessage = email.getMimeMessage();
+                                mimeMessage.addHeader(name, value)
                             }
                             else {
                                 LOGGER.info("not sending email");
@@ -243,17 +246,17 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         // for notice/reminder emails will only have bcc recipients
         // but we need one To: to avoid spam filters
         try {
-            email.addTo(UNDISCLOSED_RECIPIENTS);
+            email.addTo("johnk@media.berkeley.edu", "Undisclosed Recipients");
         }
         catch (EmailException e) {
-            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], address is being dropped :" + e.getMessage(), e);
+            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], message is being dropped :" + e.getMessage(), e);
         }
         for (String r : bccRecipients) {
             try {
                 email.addBcc(convertToEmail(r, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid Bcc Address [" + r + "], address is being dropped :" + e.getMessage(), e);
+                throw new EmailDeliveryException("Invalid Bcc Address [" + r + "], message is being dropped :" + e.getMessage(), e);
             }
         }
 
@@ -263,7 +266,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                 email.setFrom(convertToEmail(from, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid From Address [" + from + "], address is being dropped :" + e.getMessage(), e);
+                throw new EmailDeliveryException("Invalid From Address [" + from + "], message is being dropped :" + e.getMessage(), e);
             }
         }
         else {
