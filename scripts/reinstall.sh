@@ -16,20 +16,22 @@ echo
 
 cd $SRC_LOC/myberkeley
 echo "Stopping sling..."
-mvn -q -Dsling.stop -P runner verify 
+mvn -q -Dsling.stop -P runner verify &>/dev/null
 
 echo "Cleaning sling directories..."
-mvn -q -P runner -Dsling.purge clean
+mvn -q -P runner -Dsling.purge clean &>/dev/null
 
 echo "Fetching new sources for myberkeley..."
-git pull
+git pull &>/dev/null
+echo "Last commit:"
 git log -1
 echo
 echo "------------------------------------------"
 
 echo "Fetching new sources for 3akai-ux..."
 cd ../3akai-ux
-git pull
+git pull &>/dev/null
+echo "Last commit:"
 git log -1
 echo
 echo "------------------------------------------"
@@ -37,14 +39,14 @@ echo "------------------------------------------"
 cd ../myberkeley
 
 echo "Doing clean install..."
-mvn -q clean install 1>/dev/null 
+mvn -q clean install &>/dev/null
 
 echo "Starting sling..."
 mvn -q -Dsling.start -P runner verify 
 
 echo "Redeploying UX..."
 cd ../3akai-ux
-mvn -q -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD 1>/dev/null
+mvn -q -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD &>/dev/null
 
 echo
 
