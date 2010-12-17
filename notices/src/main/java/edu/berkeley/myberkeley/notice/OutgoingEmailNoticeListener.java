@@ -18,7 +18,12 @@
 package edu.berkeley.myberkeley.notice;
 
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
+import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_FROM;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Dictionary;
@@ -75,7 +80,7 @@ import org.slf4j.LoggerFactory;
 public class OutgoingEmailNoticeListener implements MessageListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingEmailNoticeListener.class);
 
-    protected static final String UNDISCLOSED_RECIPIENTS = "undisclosed-recipients:;";
+    protected static final String REMINDER_RECIPIENT = "reminder-recipient:;";
     
     @Property(value = "localhost")
     private static final String SMTP_SERVER = "sakai.smtp.server";
@@ -86,7 +91,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
     @Property(intValue = 30)
     private static final String RETRY_INTERVAL = "sakai.email.retryIntervalMinutes";
 
-    @Property(boolValue = true)
+    @Property(boolValue = false, label = "%sakai.email.sendemail.name", description="%sakai.email.sendemail.description") // forces operator to turn on via system/console or *.cfg in working/load
     private static final String PROP_SEND_EMAIL = "notice.sendEmail";
     private boolean sendEmail;
     
@@ -157,20 +162,21 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                         MultiPartEmail email = null;
                         try {
                             email = constructMessage(messageNode, recipients);
-                            LOGGER.debug("");
                             email.setDebug(true);
                             email.setSmtpPort(smtpPort);
                             email.setHostName(smtpServer);
                             email.buildMimeMessage();
                             MimeMessage mimeMessage = email.getMimeMessage();
-                            mimeMessage.addHeader("To", UNDISCLOSED_RECIPIENTS);
-                            if (this.sendEmail) {
-                                LOGGER.info("sending email w. Subject: " + email.getSubject());
-                                String messageId = email.sendMimeMessage();
-                                LOGGER.info("successfully send email w. messageId: " + messageId);
+                            // adding this special recipient here as header directly, otherwise address parsing will fail
+                            mimeMessage.addHeader("To", REMINDER_RECIPIENT);
+                            LOGGER.info("attempting to send email:");
+                            logEmail(mimeMessage);
+                            if (this.sendEmail) {                                
+                                String messageID = email.sendMimeMessage();
+                                LOGGER.info("successfully sent email w. server-side messageID: " + messageID);
                             }
                             else {
-                                LOGGER.info("not sending email");
+                                LOGGER.info("sendEmail is false, not sending email");
                             }
                         }
                         catch (EmailException e) {
@@ -241,31 +247,45 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         }
     }
 
+    private void logEmail(MimeMessage mimeMessage) {
+        if (LOGGER.isInfoEnabled() && mimeMessage != null) {
+            try {
+                ByteArrayOutputStream mout = new ByteArrayOutputStream();
+                mimeMessage.writeTo(new FilterOutputStream(mout));
+                LOGGER.info(mout.toString());
+            }
+            catch (IOException e) {
+                LOGGER.error("failed to log email", e);
+            }
+            catch (MessagingException e) {
+                LOGGER.error("failed to log email", e);
+            }
+        }
+    }
+
     private MultiPartEmail constructMessage(Node messageNode, List<String> recipients) throws EmailDeliveryException, RepositoryException,
             PathNotFoundException, ValueFormatException {
         MultiPartEmail email = new MultiPartEmail();
         javax.jcr.Session session = messageNode.getSession();
 
+        // now add the sender to recipients so they get a copy also
+        String senderId = messageNode.getProperty(PROP_SAKAI_FROM).getString();
+        recipients.add(senderId);
+        
         Set<String> bccRecipients = new HashSet<String>();
         for (String r : recipients) {
             bccRecipients.add(convertToEmail(r.trim(), session));
         }
         // for notice/reminder emails will only have bcc recipients
-        // but we need one To: to avoid spam filters
-//        try {
-//            email.addTo("johnk@media.berkeley.edu", "Undisclosed Recipients");
-//        }
-//        catch (EmailException e) {
-//            throw new EmailDeliveryException("Invalid To Address [" + UNDISCLOSED_RECIPIENTS + "], message is being dropped :" + e.getMessage(), e);
-//        }
         for (String r : bccRecipients) {
             try {
                 email.addBcc(convertToEmail(r, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid Bcc Address [" + r + "], message is being dropped :" + e.getMessage(), e);
+                LOGGER.error("Invalid Bcc Address [" + r + "], address is being dropped :" + e.getMessage(), e);
             }
         }
+        
 
         if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_FROM)) {
             String from = messageNode.getProperty(MessageConstants.PROP_SAKAI_FROM).getString();
@@ -273,7 +293,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                 email.setFrom(convertToEmail(from, session));
             }
             catch (EmailException e) {
-                throw new EmailDeliveryException("Invalid From Address [" + from + "], message is being dropped :" + e.getMessage(), e);
+                LOGGER.error("Invalid From Address [" + from + "], address is being dropped :" + e.getMessage(), e);
             }
         }
         else {
