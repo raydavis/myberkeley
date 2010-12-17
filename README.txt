@@ -38,11 +38,13 @@ mvn -P runner -Dsling.start verify
 
 mvn -P runner -Dsling.stop verify
 
-5. To stop the server, download new sources from Git, reinstall everything except the repository data,
-restart, and upload the new bundles to the Berkeley Maven repo (you'll need to have both myberkeley and 3akai-ux
-checked out):
+5. To stop the server, reinstall everything except the repository data,
+and restart (you'll need to have both myberkeley and 3akai-ux checked out):
 
-./update_build_and_reinstall source_root sling_password
+./scripts/reinstall.sh source_root sling_password
+
+6. To run the integration test against a fresh clean myberkeley instance:
+./scripts/myberkeley_integration.sh
 
 ===
 
@@ -54,7 +56,7 @@ mvn clean install
 
 2. To start loading client-side files from your local copy of
 3akai-ux code rather than using the deployed version of 3akai-ux,
-copy the "sample/*.cfg" files to your "working/load" directory and
+copy the "configs/dev/*.cfg" files to your "working/load" directory and
 edit them to point to your local copy.
 
 3. To create some test content while the server is running:
@@ -95,7 +97,7 @@ For more on initial content loading:
 http://sling.apache.org/site/content-loading-jcrcontentloader.html
 
 7. To load sample user data, you will be running ruby scripts via maven.
-You will need ruby and ruby gems installed.
+You will need ruby and ruby gems installed. Ruby 1.8.7 is required.
 On windows set thru System Control Panel Advanced tab
 Install the json and curb ruby gems
 
