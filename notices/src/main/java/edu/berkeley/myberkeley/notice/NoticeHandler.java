@@ -45,6 +45,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -138,13 +139,18 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                         }
                         List<String> emailRecipientIds = new ArrayList<String>();
                         Recipient recipient = null;
-                        for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
-                            recipient = iterator.next();
-                            if (recipient.isCurrentParticipant()) {
-                                emailRecipientIds.add(recipient.getRecipientId());
+                        if (isReminder(originalNotice)) {
+                            for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
+                                recipient = iterator.next();
+                                if (recipient.isCurrentParticipant()) {
+                                    emailRecipientIds.add(recipient.getRecipientId());
+                                }
                             }
+                            sendEmail(emailRecipientIds, event, originalNotice);
                         }
-                        sendEmail(emailRecipientIds, event, originalNotice);
+                        else {
+                            LOG.info("Notification {} is not a reminder, not sending email", new Object[]{originalNotice.getPath()});
+                        }
                     }
                     else {
                         sendNotice(rcpt, originalNotice, event, session);
@@ -165,7 +171,30 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
     }
 
-	/**
+    private boolean isReminder(Node originalNotice) {
+        boolean isReminder = false;
+        String noticeType, noticePath = null;
+        try {
+            noticePath = originalNotice.getPath();
+            noticeType = originalNotice.getProperty(PROP_SAKAI_CATEGORY).getString();
+            LOG.debug("notification {} has a {} of {}", new Object[] { noticePath, PROP_SAKAI_CATEGORY, noticeType });
+            if (SAKAI_CATEGORY_REMINDER.equalsIgnoreCase(noticeType)) {
+                isReminder = true;
+            }
+        }
+        catch (ValueFormatException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        catch (PathNotFoundException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        catch (RepositoryException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        return isReminder;
+    }
+
+    /**
      * find the list that this notice is being sent to.
      * sakai:sendto=notice:${id} id must the the list id.
      * 
