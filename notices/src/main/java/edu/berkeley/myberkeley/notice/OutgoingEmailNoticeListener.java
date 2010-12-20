@@ -271,7 +271,7 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         // now add the sender to recipients so they get a copy also
         String senderId = messageNode.getProperty(PROP_SAKAI_FROM).getString();
         recipients.add(senderId);
-        
+        LOGGER.info("attempting to send email to recipient userIds: " + recipients);
         Set<String> bccRecipients = new HashSet<String>();
         for (String r : recipients) {
             bccRecipients.add(convertToEmail(r.trim(), session));
@@ -285,7 +285,6 @@ public class OutgoingEmailNoticeListener implements MessageListener {
                 LOGGER.error("Invalid Bcc Address [" + r + "], address is being dropped :" + e.getMessage(), e);
             }
         }
-        
 
         if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_FROM)) {
             String from = messageNode.getProperty(MessageConstants.PROP_SAKAI_FROM).getString();
