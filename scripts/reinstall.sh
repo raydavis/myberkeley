@@ -3,52 +3,58 @@
 # script to reinstall myberkeley on portal-dev/portal-qa, while preserving content repository
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 source_root sling_password"
+    echo "Usage: $0 source_root sling_password logfile"
     exit;
 fi
 
 SRC_LOC=$1
 SLING_PASSWORD=$2
+LOG=$3
 
-echo "Update started at `date`"
+if [ -z "$3" ]; then
+    LOG=/dev/null
+fi
 
-echo
+LOGIT="tee -a $LOG"
+
+echo "=========================================" | $LOGIT
+echo "`date`: Update started" | $LOGIT
+
+echo | $LOGIT
 
 cd $SRC_LOC/myberkeley
-echo "Stopping sling..."
-mvn -q -Dsling.stop -P runner verify &>/dev/null
+echo "`date`: Stopping sling..." | $LOGIT
+mvn -q -e -Dsling.stop -P runner verify >>$LOG 2>&1 | $LOGIT
+echo "`date`: Cleaning sling directories..." | $LOGIT
+mvn -q -e -P runner -Dsling.purge clean >>$LOG 2>&1 | $LOGIT
 
-echo "Cleaning sling directories..."
-mvn -q -P runner -Dsling.purge clean &>/dev/null
+echo "`date`: Fetching new sources for myberkeley..." | $LOGIT
+git pull >>$LOG 2>&1
+echo "Last commit:" | $LOGIT
+git log -1 | $LOGIT
+echo | $LOGIT
+echo "------------------------------------------" | $LOGIT
 
-echo "Fetching new sources for myberkeley..."
-git pull &>/dev/null
-echo "Last commit:"
-git log -1
-echo
-echo "------------------------------------------"
-
-echo "Fetching new sources for 3akai-ux..."
+echo "`date`: Fetching new sources for 3akai-ux..." | $LOGIT
 cd ../3akai-ux
-git pull &>/dev/null
-echo "Last commit:"
-git log -1
-echo
-echo "------------------------------------------"
+git pull >>$LOG 2>&1
+echo "Last commit:" | $LOGIT
+git log -1 | $LOGIT
+echo | $LOGIT
+echo "------------------------------------------" | $LOGIT
 
 cd ../myberkeley
 
-echo "Doing clean install..."
-mvn -q clean install &>/dev/null
+echo "`date`: Doing clean install..." | $LOGIT
+mvn -q -e clean install >>$LOG 2>&1 
 
-echo "Starting sling..."
-mvn -q -Dsling.start -P runner verify 
+echo "`date`: Starting sling..." | $LOGIT
+mvn -q -e -Dsling.start -P runner verify >>$LOG 2>&1
 
-echo "Redeploying UX..."
+echo "`date`: Redeploying UX..." | $LOGIT
 cd ../3akai-ux
-mvn -q -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD &>/dev/null
+mvn -q -e -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD >>$LOG 2>&1
 
-echo
-
-echo "All done at `date`"
+echo | $LOGIT
+echo "`date`: Reinstall complete." | $LOGIT
 
