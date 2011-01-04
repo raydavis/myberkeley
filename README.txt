@@ -38,6 +38,14 @@ mvn -P runner -Dsling.start verify
 
 mvn -P runner -Dsling.stop verify
 
+5. To stop the server, reinstall everything except the repository data,
+and restart (you'll need to have both myberkeley and 3akai-ux checked out):
+
+./scripts/reinstall.sh source_root sling_password
+
+6. To run the integration test against a fresh clean myberkeley instance:
+./scripts/myberkeley_integration.sh
+
 ===
 
 COOKBOOK - DEVELOPMENT
@@ -89,7 +97,7 @@ For more on initial content loading:
 http://sling.apache.org/site/content-loading-jcrcontentloader.html
 
 7. To load sample user data, you will be running ruby scripts via maven.
-You will need ruby and ruby gems installed.
+You will need ruby and ruby gems installed. Ruby 1.8.7 is required.
 On windows set thru System Control Panel Advanced tab
 Install the json and curb ruby gems
 
