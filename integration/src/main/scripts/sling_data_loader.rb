@@ -264,7 +264,7 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   sdl.get_or_create_groups
   sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   #sdl.load_defined_users "json_data.js"
-  #sdl.load_calnet_test_users
-  sdl.load_calnet_email_test_users
+  sdl.load_calnet_test_users
+  #sdl.load_calnet_email_test_users
   #sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
