@@ -23,12 +23,7 @@ mvn -P runner -Dsling.clean clean
 
 2) To clean the server of deployed and cached bundles while leaving repository and data intact:
 
-mvn -P runner -Dsling.clean clean
-
-2. to purge the old server's bundles while leaving repository data intact
-
 mvn -P runner -Dsling.purge clean
-
 
 3. To start the test server:
 
