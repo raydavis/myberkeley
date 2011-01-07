@@ -1,11 +1,11 @@
 {
   "sakai:query-language": "xpath",
-  "sakai:query-template": "/{_userMessagePath}//element(*)MetaData[@sling:resourceType='sakai/message' and @sakai:type='notice' and @sakai:category='reminder' and @sakai:eventDate != ''] order by @{sortOn|jcr:dueDate} {sortOrder|ascending}",
+  "sakai:query-template": "/{_userMessagePath}//element(*)MetaData[@sling:resourceType='sakai/message' and @sakai:type='notice' and @sakai:category='reminder' and @sakai:dueDate != '' and @sakai:taskState = 'archived' ] order by @{sortOn|jcr:dueDate} {sortOrder|ascending}",
   "sling:resourceType": "sakai/search",
   "sakai:propertyprovider" : "Message",
   "sakai:resultprocessor": "Message",
-  "sakai:title": "Messaging - User - Events.",
-  "sakai:shortDescription": "Get all the events for a specified box and category.",
+  "sakai:title": "Messaging - User - Tasks Archive.",
+  "sakai:shortDescription": "Get all the archived tasks for a specified box and category.",
   "sakai:parameters" : [
                         "{\"name\" : \"box\", \"description\" : \"The messagebox you want the notices for.\"}",
                         "{\"name\" : \"category\", \"description\" : \"The category you want the notices filtered on.\"}",
@@ -13,7 +13,7 @@
                       "{\"name\" : \"sortOrder\", \"description\" : \"Either 'ascending' or 'descending'.\"}"
     ],
   "sakai:description": [
-                      "This search will dump all the events for the specified messagebox."
+                      "This search will dump all the archived tasks for the specified messagebox."
                       ],
   "sakai:response": [""]
 }
