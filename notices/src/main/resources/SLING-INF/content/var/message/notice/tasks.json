@@ -1,0 +1,21 @@
+{
+  "sakai:query-language": "xpath",
+  "sakai:query-template": "/{_userMessagePath}//element(*)MetaData[@sling:resourceType='sakai/message' and @sakai:type='notice' and @sakai:category='reminder' and @sakai:dueDate != ''] order by @{sortOn|jcr:dueDate} {sortOrder|ascending}",
+  "sling:resourceType": "sakai/search",
+  "sakai:propertyprovider" : "Message",
+  "sakai:resultprocessor": "Message",
+  "sakai:title": "Messaging - User - Box and category.",
+  "sakai:shortDescription": "Get all the notices for a specified box and category.",
+  "sakai:parameters" : [
+                        "{\"name\" : \"box\", \"description\" : \"The messagebox you want the notices for.\"}",
+                        "{\"name\" : \"category\", \"description\" : \"The category you want the notices filtered on.\"}",
+                        "{\"name\" : \"sortOn\", \"description\" : \"Sort the results on this property.\"}",
+                      "{\"name\" : \"sortOrder\", \"description\" : \"Either 'ascending' or 'descending'.\"}"
+    ],
+  "sakai:description": [
+                      "This search will dump all the notices for the specified messagebox matching the provided category."
+                      ],
+  "sakai:response": [
+                   "Doing a standard query searching for your sent messages who are in the 'message' category, sorted on subject in an ascending way.<br /> Example: Request to: /var/message/boxcategory.json?box=outbox&category=message&sortOn=sakai:subject&sortOrder=ascending<br /><pre class=\"json\">{\n    \"query\": \"//_user/message/_x0037_9/_x0039_4/ea/_x0034_6/simong//element(*)Metadata[@sling:resourceType='sakai/message' and @sakai:messagebox='outbox' and @sakai:category='message'] order by @sakai:subject ascending\",\n    \"items\": 25,\n    \"total\": 1,\n    \"results\": [\n        {\n            \"id\": \"c3abcabe425f6cc69f3e07a4832974c81e03eb94\",\n            \"userTo\": {\n                \"jcr:created\": \"2009-12-22T11:18:23.962Z\",\n                \"jcr:uuid\": \"a7bc6941-78c3-49b6-b03e-fc0d3afe2a0a\",\n                \"jcr:primaryType\": \"sling:Folder\",\n                \"jcr:mixinTypes\": [\n                    \"mix:referenceable\"\n                ],\n                \"sling:resourceType\": \"sakai/user-profile\",\n                \"rep:userId\": \"user5\",\n                \"firstName\": \"user5\",\n                \"lastName\": \"last-5\"\n            },\n            \"userFrom\": {\n                \"jcr:created\": \"2009-12-22T11:18:23.583Z\",\n                \"jcr:uuid\": \"d9bad02a-c8ad-4d00-bc52-8c2dad6482ab\",\n                \"jcr:primaryType\": \"sling:Folder\",\n                \"jcr:mixinTypes\": [\n                    \"mix:referenceable\"\n                ],\n                \"sling:resourceType\": \"sakai/user-profile\",\n                \"rep:userId\": \"simong\",\n                \"firstName\": \"Simon\",\n                \"lastName\": \"Gaeremynck\"\n            },\n            \"sakai:from\": \"simong\",\n            \"sakai:sendstate\": \"notified\",\n            \"sakai:id\": \"c3abcabe425f6cc69f3e07a4832974c81e03eb94\",\n            \"sakai:body\": \"Lorum ipsum\n\ndolor sit amat\",\n            \"sakai:subject\": \"This is a test\",\n            \"sling:resourceType\": \"sakai/message\",\n            \"sakai:messagebox\": \"outbox\",\n            \"sakai:to\": \"user5\",\n            \"sakai:read\": \"true\",\n            \"jcr:created\": \"2009-12-22T11:36:42.707Z\",\n            \"sakai:category\": \"message\",\n            \"sakai:type\": \"internal\",\n            \"jcr:primaryType\": \"sling:Folder\",\n            \"sakai:created\": \"2009-12-22T11:36:42.708Z\"\n        }\n    ]\n}</pre>"
+                  ]
+}
