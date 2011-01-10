@@ -29,11 +29,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -50,6 +52,7 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Reference;
@@ -108,6 +111,11 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
+    
+    @org.apache.felix.scr.annotations.Property(value = { "standing" })
+    private static final String PROP_NESTED_QUERY_PARAMS = "notice.nestedQueryParams";
+    
+    private Set<String> nestedQueryParams = new HashSet<String>();
 
     /**
      * {@inheritDoc}
@@ -339,12 +347,92 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * @throws RepositoryException
      */
     private Set<Recipient> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
-        Set<Recipient> recipients = new HashSet<Recipient>();
-        String queryString = buildQuery(originalNotice, queryNode);
+//        String queryString = buildQuery(originalNotice, queryNode);
         // String queryString =
         // "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
-        if (LOG.isDebugEnabled()) LOG.info("findRecipients() Using Query {} ", queryString);
         // find all the notices in the queue for this advisor
+        // need to do two queries, one for each standing as there doesn't seem to be a way to put "or" logic into the path spec as there is in the attributes
+        // this is now hardwired to standings of 'grad' and 'undergrad'
+        Set<Recipient> recipients = new HashSet<Recipient>();        
+        Map<String, List<String>> standingsMajorsMap = extractStandingsAndMajors(queryNode);
+        
+        String gradQueryString = buildQuery(originalNotice, queryNode, "grad", standingsMajorsMap);
+        if (LOG.isDebugEnabled()) LOG.info("findRecipients() Using Query {} for grad students", gradQueryString);
+        addRecipients(gradQueryString, recipients, session);
+        
+        String undergradQueryString = buildQuery(originalNotice, queryNode, "undergrad", standingsMajorsMap);
+        if (LOG.isDebugEnabled()) LOG.info("findRecipients() Using Query {} for undergrad students", undergradQueryString);
+        addRecipients(undergradQueryString, recipients, session);
+
+        if (LOG.isDebugEnabled()) LOG.debug("Dynamic List Notice recipients are: " + recipients);
+        return recipients;
+    }
+    
+
+    private String buildQuery(Node originalNotice, Node queryNode, String standing, Map<String, List<String>> standingsMajorsMap) throws RepositoryException {
+        StringBuilder querySB = new StringBuilder(
+        "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..");
+        NodeIterator queryNodesIter = queryNode.getNodes();
+        while (queryNodesIter.hasNext()) {
+            Node queryParamNode = queryNodesIter.nextNode();
+            String paramName = queryParamNode.getName();
+            Node paramNode = queryNode.getNode(paramName);
+            if (this.nestedQueryParams.contains(paramName.toLowerCase())) {
+                addStandingsAndMajors(standingsMajorsMap, standing, querySB);
+            }
+            else {
+                addQueryParam(paramName, paramNode, querySB);
+            }
+            if (queryNodesIter.hasNext())
+                querySB.append("/..");
+        }
+        return querySB.toString();
+    }
+
+    private Map<String, List<String>> extractStandingsAndMajors(Node queryNode) throws RepositoryException {
+        Map<String, List<String>> standingsAndMajors = new HashMap<String, List<String>>();
+        List<String> majors = null;
+        Node standingArrNode, standingNode, majorsNode = null;
+        Node standingsNode = queryNode.getNode("standing");
+        NodeIterator standingNodesArrIter = standingsNode.getNodes("__array*");
+        String standing = null;
+        while (standingNodesArrIter.hasNext()) {
+            standingArrNode = standingNodesArrIter.nextNode();
+            NodeIterator standingNodeIter = standingArrNode.getNodes();
+            while (standingNodeIter.hasNext()) {
+                standingNode = standingNodeIter.nextNode();
+                standing = standingNode.getName();
+                NodeIterator majorsNodeIter = standingNode.getNodes();
+                majors = new ArrayList<String>();
+                while (majorsNodeIter.hasNext()) {
+                    majorsNode = majorsNodeIter.nextNode();
+                    PropertyIterator majorsPropIter = majorsNode.getProperties("__array*");
+                    while (majorsPropIter.hasNext()) {
+                        String major = majorsPropIter.nextProperty().getString();
+                        majors.add(major);
+                    }
+                }
+                standingsAndMajors.put(standing, majors);
+            }
+        }
+        return standingsAndMajors;
+    }
+    
+    private void addStandingsAndMajors(Map<String, List<String>> standingsMajorsMap, String standing, StringBuilder querySB) {
+        querySB.append("/").append("standing").append("[@value='").append(standing).append("']/").append("../major[");
+        List<String> majors = standingsMajorsMap.get(standing);
+        for (Iterator<String> majorsIterator = majors.iterator(); majorsIterator.hasNext();) {
+            String major = majorsIterator.next();
+            querySB.append("@value='").append(major).append("'");
+            if (majorsIterator.hasNext()) {
+                querySB.append(" or ");
+            }
+        }
+        querySB.append("]");
+    }
+    
+
+    private void addRecipients(String queryString, Set<Recipient> recipients, Session session) throws RepositoryException {
         long startMillis = System.currentTimeMillis();
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query query = queryManager.createQuery(queryString, "xpath");
@@ -370,8 +458,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 LOG.error("findRecipients() failed for {}", new Object[] { recipientProfileNode.getPath() }, e);
             }
         }
-        if (LOG.isDebugEnabled()) LOG.debug("Dynamic List Notice recipients are: " + recipients);
-        return recipients;
+        
     }
 
     private boolean isCurrentParticipant(Node contextNode) {
@@ -388,52 +475,34 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 		return isCurrentParticipant;
 	}
 
-	/**
-     * build an xpath query from the list query node subnodes and values
-     * 
-     * @param originalNotice
-     * @param queryNode
-     * @return
-     * @throws RepositoryException
-     */
 
-    private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException {
-        StringBuilder querySB = new StringBuilder(
-                "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..");
-        NodeIterator queryNodesIter = queryNode.getNodes();
-        while (queryNodesIter.hasNext()) {
-            Node queryParamNode = queryNodesIter.nextNode();
-            String paramName = queryParamNode.getName();
-            Node paramNode = queryNode.getNode(paramName);
-            querySB.append("/").append(paramName);
-            PropertyIterator paramValuePropsIter = paramNode.getProperties();
-            Set<String> paramValues = new HashSet<String>();
+    private void addQueryParam(String paramName, Node paramNode, StringBuilder querySB) throws RepositoryException {
+        querySB.append("/").append(paramName);
+        PropertyIterator paramValuePropsIter = paramNode.getProperties();
+        Set<String> paramValues = new HashSet<String>();
 
-            // need to copy Properties into array because jcr:primaryType
-            // property breaks isLastValue
-            while (paramValuePropsIter.hasNext()) {
-                Property prop = paramValuePropsIter.nextProperty();
-                if (prop.getName().startsWith("__array")) {
-                    String paramValue = prop.getValue().getString();
-                    paramValue = new StringBuffer("'").append(paramValue).append("'").toString();
-                    paramValues.add(paramValue);
-                }
+        // need to copy Properties into array because jcr:primaryType
+        // property breaks isLastValue
+        while (paramValuePropsIter.hasNext()) {
+            Property prop = paramValuePropsIter.nextProperty();
+            if (prop.getName().startsWith("__array")) {
+                String paramValue = prop.getValue().getString();
+                paramValue = new StringBuffer("'").append(paramValue).append("'").toString();
+                paramValues.add(paramValue);
             }
-            boolean isFirstValue = true;
-            boolean isLastValue = false;
-            for (Iterator<String> paramValuesIter = paramValues.iterator(); paramValuesIter.hasNext();) {
-                String paramValue = paramValuesIter.next();
-                if (!paramValuesIter.hasNext())
-                    isLastValue = true;
-                addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
-                isFirstValue = false;
-            }
-            if (queryNodesIter.hasNext())
-                querySB.append("/..");
         }
-        return querySB.toString();
+        boolean isFirstValue = true;
+        boolean isLastValue = false;
+        for (Iterator<String> paramValuesIter = paramValues.iterator(); paramValuesIter.hasNext();) {
+            String paramValue = paramValuesIter.next();
+            if (!paramValuesIter.hasNext())
+                isLastValue = true;
+            addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
+            isFirstValue = false;
+        }
     }
 
+    
     private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
         if (isFirstValue)
             querySB.append("[");
@@ -550,6 +619,59 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             this.messageProfileWriter.writeProfileInformation(session, recipient, write);
         }
     }
+    
+    private final class Recipient {
+        private String recipientId = "";
+        private boolean currentParticipant = false;
+        
+        private Recipient(String recipientId, boolean currentParticipant) {
+            this.recipientId = recipientId;
+            this.currentParticipant = currentParticipant;
+        }
+
+        public String getRecipientId() {
+            return recipientId;
+        }
+
+        public boolean isCurrentParticipant() {
+            return currentParticipant;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+
+            result = prime * result
+                    + ((recipientId == null) ? 0 : recipientId.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Recipient other = (Recipient) obj;
+            if (recipientId == null) {
+                if (other.recipientId != null)
+                    return false;
+            } else if (!recipientId.equals(other.recipientId))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+              return new ToStringBuilder(this).
+                append("recipientId", recipientId).
+                append("currentParticipant", currentParticipant).
+                toString();
+        }
+    }
 
     protected void bindMessagingService(MessagingService messagingService) {
         this.messagingService = messagingService;
@@ -591,54 +713,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
+        String[] nestedQueryParams = OsgiUtil.toStringArray(props.get(PROP_NESTED_QUERY_PARAMS));
+        for (int i = 0; i < nestedQueryParams.length; i++) {
+            this.nestedQueryParams.add(nestedQueryParams[i]);
+        }
     }
 
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
     }
     
-    private class Recipient {
-    	private String recipientId = "";
-    	private boolean currentParticipant = false;
-    	
-    	private Recipient(String recipientId, boolean currentParticipant) {
-    		this.recipientId = recipientId;
-    		this.currentParticipant = currentParticipant;
-    	}
-
-		public String getRecipientId() {
-			return recipientId;
-		}
-
-		public boolean isCurrentParticipant() {
-			return currentParticipant;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-
-			result = prime * result
-					+ ((recipientId == null) ? 0 : recipientId.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			Recipient other = (Recipient) obj;
-			if (recipientId == null) {
-				if (other.recipientId != null)
-					return false;
-			} else if (!recipientId.equals(other.recipientId))
-				return false;
-			return true;
-		}
-    }
 }
