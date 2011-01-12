@@ -1,6 +1,6 @@
 {
   "sakai:query-language": "xpath",
-  "sakai:query-template": "/{_userMessagePath}//element(*)MetaData[@sling:resourceType='sakai/message' and @sakai:type='notice' and @sakai:category='reminder' and @sakai:eventDate != '' and @sakai:eventDate >= xs:dateTime('{startDate}') and @sakai:eventDate <= xs:dateTime('{endDate}') ] order by @{sortOn|jcr:dueDate} {sortOrder|ascending}",
+  "sakai:query-template": "/{_userMessagePath}//element(*)MetaData[@sling:resourceType='sakai/message' and @sakai:type='notice' and @sakai:category='reminder' and @sakai:eventDate != '' and @sakai:eventDate >= xs:dateTime('{startDate}') and @sakai:eventDate <= xs:dateTime('{endDate}') and @sakai:required != '{excludeRequiredState}' ] order by @{sortOn|jcr:dueDate} {sortOrder|ascending}",
   "sling:resourceType": "sakai/search",
   "sakai:propertyprovider" : "Message",
   "sakai:resultprocessor": "Message",
