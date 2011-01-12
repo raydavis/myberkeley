@@ -197,13 +197,14 @@ public class QueuedMessageSender {
          * @throws RepositoryException
          */
         private QueryResult findQueuedNotices(String advisorId, Session adminSession) throws RepositoryException {
+            LOGGER.info("findQueuedNotices() for advisor: " + advisorId);
             String messageStorePath = ISO9075.encodePath(messagingService.getFullPathToStore(advisorId, adminSession));
             // /jcr:root/_user/_x0032_/_x0032_0/_x0032_040/message//*[@sling:resourceType="sakai/message"
             // and @sakai:type="notice and @sakai:messagebox="sakai:queue
             StringBuilder queryString = new StringBuilder("/jcr:root").append(messageStorePath).append("//*[@sling:resourceType=\"sakai/message\" and @")
                     .append(PROP_SAKAI_TYPE).append("=\"").append(TYPE_NOTICE).append("\" and @").append(PROP_SAKAI_MESSAGEBOX).append("=\"").append(BOX_QUEUE)
                     .append("\" and @").append(PROP_SAKAI_SENDSTATE).append("=\"").append(STATE_PENDING).append("\"]");
-            LOGGER.info("findQueuedNotices() Using QUery {} ", queryString.toString());
+            if (LOGGER.isDebugEnabled()) LOGGER.debug("findQueuedNotices() Using QUery {} ", queryString.toString());
             // find all the notices in the queue for this advisor
             QueryManager queryManager = adminSession.getWorkspace().getQueryManager();
             Query query = queryManager.createQuery(queryString.toString(), "xpath");
