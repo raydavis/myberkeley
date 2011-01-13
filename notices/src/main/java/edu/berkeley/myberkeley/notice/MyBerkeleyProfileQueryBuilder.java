@@ -9,6 +9,19 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
+/**
+ * Implementation of methods to build an xquery/xpath for finding recipients of a message defined by the dynamic list attributes
+ * an example full query:
+ * "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/../context[@value='g-ced-students']/..
+ * /standing[@value='undergrad']/../major[@value='ARCHITECTURE' or @value='LANDSCAPE ARCH']"
+ * methods must be run in the following order:
+ * 1) appendRoot()
+ * 2) appendAnchorNodeParam()
+ * 3) appendNestedNodeParams()
+ * 4) toString()
+ * works in conjunction with the methods in DynamicListQueryParamExtractor
+ * @author johnk
+ */
 public class MyBerkeleyProfileQueryBuilder implements ProfileQueryBuilder {
 
     private StringBuilder sb;
@@ -17,12 +30,23 @@ public class MyBerkeleyProfileQueryBuilder implements ProfileQueryBuilder {
         this.sb = new StringBuilder();
     }
 
+    /**
+     * the deepest node that will be common to all queries
+     * @return e.g context
+     */
     @Override
     public ProfileQueryBuilder appendRoot(String str) {
         sb.append(str);
         return this;
     }
     
+    /**
+     * the anchor node is the node that defines the point where multiple queries queries must be constructed and run to 
+     * find all target recipients, e.g context where query would include "context[@value='g-ced-students']"
+     * @param anchorNode
+     * @return
+     * @throws RepositoryException
+     */
     @Override
     public ProfileQueryBuilder appendAnchorNodeParam(Node anchorNode) throws RepositoryException {
         addQueryParam(anchorNode);
@@ -30,12 +54,19 @@ public class MyBerkeleyProfileQueryBuilder implements ProfileQueryBuilder {
         return this;
     }
 
+    /**
+     * node where multiple queries must be constructed and run. e.g. "standing[@value='grad']" vs "standing[@value='undergrad']"
+     * @param keys - all the keys for the nested param - e.g. "[standing, undergrad, major]"
+     * @param values - the values for the deepest node e.g. "major[@value='ARCHITECTURE' or @value='DESIGN']"
+     * @return
+     * @throws RepositoryException
+     */
     @Override
     public ProfileQueryBuilder appendNestedNodeParams(String[] keys, Set<String> values) throws RepositoryException {
         sb.append("/").append(keys[0]).append("[@value='").append(keys[1]).append("']/").append("../").append(keys[2]).append("[");
         for (Iterator<String> valuesIter = values.iterator(); valuesIter.hasNext();) {
-            String major = valuesIter.next();
-            sb.append("@value='").append(major).append("'");
+            String value = valuesIter.next();
+            sb.append("@value='").append(value).append("'");
             if (valuesIter.hasNext()) {
                 sb.append(" or ");
             }
@@ -44,6 +75,10 @@ public class MyBerkeleyProfileQueryBuilder implements ProfileQueryBuilder {
         return this;
     }
 
+    /**
+     * return the fully built query
+     * @return
+     */
     public String toString() {
         return sb.toString();
     }
