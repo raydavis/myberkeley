@@ -25,7 +25,7 @@
             <Bundle-Category>myberkeley</Bundle-Category>
 			<Export-Package> edu.berkeley.myberkeley.api.notice.* </Export-Package>          
             <Private-Package>edu.berkeley.myberkeley.notice.*</Private-Package>
-            <Sling-Initial-Content>SLING-INF/content</Sling-Initial-Content>
+            <Sling-Initial-Content>SLING-INF/content;overwrite:=true</Sling-Initial-Content>
             <Embed-Transitive>true</Embed-Transitive>
 		</instructions>
         </configuration>
