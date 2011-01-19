@@ -4,10 +4,12 @@ import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNA
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_PREFIX;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_QUERY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.DYNAMIC_LISTS_ROOT_NODE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NODE_PATH_PROPERTY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.NOTICE_TRANSPORT;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_CATEGORY;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_EVENTDATE;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.SAKAI_CATEGORY_REMINDER;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.TYPE_NOTICE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.BOX_INBOX;
@@ -23,14 +25,17 @@ import static org.sakaiproject.nakamura.api.profile.ProfileConstants.USER_IDENTI
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.Node;
@@ -42,10 +47,12 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Reference;
@@ -57,12 +64,17 @@ import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants.EventDeliveryMode;
+import org.sakaiproject.nakamura.api.events.EventDeliveryConstants.EventMessageMode;
 import org.sakaiproject.nakamura.api.message.MessageProfileWriter;
 import org.sakaiproject.nakamura.api.message.MessageRoute;
 import org.sakaiproject.nakamura.api.message.MessageRoutes;
 import org.sakaiproject.nakamura.api.message.MessageTransport;
 import org.sakaiproject.nakamura.api.message.MessagingService;
 import org.sakaiproject.nakamura.api.personal.PersonalUtils;
+import org.sakaiproject.nakamura.email.outgoing.OutgoingEmailMessageListener;
 import org.sakaiproject.nakamura.util.JcrUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,12 +102,25 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
 
     @Reference
     protected transient MessageProfileWriter messageProfileWriter;
+    
+    @Reference
+    protected transient EventAdmin eventAdmin;
 
     @org.apache.felix.scr.annotations.Property(value = { "EEE MMM dd yyyy HH:mm:ss 'GMT'Z", "yyyy-MM-dd'T'HH:mm:ss.SSSZ", "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy-MM-dd", "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy" })
     private static final String PROP_DATE_FORMAT = "notice.dateFormats";
 
     private List<DateFormat> dateFormats = new LinkedList<DateFormat>();
+    
+    @org.apache.felix.scr.annotations.Property(value = { "standing" })
+    private static final String PROP_NESTED_QUERY_PARAMS = "notice.nestedQueryParams";
+    
+    private Set<String> nestedQueryParams = new HashSet<String>();
+    
+    @org.apache.felix.scr.annotations.Property(value = "context")
+    private static final String PROP_ANCHOR_QUERY_PARAM = "notice.anchorQueryParam";
+    
+    private String anchorQueryParam;
 
     /**
      * {@inheritDoc}
@@ -110,22 +135,40 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             String rcpt = null;
             for (MessageRoute route : routes) {
                 if (NOTICE_TRANSPORT.equals(route.getTransport())) {
-
                     rcpt = route.getRcpt();
+                    Set<Recipient> recipients = null;
                     LOG.info("Started a notice routing to: " + rcpt);
                     if (rcpt.trim().startsWith(DYNAMIC_LISTS_PREFIX)) {
                         Node targetListQueryNode = findTargetListQuery(rcpt, originalNotice, session);
-                        Set<String> recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
-                        for (Iterator<String> iterator = recipients.iterator(); iterator.hasNext();) {
-                            String recipient = (String) iterator.next();
+                        recipients = findRecipients(rcpt, originalNotice, targetListQueryNode, session);
+                        for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
+                            Recipient recipient = iterator.next();
                             long sendMessageStartMillis = System.currentTimeMillis();
-                            sendNotice(recipient, originalNotice, session);
+                            sendNotice(recipient.getRecipientId(), originalNotice, event, session);
                             long sendMessageEndMillis = System.currentTimeMillis();
-                            if (LOG.isDebugEnabled()) LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
+                            if (LOG.isDebugEnabled())
+                                LOG.debug("send() total send millis " + (sendMessageEndMillis - sendMessageStartMillis));
+                        }
+                        List<String> emailRecipientIds = new ArrayList<String>();
+                        Recipient recipient = null;
+                        if (isReminder(originalNotice)) {
+                            for (Iterator<Recipient> iterator = recipients.iterator(); iterator.hasNext();) {
+                                recipient = iterator.next();
+                                if (recipient.isCurrentParticipant()) {
+                                    emailRecipientIds.add(recipient.getRecipientId());
+                                }
+                            }
+                            sendEmail(emailRecipientIds, event, originalNotice);
+                        }
+                        else {
+                            LOG.info("Notification {} is not a reminder, not sending email", new Object[]{originalNotice.getPath()});
                         }
                     }
                     else {
-                        sendNotice(rcpt, originalNotice, session);
+                        sendNotice(rcpt, originalNotice, event, session);
+                        List<String> emailRecipientIds = new ArrayList<String>();
+                        emailRecipientIds.add(rcpt);
+                        sendEmail(emailRecipientIds, event, originalNotice);
                     }
                 }
             }
@@ -135,8 +178,32 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         }
         finally {
             long endMillis = System.currentTimeMillis();
-            if (LOG.isDebugEnabled()) LOG.debug("NoticeHandler.send() execution milliseconds: " + (endMillis - startMillis));
+            if (LOG.isDebugEnabled())
+                LOG.debug("NoticeHandler.send() execution milliseconds: " + (endMillis - startMillis));
         }
+    }
+
+    private boolean isReminder(Node originalNotice) {
+        boolean isReminder = false;
+        String noticeType, noticePath = null;
+        try {
+            noticePath = originalNotice.getPath();
+            noticeType = originalNotice.getProperty(PROP_SAKAI_CATEGORY).getString();
+            LOG.debug("notification {} has a {} of {}", new Object[] { noticePath, PROP_SAKAI_CATEGORY, noticeType });
+            if (SAKAI_CATEGORY_REMINDER.equalsIgnoreCase(noticeType)) {
+                isReminder = true;
+            }
+        }
+        catch (ValueFormatException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        catch (PathNotFoundException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        catch (RepositoryException e) {
+            LOG.error("can't determine {} for notification: {}", new Object[]{PROP_SAKAI_CATEGORY, noticePath}, e);
+        }
+        return isReminder;
     }
 
     /**
@@ -189,9 +256,10 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * 
      * @param recipient
      * @param originalNotice
+     * @param event 
      * @param session
      */
-    private void sendNotice(String recipient, Node originalNotice, Session session) {
+    private void sendNotice(String recipient, Node originalNotice, Event event, Session session) {
         // the path were we want to save messages in.
         String messageId;
         try {
@@ -233,7 +301,41 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         catch (RepositoryException e) {
             LOG.error("sendNotice() failed", e);
         }
+    }
+    
+    /**
+     * 
+     * @param recipients
+     * @param event
+     * @param n
+     */
+    protected void sendEmail(List<String> recipients, Event event, Node n) {
+      LOG.debug("Started handling an email message");
 
+      if (recipients != null) {
+        java.util.Properties props = new java.util.Properties();
+        try {
+          if ( event != null ) {
+            for( String propName : event.getPropertyNames()) {
+              Object propValue = event.getProperty(propName);
+              props.put(propName, propValue);
+            }
+          }
+          // make the message deliver to one listener, that means the desination must be a queue.
+          props.put(EventDeliveryConstants.DELIVERY_MODE, EventDeliveryMode.P2P);
+          // make the message persistent to survive restarts.
+          props.put(EventDeliveryConstants.MESSAGE_MODE, EventMessageMode.PERSISTENT);
+          // email listener wants a list
+          props.put(OutgoingEmailMessageListener.RECIPIENTS, recipients);
+          props.put(NODE_PATH_PROPERTY, n.getPath());
+          Event emailEvent = new Event(QUEUE_NAME, props);
+
+          LOG.debug("Sending event [" + emailEvent + "]");
+          eventAdmin.sendEvent(emailEvent);
+        } catch (RepositoryException e) {
+          LOG.error(e.getMessage(), e);
+        }
+      }
     }
 
     /**
@@ -247,13 +349,35 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
      * @return
      * @throws RepositoryException
      */
-    private Set<String> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
-        Set<String> recipients = new HashSet<String>();
-        String queryString = buildQuery(originalNotice, queryNode);
+    private Set<Recipient> findRecipients(String rcpt, Node originalNotice, Node queryNode, Session session) throws RepositoryException {
+//        String queryString = buildQuery(originalNotice, queryNode);
         // String queryString =
         // "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/context[@value='g-ced-students']/../standing[@value='grad']/../major[@value='ARCHITECTURE' or @value='DESIGN']";
-        if (LOG.isDebugEnabled()) LOG.info("findRecipients() Using Query {} ", queryString);
         // find all the notices in the queue for this advisor
+        // need to do two queries, one for each standing as there doesn't seem to be a way to put "or" logic into the path spec as there is in the attributes
+        // this is now hardwired to standings of 'grad' and 'undergrad'
+        String queryString = null;
+        Set<Recipient> recipients = new HashSet<Recipient>();
+        DynamicListQueryParamExtractor extractor = new MyBerkeleyDynamicListQueryParamExtractor(queryNode, this.anchorQueryParam, this.nestedQueryParams);
+        Set<String> multipleQueryKeys = extractor.getMultipleQueryKeys();
+        Node anchorNode = extractor.getAnchorNode();
+        for (Iterator<String> iterator = multipleQueryKeys.iterator(); iterator.hasNext();) {
+            String subKey = iterator.next();
+            String[] queryKeyParams = extractor.getQueryKeyParams(subKey);
+            Set<String> queryValues = extractor.getQueryValues(subKey);
+            ProfileQueryBuilder queryBuilder = new MyBerkeleyProfileQueryBuilder();
+            queryBuilder.appendRoot("/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..")
+                        .appendAnchorNodeParam(anchorNode)
+                        .appendNestedNodeParams(queryKeyParams, queryValues);
+            queryString = queryBuilder.toString();
+            if (LOG.isDebugEnabled()) LOG.debug("findRecipients() Using Query {} ", new Object[] { queryString });
+            addRecipients(queryString, recipients, session);
+            if (LOG.isDebugEnabled()) LOG.debug("after query execution recipients are: {}", new Object[] { recipients });
+        }
+        return recipients;
+    }
+
+    private void addRecipients(String queryString, Set<Recipient> recipients, Session session) throws RepositoryException {
         long startMillis = System.currentTimeMillis();
         QueryManager queryManager = session.getWorkspace().getQueryManager();
         Query query = queryManager.createQuery(queryString, "xpath");
@@ -271,74 +395,31 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 // in it
                 recipientProfileNode = contextNode.getNode("../../../");
                 recipientId = recipientProfileNode.getProperty(USER_IDENTIFIER_PROPERTY).getString();
-                recipients.add(recipientId);
+                boolean isCurrentParticipant = isCurrentParticipant(contextNode);
+                Recipient recipient = new Recipient(recipientId, isCurrentParticipant);
+                recipients.add(recipient);
             }
             catch (RepositoryException e) {
                 LOG.error("findRecipients() failed for {}", new Object[] { recipientProfileNode.getPath() }, e);
+                throw e;
             }
-        }
-        if (LOG.isDebugEnabled()) LOG.debug("Dynamic List Notice recipients are: " + recipients);
-        return recipients;
-    }
-
-    /**
-     * build an xpath query from the list query node subnodes and values
-     * 
-     * @param originalNotice
-     * @param queryNode
-     * @return
-     * @throws RepositoryException
-     */
-
-    private String buildQuery(Node originalNotice, Node queryNode) throws RepositoryException {
-        StringBuilder querySB = new StringBuilder(
-                "/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..");
-        NodeIterator queryNodesIter = queryNode.getNodes();
-        while (queryNodesIter.hasNext()) {
-            Node queryParamNode = queryNodesIter.nextNode();
-            String paramName = queryParamNode.getName();
-            Node paramNode = queryNode.getNode(paramName);
-            querySB.append("/").append(paramName);
-            PropertyIterator paramValuePropsIter = paramNode.getProperties();
-            Set<String> paramValues = new HashSet<String>();
-
-            // need to copy Properties into array because jcr:primaryType
-            // property breaks isLastValue
-            while (paramValuePropsIter.hasNext()) {
-                Property prop = paramValuePropsIter.nextProperty();
-                if (prop.getName().startsWith("__array")) {
-                    String paramValue = prop.getValue().getString();
-                    paramValue = new StringBuffer("'").append(paramValue).append("'").toString();
-                    paramValues.add(paramValue);
-                }
-            }
-            boolean isFirstValue = true;
-            boolean isLastValue = false;
-            for (Iterator<String> paramValuesIter = paramValues.iterator(); paramValuesIter.hasNext();) {
-                String paramValue = paramValuesIter.next();
-                if (!paramValuesIter.hasNext())
-                    isLastValue = true;
-                addParamToQuery(querySB, paramName, paramValue, isFirstValue, isLastValue);
-                isFirstValue = false;
-            }
-            if (queryNodesIter.hasNext())
-                querySB.append("/..");
-        }
-        return querySB.toString();
-    }
-
-    private void addParamToQuery(StringBuilder querySB, String paramName, String paramValue, boolean isFirstValue, boolean isLastValue) {
-        if (isFirstValue)
-            querySB.append("[");
-        querySB.append("@value=").append(paramValue);
-        if (!isLastValue) {
-            querySB.append(" or ");
-        }
-        else {
-            querySB.append("]");
         }
     }
 
+    private boolean isCurrentParticipant(Node contextNode) {
+    	boolean isCurrentParticipant = false;
+		try {
+			Node participantNode = contextNode.getNode("../participant");
+			String value = participantNode.getProperty("value").getString();
+			isCurrentParticipant = value != null && "true".equals(value) ? true : false;
+		} catch (PathNotFoundException e) {
+			e.printStackTrace();
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+		}
+		return isCurrentParticipant;
+	}
+    
     /**
      * method to make sure the recipient notice node stores a Date object
      * sometimes the originalNotice has a String and sometimes a Date at this
@@ -443,6 +524,59 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             this.messageProfileWriter.writeProfileInformation(session, recipient, write);
         }
     }
+    
+    private final class Recipient {
+        private String recipientId = "";
+        private boolean currentParticipant = false;
+        
+        private Recipient(String recipientId, boolean currentParticipant) {
+            this.recipientId = recipientId;
+            this.currentParticipant = currentParticipant;
+        }
+
+        public String getRecipientId() {
+            return recipientId;
+        }
+
+        public boolean isCurrentParticipant() {
+            return currentParticipant;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+
+            result = prime * result
+                    + ((recipientId == null) ? 0 : recipientId.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Recipient other = (Recipient) obj;
+            if (recipientId == null) {
+                if (other.recipientId != null)
+                    return false;
+            } else if (!recipientId.equals(other.recipientId))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+              return new ToStringBuilder(this).
+                append("recipientId", recipientId).
+                append("currentParticipant", currentParticipant).
+                toString();
+        }
+    }
 
     protected void bindMessagingService(MessagingService messagingService) {
         this.messagingService = messagingService;
@@ -467,6 +601,14 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     protected void unbindMessageProfileWriter(MessageProfileWriter messageProfileWriter) {
         this.messageProfileWriter = null;
     }
+    
+    protected void bindEventAdmin(EventAdmin eventAdmin) {
+    	this.eventAdmin = eventAdmin;
+    }
+    
+    protected void unbindEventAdmin(EventAdmin eventAdmin) {
+    	this.eventAdmin = null;
+    }    
 
     protected void activate(ComponentContext context) {
         Dictionary<?, ?> props = context.getProperties();
@@ -476,10 +618,15 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
             dateFormat = new SimpleDateFormat(dateFormatStr, Locale.US);
             this.dateFormats.add(dateFormat);
         }
-
+        String[] nestedQueryParams = OsgiUtil.toStringArray(props.get(PROP_NESTED_QUERY_PARAMS));
+        for (int i = 0; i < nestedQueryParams.length; i++) {
+            this.nestedQueryParams.add(nestedQueryParams[i]);
+        }
+        this.anchorQueryParam = (String) props.get(PROP_ANCHOR_QUERY_PARAM);
     }
 
     protected void deactivate(ComponentContext context) {
         this.dateFormats = null;
     }
+    
 }

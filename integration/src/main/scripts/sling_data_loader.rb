@@ -18,14 +18,19 @@ module MyBerkeleyData
   
     CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
                           "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
-                          "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
-                          "test-300873","test-300874","test-300875","test-300876","test-300877"]
+                          "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869"]
+    
+    CALNET_EMAIL_TEST_USER_IDS = ["test-300870","test-300871","test-300872","test-300873","test-300874","test-300875","test-300876","test-300877"]
+    
+    TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
+    
+    TEST_EMAIL_CONTEXT = "g-ced-students-testemail"
   
   class SlingDataLoader
   
     TEST_USER_PREFIX = 'testuser'
     
-    @ced_advisors_group = nil
+    @ced_advisors_group = nil                                                                               
     @ced_all_students_group = nil
     
     @env = nil
@@ -135,6 +140,21 @@ module MyBerkeleyData
       end
     end
     
+    def load_calnet_email_test_users
+      i = 0
+      CALNET_EMAIL_TEST_USER_IDS.each do |id|
+        first_name = id.split('-')[0]
+        last_name = id.split('-')[1].to_s
+        uid = id.split('-')[1].to_s
+        # for a user like test-212381, the calnet uid will be 212381
+        user_props = generate_email_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
+        loaded_calnet_test_user = load_user uid, user_props
+        add_student_to_group loaded_calnet_test_user
+        apply_student_aces loaded_calnet_test_user
+        i = i + 1
+      end
+    end
+    
     def generate_user_props(username, first_name, last_name, index, length)
         user_props = {}
         user_props[':name'] = username
@@ -151,6 +171,24 @@ module MyBerkeleyData
         user_props['current'] = true
         user_props['participant'] = true
         return user_props
+    end
+    
+    def generate_email_user_props(username, first_name, last_name, index, length)
+        email_user_props = {}
+        email_user_props[':name'] = username
+        email_user_props['firstName'] = first_name.chomp
+        email_user_props['lastName'] = last_name.chomp  
+        email_user_props['email'] = TEST_EMAIL_ADDRESSES[index % 2]
+        email_user_props['context'] = [TEST_EMAIL_CONTEXT]
+        email_user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
+        if ( index < length/2)
+          email_user_props['standing'] = 'undergrad'
+        else
+          email_user_props['standing'] = 'grad'     
+        end
+        email_user_props['current'] = true
+        email_user_props['participant'] = true
+        return email_user_props
     end
   
     def generate_all_user_props(first_names, last_names)
@@ -225,7 +263,8 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
   sdl.get_or_create_groups
   sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
-  #sdl.load_defined_users "json_data.js"
+  sdl.load_defined_users "json_data.js"
   sdl.load_calnet_test_users
+  sdl.load_calnet_email_test_users
   sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
