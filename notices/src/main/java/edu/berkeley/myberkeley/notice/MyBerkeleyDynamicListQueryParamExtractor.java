@@ -14,41 +14,71 @@ import javax.jcr.NodeIterator;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
+/**
+ * Implementation of methods to enable constructing a new nested Dynamic List query into 
+ * a "flat" xquery string.  Works in conjunction with MyBerkeleyProfileQueryBuilder
+ * @author johnk
+ *
+ */
 public class MyBerkeleyDynamicListQueryParamExtractor implements DynamicListQueryParamExtractor {
     private Node anchorNode;
     private Set<String> nestedQueryParams;
     private Map<String, List<Map<String, Map<String, Set<String>>>>> nestedNodesData; // {standing=[{undergrad={major=[LANDSCAPE ARCH, ARCHITECTURE]}}, {grad={major=[DESIGN]}}]}
     
+    /**
+     * made private because values in public constructor are required
+     */
     private MyBerkeleyDynamicListQueryParamExtractor() {}
     
+    /**
+     * 
+     * @param queryNode - from the persisied dynamic list
+     * @param anchorNodeName - the deepest node that will be common to all queries - e.g. context
+     * @param nestedQueryParams - the param that has nested values requiring this processing - e.g. [standing]
+     * @throws RepositoryException
+     */
     public MyBerkeleyDynamicListQueryParamExtractor(Node queryNode, String anchorNodeName, Set<String> nestedQueryParams) throws RepositoryException {
         this.anchorNode = queryNode.getNode(anchorNodeName);
         this.nestedQueryParams = Collections.unmodifiableSet(nestedQueryParams);
         this.nestedNodesData = Collections.unmodifiableMap(extractNestedNodes(queryNode));
     }
     
+    /**
+     * the depest node that will be common to all queries - e.g. context
+     * @return
+     */
     @Override
     public Node getAnchorNode() {
         return this.anchorNode;
     }
 
+    /**
+     * the values that will require separate queries to be built, one per value, e.g. [grad, undergrad]
+     * where one query will have ../standing[@value='grad']../ and ../standing[@value='undergrad']../
+     * @return e.g. ['grad', 'undergrad']
+     */
     @Override
-    public Set<String> getMultipleQueryKeys() {
+    public Set<String> getMultipleQueryValues() {
         Set<String> multipleQueryKeys = new HashSet<String>();
         Set<String> topKeys = this.nestedNodesData.keySet();
         Iterator<String> topKeysIter = topKeys.iterator();
         String topKey = topKeysIter.next();
         List<Map<String, Map<String, Set<String>>>> multipleQueryList = this.nestedNodesData.get(topKey);
-        for (Iterator iterator = multipleQueryList.iterator(); iterator.hasNext();) {
-            Map<String, Map<String, List<String>>> queryParamMap = (Map<String, Map<String, List<String>>>) iterator.next();
+        for (Iterator<Map<String, Map<String, Set<String>>>> iterator = multipleQueryList.iterator(); iterator.hasNext();) {
+            Map<String, Map<String, Set<String>>> queryParamMap = iterator.next();
             Set<String> queryParamKeySet = queryParamMap.keySet();
             multipleQueryKeys.addAll(queryParamKeySet);
         }
         return multipleQueryKeys;
     }
 
+    /**
+     * the keys necessary to build the query for nested nodes
+     * @param selectorValue e.g. grad or undergrad
+     * @return e.g. [standing, undergrad, major]
+     */
     @Override
-    public String[] getQueryKeyParams(String subKey) { // [standing, undergrad, major]
+    public String[] getQueryKeyParams(String selectorValue) { // grad or undergrad
         String subSubKey = null;
         Set<String> topKeys = this.nestedNodesData.keySet();  // {standing=[{undergrad={major=[LANDSCAPE ARCH, ARCHITECTURE]}}, {grad={major=[DESIGN]}}]}
         Iterator<String> topKeysIter = topKeys.iterator();
@@ -59,18 +89,23 @@ public class MyBerkeleyDynamicListQueryParamExtractor implements DynamicListQuer
             Set<String> queryParamKeySet = queryParamMap.keySet();
             for (Iterator<String> iterator2 = queryParamKeySet.iterator(); iterator2.hasNext();) {
                 String queryKey = iterator2.next();
-                if (subKey.equals(queryKey)) {
+                if (selectorValue.equals(queryKey)) {
                     Map<String, Set<String>> subMap = queryParamMap.get(queryKey);
                     subSubKey = subMap.keySet().iterator().next();
                 }
             }
         }
-        String[] keys = new String[]{topKey, subKey, subSubKey};  // [standing, undergrad, major]
+        String[] keys = new String[]{topKey, selectorValue, subSubKey};  // [standing, undergrad, major]
         return keys;
     }
 
+    /**
+     * get the multiple values associated with the paramName in the dynamic list
+     * @param paramName e.g. major
+     * @return e.g. ["ARCHITECTURE", "DESIGN"]
+     */
     @Override
-    public Set<String> getQueryValues(String subKey) {
+    public Set<String> getQueryValues(String paramName) { // e.g. major
         String subSubKey = null;
         Set<String> queryValues = null;
         Set<String> topKeys = this.nestedNodesData.keySet();  // {standing=[{undergrad={major=[LANDSCAPE ARCH, ARCHITECTURE]}}, {grad={major=[DESIGN]}}]}
@@ -82,16 +117,21 @@ public class MyBerkeleyDynamicListQueryParamExtractor implements DynamicListQuer
             Set<String> queryParamKeySet = queryParamMap.keySet();
             for (Iterator<String> iterator2 = queryParamKeySet.iterator(); iterator2.hasNext();) {
                 String queryKey = iterator2.next();
-                if (subKey.equals(queryKey)) {
+                if (paramName.equals(queryKey)) {
                     Map<String, Set<String>> subMap = queryParamMap.get(queryKey);
                     subSubKey = subMap.keySet().iterator().next();
                     queryValues = subMap.get(subSubKey);
                 }
             }
         }
-        return queryValues;
+        return queryValues; // e.g. ['ARCHTITECTURE', 'DESIGN']
     }
     
+    /*
+     * method to build the nested hashmap that reflects the nested nodes in the persisted dynamic list to enable 
+     * building the query for dynamic list recipients
+     * e.g. {standing=[{undergrad={major=[LANDSCAPE ARCH, ARCHITECTURE]}}, {grad={major=[DESIGN]}}]}
+     */
     private Map<String, List<Map<String, Map<String, Set<String>>>>> extractNestedNodes(Node queryNode) throws RepositoryException {
         Map<String, Set<String>> subSubNodeData = null;
         Map<String, Map<String, Set<String>>> subNodeData = null;
