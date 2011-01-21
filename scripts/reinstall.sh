@@ -55,6 +55,11 @@ echo "`date`: Redeploying UX..." | $LOGIT
 cd ../3akai-ux
 mvn -B -e -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD >>$LOG 2>&1
 
+# redeploy notices via POST to work around bug in initial content loader
+echo "`date`: Redeploying Notices..." | $LOGIT
+cd ../myberkeley/notices
+mvn -B -e org.apache.sling:maven-sling-plugin:install-file -Dsling.file=./target/edu.berkeley.myberkeley.notices-0.10-SNAPSHOT.jar -Dsling.user=admin -Dsling.password=$SLING_PASSWORD >>$LOG 2>&1
+
 echo | $LOGIT
 echo "`date`: Reinstall complete." | $LOGIT
 
