@@ -3,7 +3,7 @@
 # script that launches a myberkeley instance and runs its suite
 # of integration tests.  
 
-PORT=8899
+PORT="8899"
 
 stopAndExit() {
   mvn -P runner -Dsling.stop -Dsling.port=$PORT verify;
