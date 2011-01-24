@@ -359,12 +359,12 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
         String queryString = null;
         Set<Recipient> recipients = new HashSet<Recipient>();
         DynamicListQueryParamExtractor extractor = new MyBerkeleyDynamicListQueryParamExtractor(queryNode, this.anchorQueryParam, this.nestedQueryParams);
-        Set<String> multipleQueryKeys = extractor.getMultipleQueryKeys();
         Node anchorNode = extractor.getAnchorNode();
-        for (Iterator<String> iterator = multipleQueryKeys.iterator(); iterator.hasNext();) {
-            String subKey = iterator.next();
-            String[] queryKeyParams = extractor.getQueryKeyParams(subKey);
-            Set<String> queryValues = extractor.getQueryValues(subKey);
+        Set<String> multipleQueryValues = extractor.getMultipleQueryValues();
+        for (Iterator<String> iterator = multipleQueryValues.iterator(); iterator.hasNext();) {
+            String value = iterator.next();
+            String[] queryKeyParams = extractor.getQueryKeyParams(value);
+            Set<String> queryValues = extractor.getQueryValues(value);
             ProfileQueryBuilder queryBuilder = new MyBerkeleyProfileQueryBuilder();
             queryBuilder.appendRoot("/jcr:root//*[@sling:resourceType='sakai/user-profile']/myberkeley/elements/current[@value='true']/..")
                         .appendAnchorNodeParam(anchorNode)
