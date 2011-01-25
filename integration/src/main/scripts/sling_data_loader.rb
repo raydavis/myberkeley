@@ -235,6 +235,12 @@ module MyBerkeleyData
       return target_user
     end
   
+    
+    def test_update_profile_properties(sling, username)
+      user = User.new(username.to_s)
+      user.test_update_profile_properties sling, nil
+    end
+  
     def apply_student_aces(student)
       home_path = student.home_path_for @sling
       @authz.delete(home_path, "everyone")

@@ -187,6 +187,14 @@ module SlingUsers
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
     end
 	
+   def test_update_profile_properties(sling, user_props)
+      firstname = 'John F'
+      lastname = 'King'
+      email = 'johnk@media.berkeley.edu'
+      data = {}
+      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, 'major': { 'value': 'ARCHITECTURE' } } }} }
+      return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
+    end
 	
     def change_password(sling, newpassword)
        return sling.execute_post(sling.url_for("#{user_url}.changePassword.html"), "oldPwd" => @password, "newPwd" => newpassword, "newPwdConfirm" => newpassword)     
