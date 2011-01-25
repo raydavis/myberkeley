@@ -4,8 +4,8 @@
   "sling:resourceType": "sakai/search",
   "sakai:propertyprovider" : "Message",
   "sakai:resultprocessor": "Message",
-  "sakai:title": "Messaging - User - Tasks - Chris Edit",
-  "sakai:shortDescription": "Chris Edit - Get all the tasks for a specified box and category.",
+  "sakai:title": "Messaging - User - Tasks",
+  "sakai:shortDescription": "Get all the tasks for a specified box and category.",
   "sakai:parameters" : [
                         "{\"name\" : \"box\", \"description\" : \"The messagebox you want the notices for.\"}",
                         "{\"name\" : \"category\", \"description\" : \"The category you want the notices filtered on.\"}",
