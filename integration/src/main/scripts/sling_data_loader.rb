@@ -13,14 +13,17 @@ module MyBerkeleyData
   ENV_PROD = 'prod'
   CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
   CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
-  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH & ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
+  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH AND ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
+  UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
+	GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
   #CALNET_TEST_USER_IDS = ["test-300847"]
   
     CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
                           "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
-                          "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869"]
+                          "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
+                          "test-300873","test-300874","test-300875","test-300876","test-300877"]
     
-    CALNET_EMAIL_TEST_USER_IDS = ["test-300870","test-300871","test-300872","test-300873","test-300874","test-300875","test-300876","test-300877"]
+    CALNET_EMAIL_TEST_USER_IDS = []
     
     TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
     
@@ -165,8 +168,10 @@ module MyBerkeleyData
         user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
         if ( index < length/2)
           user_props['standing'] = 'undergrad'
+          user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
         else
-          user_props['standing'] = 'grad'     
+          user_props['standing'] = 'grad'
+          user_props['major'] = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')     
         end
         user_props['current'] = true
         user_props['participant'] = true
@@ -269,8 +274,5 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
   sdl.get_or_create_groups
   sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
-  sdl.load_defined_users "json_data.js"
   sdl.load_calnet_test_users
-  sdl.load_calnet_email_test_users
-  sdl.load_random_users "firstNames.txt", "lastNames.txt"
 end
