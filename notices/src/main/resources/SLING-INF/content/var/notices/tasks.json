@@ -4,7 +4,7 @@
   "sling:resourceType": "sakai/search",
   "sakai:propertyprovider" : "Message",
   "sakai:resultprocessor": "Message",
-  "sakai:title": "Messaging - User - Tasks.",
+  "sakai:title": "Messaging - User - Tasks",
   "sakai:shortDescription": "Get all the tasks for a specified box and category.",
   "sakai:parameters" : [
                         "{\"name\" : \"box\", \"description\" : \"The messagebox you want the notices for.\"}",
