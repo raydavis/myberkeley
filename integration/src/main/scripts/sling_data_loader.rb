@@ -16,14 +16,13 @@ module MyBerkeleyData
   MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH AND ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
 	GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
-  #CALNET_TEST_USER_IDS = ["test-300847"]
   
-    CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
-                          "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
-                          "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
-                          "test-300873","test-300874","test-300875","test-300876","test-300877"]
-    
-    CALNET_EMAIL_TEST_USER_IDS = []
+  CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
+                        "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
+                        "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
+                        "test-300873","test-300874","test-300875","test-300876","test-300877"]
+  
+  CALNET_EMAIL_TEST_USER_IDS = []
     
     TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
     
@@ -136,21 +135,6 @@ module MyBerkeleyData
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
-        loaded_calnet_test_user = load_user uid, user_props
-        add_student_to_group loaded_calnet_test_user
-        apply_student_aces loaded_calnet_test_user
-        i = i + 1
-      end
-    end
-    
-    def load_calnet_email_test_users
-      i = 0
-      CALNET_EMAIL_TEST_USER_IDS.each do |id|
-        first_name = id.split('-')[0]
-        last_name = id.split('-')[1].to_s
-        uid = id.split('-')[1].to_s
-        # for a user like test-212381, the calnet uid will be 212381
-        user_props = generate_email_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
         loaded_calnet_test_user = load_user uid, user_props
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
