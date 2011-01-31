@@ -60,6 +60,11 @@ echo "`date`: Redeploying Notices..." | $LOGIT
 cd ../myberkeley/notices
 mvn -B -e org.apache.sling:maven-sling-plugin:install-file -Dsling.file=./target/edu.berkeley.myberkeley.notices-0.10-SNAPSHOT.jar -Dsling.user=admin -Dsling.password=$SLING_PASSWORD >>$LOG 2>&1
 
+# reinstall the JCR explorer
+echo "`date`: Reinstalling JCR explorer..." | $LOGIT
+cd ..
+mvn org.apache.sling:maven-sling-plugin:install-file -Dsling.file=./lib/org.apache.sling.extensions.explorer-1.0.0.jar -Dsling.user=admin -Dsling.password=$SLING_PASSWORD >>$LOG 2>&1
+
 echo | $LOGIT
 echo "`date`: Reinstall complete." | $LOGIT
 
