@@ -58,7 +58,10 @@
                 </fileset>
                 <fileset>
                   <directory>${sakai3.home}/sling/felix</directory>
-                </fileset>        
+                </fileset>
+                <fileset>
+                    <directory>${sakai3.home}/sling/config</directory>
+                </fileset>
                 <fileset>
                   <directory>${sakai3.home}/sling</directory>
 		          <includes>
