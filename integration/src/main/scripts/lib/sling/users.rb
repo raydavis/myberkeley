@@ -184,6 +184,7 @@ module SlingUsers
       email = user_props['email']
       data = {}
       data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
+      data[":sakai:pages-template"] = "/var/templates/site/defaultuser"
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
     end
 	
@@ -192,7 +193,7 @@ module SlingUsers
       lastname = 'King'
       email = 'johnk@media.berkeley.edu'
       data = {}
-      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, 'major': { 'value': 'ARCHITECTURE' } } }} }
+      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, 'major': { 'value': 'ARCHITECTURE' } } }} }"
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
     end
 	
@@ -280,6 +281,7 @@ module SlingUsers
               "pwdConfirm" => user.password }
       if (!firstname.nil? and !lastname.nil?)
         data[":sakai:profile-import"] = "{'basic': {'access': 'everybody', 'elements': {'email': {'value': '#{username}@sakai.invalid'}, 'firstName': {'value': '#{firstname}'}, 'lastName': {'value': '#{lastname}'}}}}"
+        data[":sakai:pages-template"] = "/var/templates/site/defaultuser"
       end
       result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), data)
       if (result.code.to_i > 299)

@@ -130,7 +130,7 @@ module MyBerkeleyData
     def load_calnet_test_users
       i = 0
       CALNET_TEST_USER_IDS.each do |id|
-        first_name = id.split('-')[0]
+        first_name = id.split('-')[0].to_s
         last_name = id.split('-')[1].to_s
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
@@ -227,7 +227,7 @@ module MyBerkeleyData
     
     def test_update_profile_properties(sling, username)
       user = User.new(username.to_s)
-      user.test_update_profile_properties sling, nil
+      user.test_update_profile_properties @sling, nil
     end
   
     def apply_student_aces(student)
