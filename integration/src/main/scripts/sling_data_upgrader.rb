@@ -23,8 +23,8 @@ module MyBerkeleyData
     
     attr_reader :user_password_key
   
-    def initialize(server, admin_password="admin", numusers="32")
-      @num_students = numusers.to_i
+    def initialize(server, admin_password="admin")
+      @server = server
       @sling = Sling.new(server, admin_password, true)
       @sling.do_login
       @user_manager = UserManager.new(@sling)
@@ -46,7 +46,7 @@ module MyBerkeleyData
         print "about to upgrade #{upgrade_user_paths.length} users in context #{context} personal pages using templates #{TEMPLATE_FINAL_TERMS.inspect}\n"
         upgrade_user_paths.each do |user_path|
           TEMPLATE_FINAL_TERMS.each do |term|  
-            copy_response = @sling.execute_post("http://localhost:8080/var/templates/site/defaultuser/#{term}", ":operation" => "copy", ":dest" => "/_user/#{user_path}/pages/")
+            copy_response = @sling.execute_post("#{@server}/var/templates/site/defaultuser/#{term}", ":operation" => "copy", ":dest" => "/_user/#{user_path}/pages/")
             if (copy_response.code.to_i >= 300)
               print "upgrade #{term} pages copy failed for user_path #{user_path}\n"
             end
@@ -61,15 +61,20 @@ module MyBerkeleyData
       user_paths = []
       page = 1
       until (page >= 40)
-        response = @sling.execute_get("http://localhost:8080/var/search/users.json?q=#{context}&items=25&page=#{page}")
+        if (context == 'g-ced-students')
+          search_string = "#{@server}/var/search/users.json?q=#{context}&items=25&page=#{page}"
+        elsif
+          search_string = "#{@server}/var/search/users.json?q=#{context}"
+        end
+        response = @sling.execute_get(search_string)
         response_json = JSON response.body
         user_nodes = response_json["results"]
-        print "found #{user_nodes.length} users to upgrade with search params q=#{context}&items=25&page=#{page}\n"
+        print "found #{user_nodes.length} users to upgrade with search #{search_string}\n"
         page += 1
         user_nodes.each do |user_node|
           user_id = user_node["rep:userId"]
           # user_id = jcr_path.split(/^\/~|\/.*$/)[1].to_s
-          user_path_response = @sling.execute_get("http://localhost:8080/system/userManager/user/#{user_id}.json")  # the URL where full paths reside
+          user_path_response = @sling.execute_get("#{@server}/system/userManager/user/#{user_id}.json")  # the URL where full paths reside
           if (user_path_response.code.to_i >= 200 && user_path_response.code.to_i < 300) 
             user_path_json = JSON user_path_response.body
             print user_path_json
@@ -88,8 +93,7 @@ end
 
 
 if ($PROGRAM_NAME.include? 'sling_data_upgrader.rb')
-  puts "will load data on server #{ARGV[0]}"
-  puts "will attempt to create or update #{ARGV[2]} users"
-  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
+  puts "will upgrade personal pages data on server #{ARGV[0]}"
+  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1]
   sdl.upgrade_personal_pages
 end

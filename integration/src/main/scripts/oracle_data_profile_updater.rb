@@ -71,11 +71,6 @@ module MyBerkeleyData
       determine_major user_props, ced_student
       determine_current_status user_props, ced_student
       user_props['context'] = ['g-ced-students']
-      #if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid.to_s)  don't overwrite participant or we lose opt-ins
-      #  user_props['participant'] = true
-      #else
-      #  user_props['participant'] = false        
-      #end
       determine_standing user_props, ced_student 
       return user_props
     end
@@ -195,7 +190,7 @@ module MyBerkeleyData
   end
 end
 
-if ($PROGRAM_NAME.include? 'oracle_data_loader_profile.rb')
+if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
   
   options = {}
   optparser = OptionParser.new do |opts|
