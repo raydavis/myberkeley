@@ -224,10 +224,13 @@ module MyBerkeleyData
       return target_user
     end
   
-    
-    def test_update_profile_properties(sling, username)
-      user = User.new(username.to_s)
-      user.test_update_profile_properties @sling, nil
+    def update_user(username, user_props, password=nil)
+      if (password)
+          target_user = User.new username, password
+        else
+          target_user = User.new username
+        end      
+      target_user.update_profile_properties @sling, user_props
     end
   
     def apply_student_aces(student)

@@ -12,8 +12,9 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
-  PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
-  
+  #PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
+  ROLE_CODES = {1 => "Undergraduate Student", 2 => "Graduate Student", 3 => "GSI", 4 => "Instructor", 5 => "Staff"}
+  UC_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   class OracleDataLoader
 
     @env = nil
@@ -48,31 +49,48 @@ module MyBerkeleyData
     end
     
     
+      #email = user_props['email'] || ""
+      #firstname = user_props['firstName']  || ""
+      #lastname = user_props['lastName'] || ""
+      #role = user_props['role'] || ""
+      #department = user_props['department'] || ""
+      #college = user_props['college'] || ""
+      #major = user_props['major'] || ""
+      #context = user_props['context'] || ""
+      #standing = user_props['standing'] || ""
+      #participant = user_props['participant'] || ""
+      
     def make_user_props(ced_student)
       user_props = {}
       user_props['firstName'] = ced_student.first_name
       user_props['lastName'] = ced_student.last_name
       user_props['email'] = make_email ced_student
+      determine_role user_props, ced_student
+      determine_college user_props, ced_student
+      #determine_department user_props, ced_student - no way to establish this with current viewws
+      determine_major user_props, ced_student
+      determine_current_status user_props, ced_student
       user_props['context'] = ['g-ced-students']
-      if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid.to_s)
-        user_props['participant'] = true
-      else
-        user_props['participant'] = false        
-      end
-      if (is_current ced_student )
-        user_props['current'] = true;
-      else
-        user_props['current'] = false
-      end
+      determine_standing user_props, ced_student 
+      return user_props
+    end
+    
+    def determine_standing
       if ('U'.eql?ced_student.ug_grad_flag.strip )
         user_props['standing'] = 'undergrad'
       elsif ('G'.eql?ced_student.ug_grad_flag.strip)
         user_props['standing'] = 'grad'
       else
         user_props['standing'] = 'unknown'
+      end     
+    end
+    
+    def determine_current_status(user_props, ced_student)
+      if (is_current ced_student )
+        user_props['current'] = true;
+      else
+        user_props['current'] = false
       end
-      determine_major user_props, ced_student
-      return user_props
     end
     
     def determine_major(user_props, ced_student)
@@ -86,6 +104,19 @@ module MyBerkeleyData
       else
         user_props['major'] = [ced_student.major_name.strip.sub(/&/, 'AND')]
       end
+    end
+    
+    def determine_role(user_props, ced_student)
+      role = UC_GRAD_FLAG_MAP[ced_student.uc_grad_flag.to_sym]
+      return role
+    end
+    
+    #def determine_department(user_props, ced_student)
+    #  user_props['department'] = 'Environmental Design'
+    #end
+    
+    def determine_college(user_props, ced_student)
+      user_props['college'] = 'College of Environmental Design'
     end
     
     # STUDENT-TYPE-REGISTERED,EMPLOYEE-STATUS-EXPIRED
@@ -106,7 +137,7 @@ module MyBerkeleyData
       return email
     end
     
-    def load_ced_students
+    def update_ced_students
 
       ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
                       left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
@@ -115,19 +146,21 @@ module MyBerkeleyData
       i = 0
       ced_students.each do |s|
         props = make_user_props s
-        if (@user_password_key)
-          user_password = sling_data_loader.make_password s.stu_name, @user_password_key
-        else
-          user_password = "testuser"
-        end
         if (props['current'] == true)
           student_ldap_uid = s.student_ldap_uid
-          user = @sling_data_loader.load_user student_ldap_uid, props, user_password
-          @sling_data_loader.add_student_to_group user
-          @sling_data_loader.apply_student_aces user
-          #break if (i += 1) >= @num_students
+          user = @sling_data_loader.update_user student_ldap_uid, props, user_password
         end
       end
+    end
+    
+    def update_ced_advisors
+        response = @sling.execute_get("http://localhost:8080/var/search/users.json?q='g-ced-advisors'")
+        response_json = JSON response.body
+        advisor_nodes = response_json["results"]
+        advisor_nodes.each do |advisor_node|
+          advisor_id = advisor_node["rep:userId"]
+          updated_advisor = @sling_data_loader.update_user advisor_id, props, user_password
+        end
     end
   end
   
@@ -157,7 +190,7 @@ module MyBerkeleyData
   end
 end
 
-if ($PROGRAM_NAME.include? 'oracle_data_loader_profile.rb')
+if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
   
   options = {}
   optparser = OptionParser.new do |opts|
@@ -222,8 +255,8 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader_profile.rb')
   
 #  odl.sling_data_loader.get_or_create_groups
 #  odl.sling_data_loader.load_defined_user_advisors
-#  odl.load_ced_students
+   odl.update_ced_students
+   #odl.update_ced_advisors
 
-odl.sling_data_loader.test_update_profile_properties @sling, 271592
   
 end 

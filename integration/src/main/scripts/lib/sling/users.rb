@@ -179,21 +179,21 @@ module SlingUsers
     end
     
     def update_profile_properties(sling, user_props)
-      firstname = user_props['firstName']
-      lastname = user_props['lastName']
-      email = user_props['email']
+      email = user_props['email'] || ""
+      firstname = user_props['firstName']  || ""
+      lastname = user_props['lastName'] || ""
+      role = user_props['role'] || ""
+      department = user_props['department'] || ""
+      college = user_props['college'] || ""
+      major = user_props['major'] || ""
+      context = user_props['context'] || ""
+      standing = user_props['standing'] || ""
+      participant = user_props['participant'] || ""
       data = {}
-      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' } } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{user_props['context']}' }, 'standing': { 'value': '#{user_props['standing']}' }, 'current': { 'value': '#{user_props['current']}' }, 'major': { 'value': '#{user_props['major']}' }, 'participant': { 'value': '#{user_props['participant']}' } } } }"
-      data[":sakai:pages-template"] = "/var/templates/site/defaultuser"
-      return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
-    end
-	
-   def test_update_profile_properties(sling, user_props)
-      firstname = 'John F'
-      lastname = 'King'
-      email = 'johnk@media.berkeley.edu'
-      data = {}
-      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, 'major': { 'value': 'ARCHITECTURE' } } }} }"
+      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, \
+                                      'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value': '#{major}' }, } }, \
+                                      'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' }, 'current': { 'value': '#{current}' }, \
+                                      'major': { 'value': '#{major}' }, 'participant': { 'value': '#{participant}' } } } }"
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
     end
 	
