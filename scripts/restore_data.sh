@@ -35,7 +35,7 @@ echo "drop database nakamura;" | $MYSQL
 
 echo "create database nakamura default character set 'utf8';" | $MYSQL
 
-gzip -cd $MYSQL_DUMP | $MYSQL
+gzip -cd $MYSQL_DUMP | $MYSQL nakamura
 
 gzip -cd $JACKRABBIT_TAR | tar oxv
 
