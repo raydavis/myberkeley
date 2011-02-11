@@ -63,7 +63,7 @@ module MyBerkeleyData
       until (page >= 40)
         if (context == 'g-ced-students')
           search_string = "#{@server}/var/search/users.json?q=#{context}&items=25&page=#{page}"
-        elsif
+        else
           search_string = "#{@server}/var/search/users.json?q=#{context}"
         end
         response = @sling.execute_get(search_string)
