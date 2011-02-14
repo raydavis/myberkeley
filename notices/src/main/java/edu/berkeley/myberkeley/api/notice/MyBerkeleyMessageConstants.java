@@ -49,4 +49,6 @@ public interface MyBerkeleyMessageConstants extends MessageConstants {
     public static final String NODE_PATH_PROPERTY = "nodePath";
     
     public static final String QUEUE_NAME = "org/sakaiproject/nakamura/notice/email/outgoing";
+
+    public static final String PROP_SAKAI_REQUIRED = "sakai:required";
 }

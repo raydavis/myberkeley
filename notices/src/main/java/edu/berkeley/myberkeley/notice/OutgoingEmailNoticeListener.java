@@ -17,13 +17,14 @@
  */
 package edu.berkeley.myberkeley.notice;
 
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_DUEDATE;
 import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.QUEUE_NAME;
+import static edu.berkeley.myberkeley.api.notice.MyBerkeleyMessageConstants.PROP_SAKAI_REQUIRED;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_FROM;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Dictionary;
@@ -115,6 +116,12 @@ public class OutgoingEmailNoticeListener implements MessageListener {
     private String smtpServer;
 
     private Integer retryInterval;
+
+    // Subject prefixes (each of them must end with a space character)
+    private static final String SUBJECT_PREFIX_TASK = "[myB-task] ";
+    private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[myB-task-required] ";
+    private static final String SUBJECT_PREFIX_EVENT = "[myB-event] ";
+    private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
 
     public OutgoingEmailNoticeListener() {
     }
@@ -309,7 +316,8 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         }
 
         if (messageNode.hasProperty(MessageConstants.PROP_SAKAI_SUBJECT)) {
-            email.setSubject(messageNode.getProperty(MessageConstants.PROP_SAKAI_SUBJECT).getString());
+            String subjectPrefix = getSubjectPrefix(messageNode);
+            email.setSubject(subjectPrefix + messageNode.getProperty(MessageConstants.PROP_SAKAI_SUBJECT).getString());
         }
 
         if (messageNode.hasNodes()) {
@@ -331,6 +339,61 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         }
 
         return email;
+    }
+
+    /**
+     * Return subject prefix for the given message.
+     * @param messageNode   Message to check
+     * @return  One of the 4 possible prefixes: task, required task, event, required event
+     * @throws RepositoryException
+     */
+    private String getSubjectPrefix(Node messageNode) throws RepositoryException {
+
+        if (isMessageRequired(messageNode)) {
+
+            // A message must have either due date or event date
+            if (hasDueDate(messageNode)) {
+                return SUBJECT_PREFIX_TASK_REQUIRED;
+            } else {
+                // Assuming that the message is an event if it doesn't have a due date
+                return SUBJECT_PREFIX_EVENT_REQUIRED;
+            }
+
+        }
+
+        // A message must have either due date or event date
+        if (hasDueDate(messageNode)) {
+            return SUBJECT_PREFIX_TASK;
+        } else {
+            // Assuming that the message is an event if it doesn't have a due date
+            return SUBJECT_PREFIX_EVENT;
+        }
+    }
+
+    /**
+     * Returns true if the given message has a due date
+     * @param messageNode   Message to check
+     * @return  true if due date is present; otherwise false
+     * @throws RepositoryException
+     */
+    private boolean hasDueDate(Node messageNode) throws RepositoryException {
+        return messageNode.hasProperty(PROP_SAKAI_DUEDATE);
+    }
+
+    /**
+     * Returns true if the given message is required (i.e. has 'sakai:required' property set to true)
+     * @param messageNode   Message to check
+     * @return  true if message is required; otherwise false
+     * @throws RepositoryException
+     */
+    private boolean isMessageRequired(Node messageNode) throws RepositoryException{
+
+        if (messageNode.hasProperty(PROP_SAKAI_REQUIRED)) {
+            return messageNode.getProperty(PROP_SAKAI_REQUIRED).getBoolean();
+        }
+
+        // Assuming that the message is not required if it has no sakai:required property
+        return false;
     }
 
     private String convertToEmail(String address, javax.jcr.Session session) {

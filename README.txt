@@ -41,6 +41,10 @@ and restart (you'll need to have both myberkeley and 3akai-ux checked out):
 6. To run the integration test against a fresh clean myberkeley instance:
 ./scripts/myberkeley_integration.sh
 
+7. To install the Sling Explorer, which lets you browse the JCR repository:
+mvn org.apache.sling:maven-sling-plugin:install-file -Dsling.file=./lib/org.apache.sling.extensions.explorer-1.0.0.jar -Dsling.user=admin -Dsling.password=$SLING_PASSWORD
+Then you can go to http://localhost:8080/.explorer.html to see JCR nodes.
+
 ===
 
 COOKBOOK - DEVELOPMENT
