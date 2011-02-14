@@ -71,9 +71,9 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.sakaiproject.nakamura.api.activemq.ConnectionFactoryService;
 import org.sakaiproject.nakamura.api.message.MessageConstants;
-import org.sakaiproject.nakamura.api.personal.PersonalUtils;
 import org.sakaiproject.nakamura.email.outgoing.EmailDeliveryException;
 import org.sakaiproject.nakamura.email.outgoing.JcrEmailDataSource;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -400,15 +400,11 @@ public class OutgoingEmailNoticeListener implements MessageListener {
         if (address.indexOf('@') < 0) {
             String emailAddress = null;
             try {
-                Authorizable user = PersonalUtils.getAuthorizable(session, address);
-                if (user != null) {
-                    // We only check the profile is the recipient is a user.
-                    String profilePath = PersonalUtils.getProfilePath(user);
-                    if (profilePath != null && session.itemExists(profilePath)) {
-                        Node profileNode = session.getNode(profilePath);
-                        Node emailNode = profileNode.getNode("basic/elements/email/");
-                        emailAddress = emailNode.getProperty("value").getString();
-                    }
+                String profilePath = LitePersonalUtils.getProfilePath(address);
+                if (profilePath != null && session.itemExists(profilePath)) {
+                    Node profileNode = session.getNode(profilePath);
+                    Node emailNode = profileNode.getNode("basic/elements/email/");
+                    emailAddress = emailNode.getProperty("value").getString();
                 }
             }
             catch (RepositoryException e) {
