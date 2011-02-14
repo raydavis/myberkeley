@@ -20,7 +20,6 @@ import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_SENDSTATE;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.PROP_SAKAI_TO;
 import static org.sakaiproject.nakamura.api.message.MessageConstants.STATE_NOTIFIED;
-import static org.sakaiproject.nakamura.api.profile.ProfileConstants.USER_IDENTIFIER_PROPERTY;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -73,9 +72,9 @@ import org.sakaiproject.nakamura.api.message.MessageRoute;
 import org.sakaiproject.nakamura.api.message.MessageRoutes;
 import org.sakaiproject.nakamura.api.message.MessageTransport;
 import org.sakaiproject.nakamura.api.message.MessagingService;
-import org.sakaiproject.nakamura.api.personal.PersonalUtils;
 import org.sakaiproject.nakamura.email.outgoing.OutgoingEmailMessageListener;
 import org.sakaiproject.nakamura.util.JcrUtils;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -241,8 +240,7 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
     private Node getDynamicLists(Node originalNotice, Session session) throws RepositoryException {
         Property senderIdProp = originalNotice.getProperty(PROP_SAKAI_FROM);
         String senderId = senderIdProp.getValue().getString();
-        Authorizable au = PersonalUtils.getAuthorizable(session, senderId);
-        String homePath = PersonalUtils.getHomeFolder(au);
+        String homePath = LitePersonalUtils.getHomePath(senderId);
         StringBuilder linksPathSB = new StringBuilder(homePath).append("/private/").append(DYNAMIC_LISTS_ROOT_NODE_NAME).append("/").append(
                 DYNAMIC_LISTS_DATA_NODE_NAME);
         LOG.debug("loading dynamic lists from " + linksPathSB.toString());
