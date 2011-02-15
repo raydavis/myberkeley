@@ -2,13 +2,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.10.presparse-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.notices</artifactId>
   <name>MyBerkeley notices bundle</name>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.10.presparse-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,36 +42,36 @@
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-	  <version>0.10-SNAPSHOT</version>
+	  <version>0.10.presparse-SNAPSHOT</version>
 	</dependency>
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
 	  <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
-	  <version>0.10-SNAPSHOT</version>
+	  <version>0.10.presparse-SNAPSHOT</version>
 	  <scope>provided</scope>
 	</dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.user</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10.presparse-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.personal</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10.presparse-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>    
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.events</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10.presparse-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>   
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.email.outgoing</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10.presparse-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>  
 <!-- Sling -->
