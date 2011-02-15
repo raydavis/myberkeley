@@ -4,7 +4,7 @@
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.base</artifactId>
   <packaging>pom</packaging>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.10.presparse-SNAPSHOT</version>
   <name>MyBerkeley</name>
   <url>http://ets.berkeley.edu/</url>
   <issueManagement>

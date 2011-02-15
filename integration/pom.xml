@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.10.presparse-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.integration</artifactId>
   <name>MyBerkeley integration runner and data loader</name>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.10.presparse-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
    <sling.include.nakamura>${project.parent.basedir}/working/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
@@ -58,7 +58,10 @@
                 </fileset>
                 <fileset>
                   <directory>${sakai3.home}/sling/felix</directory>
-                </fileset>        
+                </fileset>
+                <fileset>
+                    <directory>${sakai3.home}/sling/config</directory>
+                </fileset>
                 <fileset>
                   <directory>${sakai3.home}/sling</directory>
 		          <includes>
@@ -172,7 +175,7 @@
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
       <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10.presparse-SNAPSHOT</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

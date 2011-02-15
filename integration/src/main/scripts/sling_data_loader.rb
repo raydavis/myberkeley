@@ -27,6 +27,8 @@ module MyBerkeleyData
     TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
     
     TEST_EMAIL_CONTEXT = "g-ced-students-testemail"
+    
+  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   
   class SlingDataLoader
   
@@ -109,6 +111,9 @@ module MyBerkeleyData
         user_props['major'] = ["N/A"]
         user_props['current'] = true
         user_props['participant'] = true
+        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        user_props['college'] = ['College of Environmental Design']
+        user_props['role'] = ['Staff'] 
         puts "creating user: #{user.inspect}"
         loaded_user = load_user username, user_props
         return loaded_user
@@ -130,7 +135,7 @@ module MyBerkeleyData
     def load_calnet_test_users
       i = 0
       CALNET_TEST_USER_IDS.each do |id|
-        first_name = id.split('-')[0]
+        first_name = id.split('-')[0].to_s
         last_name = id.split('-')[1].to_s
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
@@ -141,7 +146,18 @@ module MyBerkeleyData
         i = i + 1
       end
     end
-    
+  
+      #email = user_props['email'] || ""
+      #firstname = user_props['firstName']  || ""
+      #lastname = user_props['lastName'] || ""
+      #role = user_props['role'] || ""
+      #department = user_props['department'] || ""
+      #college = user_props['college'] || ""
+      #major = user_props['major'] || ""
+      #context = user_props['context'] || ""
+      #standing = user_props['standing'] || ""
+      #participant = user_props['participant'] || ""
+      
     def generate_user_props(username, first_name, last_name, index, length)
         user_props = {}
         user_props[':name'] = username
@@ -149,12 +165,16 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp  
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
+        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        user_props['college'] = ['College of Environmental Design'] 
         user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
         if ( index < length/2)
           user_props['standing'] = 'undergrad'
+          user_props['role'] = UG_GRAD_FLAG_MAP[:U]
           user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
         else
           user_props['standing'] = 'grad'
+          user_props['role'] = UG_GRAD_FLAG_MAP[:G]
           user_props['major'] = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')     
         end
         user_props['current'] = true
@@ -179,7 +199,7 @@ module MyBerkeleyData
         email_user_props['participant'] = true
         return email_user_props
     end
-  
+      
     def generate_all_user_props(first_names, last_names)
       i = 0
       all_users_props = []
@@ -193,11 +213,15 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp!
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
+        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        user_props['college'] = ['College of Environmental Design']        
         user_props['major'] = MAJORS[i % 8].sub(/&/, 'AND')
         if ( i < @num_students/2)
           user_props['standing'] = 'undergrad'
+          user_props['role'] = UG_GRAD_FLAG_MAP[:U]
         else
-          user_props['standing'] = 'grad'     
+          user_props['standing'] = 'grad'
+          user_props['role'] = UG_GRAD_FLAG_MAP[:G]
         end
         user_props['current'] = true
         user_props['participant'] = true
@@ -222,6 +246,15 @@ module MyBerkeleyData
         target_user.update_profile_properties @sling, user_props
       end
       return target_user
+    end
+  
+    def update_user(username, user_props, password=nil)
+      if (password)
+          target_user = User.new username, password
+        else
+          target_user = User.new username
+        end      
+      target_user.update_profile_properties @sling, user_props
     end
   
     def apply_student_aces(student)

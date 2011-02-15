@@ -27,7 +27,9 @@ module MyBerkeleyData
     hits.concat others
     #hits.sort {|x, y| x.attributes[:sn][0].slice(1) <=> y.attributes[:sn][0].slice(1) }  # this appears to not work, giving up
   
-    return make_user_json hits
+    faculty = UCB::LDAP::Entry.search(:base => "ou=people,dc=berkeley,dc=edu", :filter => make_faculty_filter)
+ 
+    return make_user_json hits 
   end
   
   def write_json(json_data, file_name = "json_data.js")
@@ -74,6 +76,10 @@ module MyBerkeleyData
     adamh = make_name_filter "Adam", "Hochman"
     joshh = make_name_filter "Josh", "Holtzman"
     return adamh | joshh
+  end
+  
+  def make_faculty_filter 
+    martinj = make_name_filter "Martin E.", "Jay"
   end
   
   def make_name_filter first, last
