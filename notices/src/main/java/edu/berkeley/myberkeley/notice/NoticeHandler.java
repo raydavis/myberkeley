@@ -392,7 +392,8 @@ public class NoticeHandler implements MessageTransport, MessageProfileWriter {
                 // now get the parent authprofile node that has the rep:userId
                 // in it
                 recipientProfileNode = contextNode.getNode("../../../");
-                recipientId = recipientProfileNode.getProperty(USER_IDENTIFIER_PROPERTY).getString();
+                // inlined ProfileConstants.USER_IDENTIFIER_PROPERTY = "rep:userId"
+                recipientId = recipientProfileNode.getProperty("rep:userId").getString();
                 boolean isCurrentParticipant = isCurrentParticipant(contextNode);
                 Recipient recipient = new Recipient(recipientId, isCurrentParticipant);
                 recipients.add(recipient);
