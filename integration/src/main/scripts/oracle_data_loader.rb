@@ -13,7 +13,8 @@ include SlingUsers
 
 module MyBerkeleyData
   PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
-  
+  ROLE_CODES = {1 => "Undergraduate Student", 2 => "Graduate Student", 3 => "GSI", 4 => "Instructor", 5 => "Staff"}
+  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   class OracleDataLoader
 
     @env = nil
@@ -45,25 +46,45 @@ module MyBerkeleyData
       @sling.do_login
       @user_manager = UserManager.new(@sling)
       @sling_data_loader = MyBerkeleyData::SlingDataLoader.new(options[:appserver], options[:adminpwd], 0) # no random users, just real ones
+      
+      ActiveRecord::Base.logger = Logger.new(STDOUT)
+      #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
+      conn = ActiveRecord::Base.establish_connection(
+          :adapter  => "oracle_enhanced",
+          #:host     => odl.oracle_host,
+          #:port     => 1523,
+          :username => @oracle_user,
+          :password => @oracle_password,
+          :database => @oracle_sid
+         )
     end
     
-    
+      #email = user_props['email'] || ""
+      #firstname = user_props['firstName']  || ""
+      #lastname = user_props['lastName'] || ""
+      #role = user_props['role'] || ""
+      #department = user_props['department'] || ""
+      #college = user_props['college'] || ""
+      #major = user_props['major'] || ""
+      #context = user_props['context'] || ""
+      #standing = user_props['standing'] || ""
+      #participant = user_props['participant'] || ""
     def make_user_props(ced_student)
       user_props = {}
-      user_props['firstName'] = ced_student.first_name
-      user_props['lastName'] = ced_student.last_name
+      user_props['firstName'] = ced_student.first_name.strip
+      user_props['lastName'] = ced_student.last_name.strip
       user_props['email'] = make_email ced_student
+      determine_role user_props, ced_student
+      determine_college user_props, ced_student
+      determine_department user_props, ced_student
+      determine_major user_props, ced_student
+      determine_current_status user_props, ced_student
       user_props['context'] = ['g-ced-students']
-      if (PARTICIPANT_UIDS.include? ced_student.student_ldap_uid.to_s)
-        user_props['participant'] = true
-      else
-        user_props['participant'] = false        
-      end
-      if (is_current ced_student )
-        user_props['current'] = true;
-      else
-        user_props['current'] = false
-      end
+      determine_standing user_props, ced_student 
+      return user_props
+    end
+    
+    def determine_standing(user_props, ced_student)
       if ('U'.eql?ced_student.ug_grad_flag.strip )
         user_props['standing'] = 'undergrad'
       elsif ('G'.eql?ced_student.ug_grad_flag.strip)
@@ -71,8 +92,6 @@ module MyBerkeleyData
       else
         user_props['standing'] = 'unknown'
       end
-      determine_major user_props, ced_student
-      return user_props
     end
     
     def determine_major(user_props, ced_student)
@@ -97,6 +116,28 @@ module MyBerkeleyData
       end
     end
     
+    def determine_current_status(user_props, ced_student)
+      if (is_current ced_student )
+        user_props['current'] = true;
+      else
+        user_props['current'] = false
+      end
+    end
+    
+    
+    def determine_role(user_props, ced_student)
+      role = UG_GRAD_FLAG_MAP[ced_student.ug_grad_flag.to_sym]
+      return role
+    end
+    
+    def determine_department(user_props, ced_student)
+      user_props['department'] = '' # need the empty string for profile page trimpath template handling
+    end
+    
+    def determine_college(user_props, ced_student)
+      user_props['college'] = 'College of Environmental Design'
+    end
+    
     def make_email ced_student
       if (ENV_PROD.eql?@env) 
         email = ced_student.student_email_address
@@ -106,12 +147,17 @@ module MyBerkeleyData
       return email
     end
     
+    def select_ced_students
+      ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
+                left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
+                where (sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
+                and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
+      return ced_students
+    end
+    
     def load_ced_students
 
-      ced_students =  MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
-                      left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-                      where (sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
-                      and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
+      ced_students = select_ced_students
       i = 0
       ced_students.each do |s|
         props = make_user_props s
@@ -209,16 +255,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   
   odl = MyBerkeleyData::OracleDataLoader.new options
   
-  ActiveRecord::Base.logger = Logger.new(STDOUT)
-  #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
-  conn = ActiveRecord::Base.establish_connection(
-      :adapter  => "oracle_enhanced",
-      #:host     => odl.oracle_host,
-      #:port     => 1523,
-      :username => odl.oracle_user,
-      :password => odl.oracle_password,
-      :database => odl.oracle_sid
-     )
   
   odl.sling_data_loader.get_or_create_groups
   odl.sling_data_loader.load_defined_user_advisors

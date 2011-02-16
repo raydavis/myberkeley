@@ -14,7 +14,7 @@ module MyBerkeleyData
   CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
   CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
   
-  class SlingDataUpgrader
+  class SlingDataLoader
     CONTEXTS_TO_UPGRADE = ["g-ced-advisors","g-ced-students"]
     TEMPLATE_FINAL_TERMS = ["_navigation","_pages","_widgets"]  # the template nodes to be copied in the user's pages node to create personal pages
     
@@ -94,6 +94,6 @@ end
 
 if ($PROGRAM_NAME.include? 'sling_data_upgrader.rb')
   puts "will upgrade personal pages data on server #{ARGV[0]}"
-  sdl = MyBerkeleyData::SlingDataUpgrader.new ARGV[0], ARGV[1]
+  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1]
   sdl.upgrade_personal_pages
 end
