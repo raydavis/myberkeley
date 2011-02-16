@@ -3,15 +3,15 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.10.presparse-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
   <name>MyBerkeley executable</name>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.10.presparse-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.10-SNAPSHOT</nakamura.version>
+    <nakamura.version>0.10.presparse-SNAPSHOT</nakamura.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -29,13 +29,13 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.root</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.10.presparse-SNAPSHOT</version>
               <startLevel>0</startLevel>
             </bundle>
 			<bundle>
 			  <groupId>org.sakaiproject.nakamura</groupId>
 			  <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
-			  <version>0.10-SNAPSHOT</version>
+			  <version>0.10.presparse-SNAPSHOT</version>
 			</bundle>            
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
@@ -58,13 +58,13 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-              <version>0.6.0-SNAPSHOT</version>
+              <version>0.6.0.presparse-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.notices</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.10.presparse-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
           </additionalBundles>
