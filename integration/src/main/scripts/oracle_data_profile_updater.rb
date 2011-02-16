@@ -12,10 +12,10 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
-  #PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
+  
   ROLE_CODES = {1 => "Undergraduate Student", 2 => "Graduate Student", 3 => "GSI", 4 => "Instructor", 5 => "Staff"}
-  UC_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
-  class OracleDataLoader
+  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
+  class OracleDataProfileUpdater
 
     @env = nil
     
@@ -34,10 +34,10 @@ module MyBerkeleyData
     attr_reader :oracle_host, :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :num_students, :sling_data_loader
     
     def initialize(options)
-      @oracle_host = options[:oraclehost]
-      @oracle_user = options[:oracleuser]
-      @oracle_password = options[:oraclepwd]
-      @oracle_sid = options[:oraclesid]
+      @oracle_host = options[:oraclehost].strip
+      @oracle_user = options[:oracleuser].strip
+      @oracle_password = options[:oraclepwd].strip
+      @oracle_sid = options[:oraclesid].strip
       
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
@@ -62,12 +62,12 @@ module MyBerkeleyData
       
     def make_user_props(ced_student)
       user_props = {}
-      user_props['firstName'] = ced_student.first_name
-      user_props['lastName'] = ced_student.last_name
+      user_props['firstName'] = ced_student.first_name.strip
+      user_props['lastName'] = ced_student.last_name.strip
       user_props['email'] = make_email ced_student
       determine_role user_props, ced_student
       determine_college user_props, ced_student
-      #determine_department user_props, ced_student - no way to establish this with current viewws
+      determine_department user_props, ced_student
       determine_major user_props, ced_student
       determine_current_status user_props, ced_student
       user_props['context'] = ['g-ced-students']
@@ -75,7 +75,7 @@ module MyBerkeleyData
       return user_props
     end
     
-    def determine_standing
+    def determine_standing(user_props, ced_student)
       if ('U'.eql?ced_student.ug_grad_flag.strip )
         user_props['standing'] = 'undergrad'
       elsif ('G'.eql?ced_student.ug_grad_flag.strip)
@@ -107,13 +107,13 @@ module MyBerkeleyData
     end
     
     def determine_role(user_props, ced_student)
-      role = UC_GRAD_FLAG_MAP[ced_student.uc_grad_flag.to_sym]
+      role = UG_GRAD_FLAG_MAP[ced_student.ug_grad_flag.to_sym]
       return role
     end
     
-    #def determine_department(user_props, ced_student)
-    #  user_props['department'] = 'Environmental Design'
-    #end
+    def determine_department(user_props, ced_student)
+      user_props['department'] = '' # need the empty string for profile page trimpath template handling
+    end
     
     def determine_college(user_props, ced_student)
       user_props['college'] = 'College of Environmental Design'
@@ -148,7 +148,7 @@ module MyBerkeleyData
         props = make_user_props s
         if (props['current'] == true)
           student_ldap_uid = s.student_ldap_uid
-          user = @sling_data_loader.update_user student_ldap_uid, props, user_password
+          user = @sling_data_loader.update_user student_ldap_uid, props
         end
       end
     end
@@ -240,7 +240,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
   
   optparser.parse ARGV
   
-  odl = MyBerkeleyData::OracleDataLoader.new options
+  odl = MyBerkeleyData::OracleDataProfileUpdater.new options
   
   ActiveRecord::Base.logger = Logger.new(STDOUT)
   #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
@@ -253,10 +253,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
       :database => odl.oracle_sid
      )
   
-#  odl.sling_data_loader.get_or_create_groups
-#  odl.sling_data_loader.load_defined_user_advisors
    odl.update_ced_students
-   #odl.update_ced_advisors
 
   
 end 

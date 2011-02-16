@@ -188,12 +188,10 @@ module SlingUsers
       major = user_props['major'] || ""
       context = user_props['context'] || ""
       standing = user_props['standing'] || ""
-      participant = user_props['participant'] || ""
+      #participant = user_props['participant'] || ""
+      current = user_props['current'] || ""
       data = {}
-      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value': '#{lastname}' }, \
-                                      'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value': '#{major}' }, } }, \
-                                      'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' }, 'current': { 'value': '#{current}' }, \
-                                      'major': { 'value': '#{major}' }, 'participant': { 'value': '#{participant}' } } } }"
+      data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value':'#{lastname}' }, 'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value':'#{major}' }, } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' },'current': { 'value': '#{current}' }, 'major': { 'value': '#{major}' } } } }"
       return sling.execute_post(sling.url_for("#{user_url}.update.html"), data)
     end
 	
