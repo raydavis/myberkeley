@@ -106,6 +106,13 @@ module MyBerkeleyData
     def load_defined_user user
         username = user[0]
         user_props = user[1]
+        make_advisor_props user_props
+        puts "creating user: #{user.inspect}"
+        loaded_user = load_user username, user_props
+        return loaded_user
+    end
+  
+    def make_advisor_props user_props #need to have firstName, lastName and email loaded already
         user_props['context'] = ['g-ced-advisors'] 
         user_props['standing'] = 'advisor'  
         user_props['major'] = ["N/A"]
@@ -114,11 +121,8 @@ module MyBerkeleyData
         user_props['department'] = '' # need the empty string for profile page trimpath template handling
         user_props['college'] = ['College of Environmental Design']
         user_props['role'] = ['Staff'] 
-        puts "creating user: #{user.inspect}"
-        loaded_user = load_user username, user_props
-        return loaded_user
     end
-  
+    
     def load_random_users(first_names_file, last_names_file)
       first_names = File.open(first_names_file, "r").readlines
       last_names = File.open(last_names_file, "r").readlines
