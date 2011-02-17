@@ -106,7 +106,7 @@ module MyBerkeleyData
     def load_defined_user user
         username = user[0]
         user_props = user[1]
-        make_adisor_props user_props
+        make_advisor_props user_props
         puts "creating user: #{user.inspect}"
         loaded_user = load_user username, user_props
         return loaded_user
@@ -118,7 +118,7 @@ module MyBerkeleyData
         user_props['major'] = ["N/A"]
         user_props['current'] = true
         user_props['participant'] = true
-        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        # user_props['department'] = '' empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']
         user_props['role'] = ['Staff'] 
     end
@@ -169,7 +169,7 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp  
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
-        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        #user_props['department'] = '' # empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design'] 
         user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
         if ( index < length/2)
@@ -217,7 +217,7 @@ module MyBerkeleyData
         user_props['lastName'] = last_name.chomp!
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = ['g-ced-students']
-        user_props['department'] = '' # need the empty string for profile page trimpath template handling
+        #user_props['department'] = '' # empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']        
         user_props['major'] = MAJORS[i % 8].sub(/&/, 'AND')
         if ( i < @num_students/2)
