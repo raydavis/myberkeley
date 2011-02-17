@@ -106,7 +106,7 @@ module MyBerkeleyData
     def load_defined_user user
         username = user[0]
         user_props = user[1]
-        make_adisor_props user_props
+        make_advisor_props user_props
         puts "creating user: #{user.inspect}"
         loaded_user = load_user username, user_props
         return loaded_user
