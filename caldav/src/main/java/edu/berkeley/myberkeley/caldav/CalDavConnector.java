@@ -2,7 +2,6 @@ package edu.berkeley.myberkeley.caldav;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.jackrabbit.webdav.client.methods.OptionsMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,21 +12,21 @@ public class CalDavConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
-    public void getOptions() throws IOException {
-        HttpClient client = new HttpClient();
+    private final HttpClient client = new HttpClient();
 
+    public CalDavConnector(String username, String password) {
         HttpState httpState = new HttpState();
-        Credentials credentials = new UsernamePasswordCredentials("vbede", "bedework");
-        AuthScope scope = new AuthScope("test.media.berkeley.edu", 8080);
-        httpState.setCredentials(scope, credentials);
-        client.setState(httpState);
+        Credentials credentials = new UsernamePasswordCredentials(username, password);
+        httpState.setCredentials(AuthScope.ANY, credentials);
+        this.client.setState(httpState);
+    }
 
-        String uri = "http://test.media.berkeley.edu:8080/ucaldav/";
+    public void getOptions(String uri) throws IOException {
         OptionsMethod options = null;
 
         try {
             options = new OptionsMethod(uri);
-            client.executeMethod(options);
+            this.client.executeMethod(options);
             LOGGER.info("OPTIONS method ran on uri " + uri);
             for ( Header header : options.getResponseHeaders() ) {
                 LOGGER.info(header.getName() + ": " + header.getValue());
