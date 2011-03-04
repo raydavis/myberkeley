@@ -6,8 +6,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
-  <artifactId>edu.berkeley.myberkeley.caldavtest</artifactId>
-  <name>MyBerkeley CalDAV Test bundle</name>
+  <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
+  <name>MyBerkeley CalDAV Connector bundle</name>
   <version>0.10-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <properties>
@@ -39,14 +39,6 @@
     </plugins>
   </build>
   <dependencies>
-
-<!-- myberkeley packages -->
-    <dependency>
-        <groupId>edu.berkeley.myberkeley</groupId>
-        <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-        <version>0.10-SNAPSHOT</version>
-    </dependency>
-
 <!-- nakamura packages -->
 	<dependency>
 	  <groupId>org.sakaiproject.nakamura</groupId>
