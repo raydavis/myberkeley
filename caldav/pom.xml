@@ -114,5 +114,21 @@
       <scope>test</scope>
     </dependency>
 
+<!-- calendar -->
+    <dependency>
+      <groupId>net.fortuna.ical4j</groupId>
+      <artifactId>ical4j</artifactId>
+      <version>1.0-rc3</version>
+      <scope>compile</scope>
+    </dependency>
+
+<!-- java -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 </project>
