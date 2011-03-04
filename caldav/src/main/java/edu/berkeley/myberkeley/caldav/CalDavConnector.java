@@ -23,20 +23,28 @@ public class CalDavConnector {
 
     public void getOptions(String uri) throws IOException {
         OptionsMethod options = null;
-
         try {
             options = new OptionsMethod(uri);
             this.client.executeMethod(options);
-            LOGGER.info("OPTIONS method ran on uri " + uri);
-            for ( Header header : options.getResponseHeaders() ) {
-                LOGGER.info(header.getName() + ": " + header.getValue());
-            }
-        } catch ( HttpClientError hce ) {
+            logRequest(options);
+        } catch (HttpClientError hce) {
             LOGGER.error("Error getting OPTIONS on uri " + uri, hce);
         } finally {
-            if ( options != null ) {
+            if (options != null) {
                 options.releaseConnection();
             }
+        }
+    }
+
+    private void logRequest(HttpMethod request) {
+        try {
+            LOGGER.info("Request on uri " + request.getURI());
+        } catch ( URIException uie ) {
+            LOGGER.error("Got URIException when trying to log request", uie);
+        }
+        LOGGER.info("Status: " + request.getStatusCode() + " " + request.getStatusText());
+        for (Header header : request.getResponseHeaders()) {
+            LOGGER.info(header.getName() + ": " + header.getValue());
         }
     }
 }
