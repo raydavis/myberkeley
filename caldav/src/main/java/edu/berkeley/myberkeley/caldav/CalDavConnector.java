@@ -85,10 +85,9 @@ public class CalDavConnector {
         executeMethod(put);
     }
 
-    public void doReport(String uri, ReportInfo reportInfo)
-            throws IOException, DavException, ParserException {
+    public List<Calendar> doReport(String uri, ReportInfo reportInfo) throws CalDavException {
         ReportMethod report = null;
-
+        List<Calendar> calendars = new ArrayList<Calendar>();
         try {
             report = new ReportMethod(uri, reportInfo);
             this.client.executeMethod(report);
@@ -102,16 +101,19 @@ public class CalDavConnector {
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
                 System.err.println("HREF: " + href);
                 CalendarBuilder builder = new CalendarBuilder();
-
                 net.fortuna.ical4j.model.Calendar c = builder.build(
                         new StringReader(prop.getValue().toString()));
+                calendars.add(c);
                 System.err.println("calendar-data: " + c.toString());
             }
+        } catch ( Exception e ) {
+            throw new CalDavException("Got exception doing report", e);
         } finally {
             if (report != null) {
                 report.releaseConnection();
             }
         }
+        return calendars;
     }
 
     private <T extends DavMethod> T executeMethod(T method) throws CalDavException {

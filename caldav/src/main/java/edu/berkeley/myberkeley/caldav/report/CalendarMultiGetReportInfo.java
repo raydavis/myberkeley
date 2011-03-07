@@ -8,6 +8,8 @@ import org.apache.jackrabbit.webdav.xml.Namespace;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.List;
+
 /**
  *
  * @author ricky
@@ -15,16 +17,16 @@ import org.w3c.dom.Element;
 public class CalendarMultiGetReportInfo extends ReportInfo {
 
     RequestCalendarData calendarData = null;
-    String[] hrefs = null;
+    List<String> hrefs = null;
 
-    public CalendarMultiGetReportInfo(RequestCalendarData calendarData, String[] hrefs) {
+    public CalendarMultiGetReportInfo(RequestCalendarData calendarData, List<String> hrefs) {
         super(CalendarMultiGetReport.CALENDAR_MULTI_GET, DavConstants.DEPTH_0, null);
         this.calendarData = calendarData;
         this.hrefs = hrefs;
     }
 
     public CalendarMultiGetReportInfo(DavPropertyNameSet propertyNames,
-            RequestCalendarData calendarData, String[] hrefs) {
+            RequestCalendarData calendarData, List<String> hrefs) {
         super(CalendarMultiGetReport.CALENDAR_MULTI_GET, DavConstants.DEPTH_0, propertyNames);
         this.calendarData = calendarData;
         this.hrefs = hrefs;
@@ -46,9 +48,9 @@ public class CalendarMultiGetReportInfo extends ReportInfo {
         // append prop to calendarMultiGet
         calendarMultiGet.appendChild(prop);
         // append hrefs
-        for (int i = 0; i < hrefs.length; i++) {
+        for (String s : this.hrefs) {
             Element href = DomUtil.createElement(document,
-                    DavConstants.XML_HREF, DavConstants.NAMESPACE, hrefs[i]);
+                    DavConstants.XML_HREF, DavConstants.NAMESPACE, s);
             calendarMultiGet.appendChild(href);
         }
         return calendarMultiGet;

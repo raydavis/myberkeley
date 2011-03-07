@@ -95,17 +95,12 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    @Ignore
-    public void doReport() throws IOException, DavException, ParserException {
+    public void doReport() throws CalDavException, IOException {
         RequestCalendarData calendarData = new RequestCalendarData();
-        Filter filter = new Filter("VCALENDAR");
-        filter.getCompFilter().add(new Filter("VEVENT"));
-        Calendar start = Calendar.getInstance();
-        start.add(Calendar.MONTH, -1);
-        Calendar end = Calendar.getInstance();
-        filter.getCompFilter().get(0).setTimeRange(
-                new TimeRange(start.getTime(), end.getTime()));
-        ReportInfo reportInfo = new CalendarQueryReportInfo(calendarData, filter);
-        this.connector.doReport(USER_HOME, reportInfo);
+        List<String> hrefs = this.connector.getCalendarHrefs(USER_HOME);
+
+        ReportInfo reportInfo = new CalendarMultiGetReportInfo(calendarData, hrefs);
+        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(USER_HOME, reportInfo);
+        assertFalse(calendars.isEmpty());
     }
 }
