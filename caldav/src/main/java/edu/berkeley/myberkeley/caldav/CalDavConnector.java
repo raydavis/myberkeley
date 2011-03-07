@@ -1,6 +1,8 @@
 package edu.berkeley.myberkeley.caldav;
 
 import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
+import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
+import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import org.apache.commons.httpclient.Credentials;
@@ -91,7 +93,8 @@ public class CalDavConnector {
         executeMethod(put);
     }
 
-    public List<Calendar> doReport(ReportInfo reportInfo) throws CalDavException {
+    public List<Calendar> getCalendars(List<String> hrefs) throws CalDavException {
+        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
         ReportMethod report = null;
         List<Calendar> calendars = new ArrayList<Calendar>();
         try {

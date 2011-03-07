@@ -1,10 +1,10 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
-import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import junit.framework.Assert;
 import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -13,7 +13,6 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
-import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,7 +57,7 @@ public class CalDavConnectorTest extends Assert {
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
 
-        net.fortuna.ical4j.model.Calendar calendar = buildICalObj(uuid);
+        Calendar calendar = buildICalObj(uuid);
         this.connector.putCalendar(href, calendar);
 
         List<String> hrefsAfter = this.connector.getCalendarHrefs();
@@ -74,9 +73,9 @@ public class CalDavConnectorTest extends Assert {
         assertTrue(found);
     }
 
-    private net.fortuna.ical4j.model.Calendar buildICalObj(UUID uuid) {
+    private Calendar buildICalObj(UUID uuid) {
         CalendarBuilder builder = new CalendarBuilder();
-        net.fortuna.ical4j.model.Calendar c = new net.fortuna.ical4j.model.Calendar();
+        Calendar c = new Calendar();
         c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
         c.getProperties().add(Version.VERSION_2_0);
         c.getProperties().add(CalScale.GREGORIAN);
@@ -84,7 +83,7 @@ public class CalDavConnectorTest extends Assert {
         VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
         c.getComponents().add(tz);
         String summary = "caldavtest uuid = " + uuid;
-        VEvent vevent = new VEvent(new net.fortuna.ical4j.model.Date(),
+        VEvent vevent = new VEvent(new Date(),
                 new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(uuid.toString()));
         c.getComponents().add(vevent);
@@ -92,12 +91,9 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void doReport() throws CalDavException {
-        RequestCalendarData calendarData = new RequestCalendarData();
+    public void getCalendars() throws CalDavException {
         List<String> hrefs = this.connector.getCalendarHrefs();
-
-        ReportInfo reportInfo = new CalendarMultiGetReportInfo(calendarData, hrefs);
-        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(reportInfo);
+        List<Calendar> calendars = this.connector.getCalendars(hrefs);
         assertFalse(calendars.isEmpty());
     }
 
@@ -106,16 +102,15 @@ public class CalDavConnectorTest extends Assert {
 
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
-        net.fortuna.ical4j.model.Calendar originalCalendar = buildICalObj(uuid);
+        Calendar originalCalendar = buildICalObj(uuid);
         this.connector.putCalendar(href, originalCalendar);
 
         List<String> hrefs = new ArrayList<String>();
         hrefs.add(href);
-        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
-        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(reportInfo);
+        List<Calendar> calendars = this.connector.getCalendars(hrefs);
         assertFalse(calendars.isEmpty());
 
-        net.fortuna.ical4j.model.Calendar calOnServer = calendars.get(0);
+        Calendar calOnServer = calendars.get(0);
         VEvent eventOnServer = (VEvent) calOnServer.getComponent(Component.VEVENT);
         VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
 
