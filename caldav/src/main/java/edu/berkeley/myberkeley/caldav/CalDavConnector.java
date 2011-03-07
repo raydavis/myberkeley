@@ -40,15 +40,18 @@ public class CalDavConnector {
 
     private final HttpClient client = new HttpClient();
 
-    public CalDavConnector(String username, String password) {
+    private final String uri;
+
+    public CalDavConnector(String username, String password, String uri) {
         HttpState httpState = new HttpState();
         Credentials credentials = new UsernamePasswordCredentials(username, password);
         httpState.setCredentials(AuthScope.ANY, credentials);
         this.client.setState(httpState);
+        this.uri = uri;
     }
 
-    public void getOptions(String uri) throws CalDavException {
-        executeMethod(new OptionsMethod(uri));
+    public void getOptions() throws CalDavException {
+        executeMethod(new OptionsMethod(this.uri));
     }
 
     /**
@@ -56,10 +59,10 @@ public class CalDavConnector {
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<String> getCalendarHrefs(String uri) throws CalDavException {
+    public List<String> getCalendarHrefs() throws CalDavException {
         List<String> hrefs = new ArrayList<String>();
         try {
-            PropFindMethod propFind = executeMethod(new PropFindMethod(uri));
+            PropFindMethod propFind = executeMethod(new PropFindMethod(this.uri));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
             for (MultiStatusResponse response : responses) {
                 if (response.getHref().endsWith(".ics")) {
@@ -88,11 +91,11 @@ public class CalDavConnector {
         executeMethod(put);
     }
 
-    public List<Calendar> doReport(String uri, ReportInfo reportInfo) throws CalDavException {
+    public List<Calendar> doReport(ReportInfo reportInfo) throws CalDavException {
         ReportMethod report = null;
         List<Calendar> calendars = new ArrayList<Calendar>();
         try {
-            report = new ReportMethod(uri, reportInfo);
+            report = new ReportMethod(this.uri, reportInfo);
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();

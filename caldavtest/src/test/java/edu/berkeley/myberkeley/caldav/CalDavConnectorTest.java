@@ -36,33 +36,32 @@ public class CalDavConnectorTest extends Assert {
 
     @Before
     public void setup() {
-        this.connector = new CalDavConnector("vbede", "bedework");
+        this.connector = new CalDavConnector("vbede", "bedework", USER_HOME);
     }
 
     @Test
     public void getOptions() throws CalDavException {
-        this.connector.getOptions(USER_HOME);
+        this.connector.getOptions();
     }
 
     @Test
     public void getCalendarHrefs() throws CalDavException {
-        List<String> hrefs = this.connector.getCalendarHrefs(USER_HOME);
+        List<String> hrefs = this.connector.getCalendarHrefs();
         assertFalse(hrefs.isEmpty());
     }
 
     @Test
     public void putCalendar() throws CalDavException {
 
-        List<String> hrefsBefore = this.connector.getCalendarHrefs(USER_HOME);
+        List<String> hrefsBefore = this.connector.getCalendarHrefs();
 
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
 
-        CalDavConnector connector = new CalDavConnector("vbede", "bedework");
         net.fortuna.ical4j.model.Calendar calendar = buildICalObj(uuid);
-        connector.putCalendar(href, calendar);
+        this.connector.putCalendar(href, calendar);
 
-        List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
+        List<String> hrefsAfter = this.connector.getCalendarHrefs();
         assertTrue(hrefsAfter.size() == hrefsBefore.size() + 1);
 
         boolean found = false;
@@ -95,10 +94,10 @@ public class CalDavConnectorTest extends Assert {
     @Test
     public void doReport() throws CalDavException {
         RequestCalendarData calendarData = new RequestCalendarData();
-        List<String> hrefs = this.connector.getCalendarHrefs(USER_HOME);
+        List<String> hrefs = this.connector.getCalendarHrefs();
 
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(calendarData, hrefs);
-        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(USER_HOME, reportInfo);
+        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(reportInfo);
         assertFalse(calendars.isEmpty());
     }
 
@@ -107,14 +106,13 @@ public class CalDavConnectorTest extends Assert {
 
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
-        CalDavConnector connector = new CalDavConnector("vbede", "bedework");
         net.fortuna.ical4j.model.Calendar originalCalendar = buildICalObj(uuid);
-        connector.putCalendar(href, originalCalendar);
+        this.connector.putCalendar(href, originalCalendar);
 
         List<String> hrefs = new ArrayList<String>();
         hrefs.add(href);
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
-        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(USER_HOME, reportInfo);
+        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(reportInfo);
         assertFalse(calendars.isEmpty());
 
         net.fortuna.ical4j.model.Calendar calOnServer = calendars.get(0);
@@ -122,7 +120,8 @@ public class CalDavConnectorTest extends Assert {
         VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
 
         assertEquals(originalEvent.getDuration(), eventOnServer.getDuration());
-        assertEquals(originalEvent.getDateStamp(), eventOnServer.getDateStamp());
+        assertEquals(originalEvent.getStartDate(), eventOnServer.getStartDate());
+        assertEquals(originalEvent.getEndDate(), eventOnServer.getEndDate());
         assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
         assertEquals(originalEvent.getUid(), eventOnServer.getUid());
 
