@@ -30,9 +30,9 @@ import java.util.UUID;
 
 public class CalDavConnectorTest extends Assert {
 
-    private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080/ucaldav/";
+    private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
-    private static final String USER_HOME = SERVER_ROOT + "user/vbede/calendar/";
+    private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/vbede/calendar/";
 
     private CalDavConnector connector;
 
@@ -53,7 +53,6 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    @Ignore
     public void putCalendar() throws CalDavException, IOException {
 
         List<String> hrefsBefore = this.connector.getCalendarHrefs(USER_HOME);
@@ -79,8 +78,15 @@ public class CalDavConnectorTest extends Assert {
 
         List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
         assertTrue(hrefsAfter.size() == hrefsBefore.size() + 1);
-        String lastHref = hrefsAfter.get(hrefsAfter.size() - 1);
-        assertEquals(href, lastHref);
+
+        boolean found = false;
+        for ( String thisHref : hrefsAfter ) {
+            if ( (SERVER_ROOT + thisHref).equals(href) ) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
     }
 
     @Test
