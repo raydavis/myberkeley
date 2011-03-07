@@ -4,6 +4,7 @@ import edu.berkeley.myberkeley.caldav.report.*;
 import junit.framework.Assert;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -17,8 +18,11 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +33,8 @@ import java.util.UUID;
  */
 
 public class CalDavConnectorTest extends Assert {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
@@ -95,12 +101,38 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void doReport() throws CalDavException, IOException {
+    public void doReport() throws CalDavException {
         RequestCalendarData calendarData = new RequestCalendarData();
         List<String> hrefs = this.connector.getCalendarHrefs(USER_HOME);
 
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(calendarData, hrefs);
         List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(USER_HOME, reportInfo);
         assertFalse(calendars.isEmpty());
+    }
+
+    @Test
+    public void putThenGetCalendarEntry() throws CalDavException {
+
+        UUID uuid = UUID.randomUUID();
+        String href = USER_HOME + uuid.toString() + ".ics";
+        CalDavConnector connector = new CalDavConnector("vbede", "bedework");
+        net.fortuna.ical4j.model.Calendar originalCalendar = buildICalObj(uuid);
+        connector.putCalendar(href, originalCalendar);
+
+        List<String> hrefs = new ArrayList<String>();
+        hrefs.add(href);
+        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
+        List<net.fortuna.ical4j.model.Calendar> calendars = this.connector.doReport(USER_HOME, reportInfo);
+        assertFalse(calendars.isEmpty());
+
+        net.fortuna.ical4j.model.Calendar calOnServer = calendars.get(0);
+        VEvent eventOnServer = (VEvent) calOnServer.getComponent(Component.VEVENT);
+        VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
+
+        assertEquals(originalEvent.getDuration(), eventOnServer.getDuration());
+        assertEquals(originalEvent.getDateStamp(), eventOnServer.getDateStamp());
+        assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
+        assertEquals(originalEvent.getUid(), eventOnServer.getUid());
+
     }
 }

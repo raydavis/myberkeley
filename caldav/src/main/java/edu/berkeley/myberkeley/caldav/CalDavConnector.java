@@ -93,18 +93,14 @@ public class CalDavConnector {
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
-            for (int i = 0; i < multiStatus.getResponses().length; i++) {
-                MultiStatusResponse multiRes = multiStatus.getResponses()[i];
-                String href = multiRes.getHref();
-                DavPropertySet propSet = multiRes.getProperties(HttpServletResponse.SC_OK);
+            for (MultiStatusResponse msResponse : multiStatus.getResponses() ) {
+                DavPropertySet propSet = msResponse.getProperties(HttpServletResponse.SC_OK);
                 DavProperty prop = propSet.get(
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
-                System.err.println("HREF: " + href);
                 CalendarBuilder builder = new CalendarBuilder();
                 net.fortuna.ical4j.model.Calendar c = builder.build(
                         new StringReader(prop.getValue().toString()));
                 calendars.add(c);
-                System.err.println("calendar-data: " + c.toString());
             }
         } catch ( Exception e ) {
             throw new CalDavException("Got exception doing report", e);
