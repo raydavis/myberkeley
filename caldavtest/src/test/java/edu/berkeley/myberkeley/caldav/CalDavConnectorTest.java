@@ -23,9 +23,15 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This test is really an integration test used to exercise (and learn) CalDAV functionality.
+ * It assumes test.media.berkeley.edu is up and running Bedework on port 8080.
+ */
+
 public class CalDavConnectorTest extends Assert {
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080/ucaldav/";
+
     private static final String USER_HOME = SERVER_ROOT + "user/vbede/calendar/";
 
     private CalDavConnector connector;
@@ -72,7 +78,7 @@ public class CalDavConnectorTest extends Assert {
         connector.putCalendar(href, c);
 
         List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
-        assertTrue(hrefsAfter.size() > hrefsBefore.size());
+        assertTrue(hrefsAfter.size() == hrefsBefore.size() + 1);
         String lastHref = hrefsAfter.get(hrefsAfter.size() - 1);
         assertEquals(href, lastHref);
     }
