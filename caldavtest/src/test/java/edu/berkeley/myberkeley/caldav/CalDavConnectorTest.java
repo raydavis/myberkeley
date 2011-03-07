@@ -1,9 +1,9 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.*;
+import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
+import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import junit.framework.Assert;
 import net.fortuna.ical4j.data.CalendarBuilder;
-import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
@@ -13,17 +13,11 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
-import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +27,6 @@ import java.util.UUID;
  */
 
 public class CalDavConnectorTest extends Assert {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
@@ -59,7 +51,7 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void putCalendar() throws CalDavException, IOException {
+    public void putCalendar() throws CalDavException {
 
         List<String> hrefsBefore = this.connector.getCalendarHrefs(USER_HOME);
 

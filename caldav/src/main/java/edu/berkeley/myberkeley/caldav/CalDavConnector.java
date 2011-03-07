@@ -1,15 +1,18 @@
 package edu.berkeley.myberkeley.caldav;
 
 import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
-import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
 import net.fortuna.ical4j.data.CalendarBuilder;
-import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
-import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpClientError;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.jackrabbit.webdav.DavException;
-import org.apache.jackrabbit.webdav.DavServletResponse;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
@@ -24,12 +27,12 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
@@ -93,7 +96,7 @@ public class CalDavConnector {
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
-            for (MultiStatusResponse msResponse : multiStatus.getResponses() ) {
+            for (MultiStatusResponse msResponse : multiStatus.getResponses()) {
                 DavPropertySet propSet = msResponse.getProperties(HttpServletResponse.SC_OK);
                 DavProperty prop = propSet.get(
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
@@ -102,7 +105,7 @@ public class CalDavConnector {
                         new StringReader(prop.getValue().toString()));
                 calendars.add(c);
             }
-        } catch ( Exception e ) {
+        } catch (Exception e) {
             throw new CalDavException("Got exception doing report", e);
         } finally {
             if (report != null) {
