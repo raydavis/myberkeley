@@ -13,14 +13,14 @@ import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.jackrabbit.webdav.DavException;
-import org.apache.jackrabbit.webdav.property.DavPropertyName;
-import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 public class CalDavConnectorTest extends Assert {
@@ -36,12 +36,22 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void getOptions() throws IOException {
+    public void getOptions() throws CalDavException {
         this.connector.getOptions(USER_HOME);
     }
 
     @Test
-    public void putCalendar() throws IOException {
+    public void getCalendarHrefs() throws CalDavException {
+        List<String> hrefs = this.connector.getCalendarHrefs(USER_HOME);
+        assertFalse(hrefs.isEmpty());
+    }
+
+    @Test
+    @Ignore
+    public void putCalendar() throws CalDavException, IOException {
+
+        List<String> hrefsBefore = this.connector.getCalendarHrefs(USER_HOME);
+
         UUID uuid = UUID.randomUUID();
         CalendarBuilder builder = new CalendarBuilder();
         net.fortuna.ical4j.model.Calendar c = new net.fortuna.ical4j.model.Calendar();
@@ -51,17 +61,24 @@ public class CalDavConnectorTest extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
         c.getComponents().add(tz);
+        String summary = "caldavtest uuid = " + uuid;
         VEvent vevent = new VEvent(new net.fortuna.ical4j.model.Date(),
-                new Dur(0, 1, 0, 0), "test");
+                new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(uuid.toString()));
         c.getComponents().add(vevent);
         String href = USER_HOME + uuid.toString() + ".ics";
 
         CalDavConnector connector = new CalDavConnector("vbede", "bedework");
         connector.putCalendar(href, c);
+
+        List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
+        assertTrue(hrefsAfter.size() > hrefsBefore.size());
+        String lastHref = hrefsAfter.get(hrefsAfter.size() - 1);
+        assertEquals(href, lastHref);
     }
 
     @Test
+    @Ignore
     public void doReport() throws IOException, DavException, ParserException {
         RequestCalendarData calendarData = new RequestCalendarData();
         Filter filter = new Filter("VCALENDAR");

@@ -12,7 +12,10 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.DavServletResponse;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
+import org.apache.jackrabbit.webdav.Status;
+import org.apache.jackrabbit.webdav.client.methods.DavMethod;
 import org.apache.jackrabbit.webdav.client.methods.OptionsMethod;
+import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
 import org.apache.jackrabbit.webdav.client.methods.PutMethod;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
 import org.apache.jackrabbit.webdav.property.DavProperty;
@@ -24,6 +27,9 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CalDavConnector {
 
@@ -38,36 +44,45 @@ public class CalDavConnector {
         this.client.setState(httpState);
     }
 
-    public void getOptions(String uri) throws IOException {
-        OptionsMethod options = null;
-        try {
-            options = new OptionsMethod(uri);
-            this.client.executeMethod(options);
-            logRequest(options);
-        } catch (HttpClientError hce) {
-            LOGGER.error("Error getting OPTIONS on uri " + uri, hce);
-        } finally {
-            if (options != null) {
-                options.releaseConnection();
-            }
-        }
+    public void getOptions(String uri) throws CalDavException {
+        executeMethod(new OptionsMethod(uri));
     }
 
-    public void putCalendar(String uri, Calendar calendar) throws IOException {
-        PutMethod put = null;
+    /**
+     * Returns the user's calendar entries (all of them) as a set of HREFs
+     * by doing a PROPFIND on a user calendar home, eg:
+     * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
+     */
+    public List<String> getCalendarHrefs(String uri) throws CalDavException {
+        List<String> hrefs = new ArrayList<String>();
         try {
-            put = new PutMethod(uri);
-            put.addRequestHeader("If-None-Match", "*");
-            put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
-            this.client.executeMethod(put);
-            logRequest(put);
-        } catch (HttpClientError hce) {
-            LOGGER.error("Error doing PUT on uri " + uri, hce);
-        } finally {
-            if (put != null) {
-                put.releaseConnection();
+            PropFindMethod propFind = executeMethod(new PropFindMethod(uri));
+            MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
+            for (MultiStatusResponse response : responses) {
+                if (response.getHref().endsWith(".ics")) {
+                    Status[] status = response.getStatus();
+                    if (status.length == 1 && status[0].getStatusCode() == HttpServletResponse.SC_OK) {
+                        hrefs.add(response.getHref());
+                    }
+                }
             }
+        } catch (IOException ioe) {
+            throw new CalDavException("IO error getting calendar hrefs ", ioe);
+        } catch (DavException de) {
+            throw new CalDavException("DavException getting calendar hrefs", de);
         }
+        return hrefs;
+    }
+
+    public void putCalendar(String uri, Calendar calendar) throws CalDavException {
+        PutMethod put = new PutMethod(uri);
+        put.addRequestHeader("If-None-Match", "*");
+        try {
+            put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
+        } catch (UnsupportedEncodingException uee) {
+            LOGGER.error("Got unsupported encoding exception", uee);
+        }
+        executeMethod(put);
     }
 
     public void doReport(String uri, ReportInfo reportInfo)
@@ -99,7 +114,23 @@ public class CalDavConnector {
         }
     }
 
-    private void logRequest(HttpMethod request) {
+    private <T extends DavMethod> T executeMethod(T method) throws CalDavException {
+        try {
+            this.client.executeMethod(method);
+            logRequest(method);
+        } catch (HttpClientError hce) {
+            throw new CalDavException("Error running " + method.getName(), hce);
+        } catch (IOException ioe) {
+            throw new CalDavException("IO error running " + method.getName(), ioe);
+        } finally {
+            if (method != null) {
+                method.releaseConnection();
+            }
+        }
+        return method;
+    }
+
+    private void logRequest(DavMethod request) {
         try {
             LOGGER.info("Request on uri " + request.getURI());
         } catch (URIException uie) {
