@@ -19,6 +19,7 @@ import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
 import org.apache.jackrabbit.webdav.client.methods.DavMethod;
+import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
 import org.apache.jackrabbit.webdav.client.methods.OptionsMethod;
 import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
 import org.apache.jackrabbit.webdav.client.methods.PutMethod;
@@ -93,10 +94,18 @@ public class CalDavConnector {
         executeMethod(put);
     }
 
+    public void deleteCalendar(String uri) throws CalDavException {
+        DeleteMethod deleteMethod = new DeleteMethod(uri);
+        executeMethod(deleteMethod);
+    }
+
     public List<Calendar> getCalendars(List<String> hrefs) throws CalDavException {
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
         ReportMethod report = null;
         List<Calendar> calendars = new ArrayList<Calendar>();
+        if ( hrefs.isEmpty() ) {
+            return calendars;
+        }
         try {
             report = new ReportMethod(this.uri, reportInfo);
             this.client.executeMethod(report);

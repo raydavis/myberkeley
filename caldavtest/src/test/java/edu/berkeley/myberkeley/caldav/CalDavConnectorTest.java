@@ -34,8 +34,13 @@ public class CalDavConnectorTest extends Assert {
     private CalDavConnector connector;
 
     @Before
-    public void setup() {
+    public void setup() throws CalDavException {
         this.connector = new CalDavConnector("vbede", "bedework", USER_HOME);
+
+        List<String> hrefs = this.connector.getCalendarHrefs();
+        for ( String href : hrefs ) {
+            this.connector.deleteCalendar(SERVER_ROOT + href);
+        }
     }
 
     @Test
@@ -46,7 +51,7 @@ public class CalDavConnectorTest extends Assert {
     @Test
     public void getCalendarHrefs() throws CalDavException {
         List<String> hrefs = this.connector.getCalendarHrefs();
-        assertFalse(hrefs.isEmpty());
+        assertTrue(hrefs.isEmpty());
     }
 
     @Test
@@ -73,28 +78,11 @@ public class CalDavConnectorTest extends Assert {
         assertTrue(found);
     }
 
-    private Calendar buildICalObj(UUID uuid) {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar c = new Calendar();
-        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        c.getProperties().add(Version.VERSION_2_0);
-        c.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
-        c.getComponents().add(tz);
-        String summary = "caldavtest uuid = " + uuid;
-        VEvent vevent = new VEvent(new Date(),
-                new Dur(0, 1, 0, 0), summary);
-        vevent.getProperties().add(new Uid(uuid.toString()));
-        c.getComponents().add(vevent);
-        return c;
-    }
-
     @Test
     public void getCalendars() throws CalDavException {
         List<String> hrefs = this.connector.getCalendarHrefs();
         List<Calendar> calendars = this.connector.getCalendars(hrefs);
-        assertFalse(calendars.isEmpty());
+        assertTrue(calendars.isEmpty());
     }
 
     @Test
@@ -121,4 +109,22 @@ public class CalDavConnectorTest extends Assert {
         assertEquals(originalEvent.getUid(), eventOnServer.getUid());
 
     }
+
+    private Calendar buildICalObj(UUID uuid) {
+        CalendarBuilder builder = new CalendarBuilder();
+        Calendar c = new Calendar();
+        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+        c.getProperties().add(Version.VERSION_2_0);
+        c.getProperties().add(CalScale.GREGORIAN);
+        TimeZoneRegistry registry = builder.getRegistry();
+        VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
+        c.getComponents().add(tz);
+        String summary = "caldavtest uuid = " + uuid;
+        VEvent vevent = new VEvent(new Date(),
+                new Dur(0, 1, 0, 0), summary);
+        vevent.getProperties().add(new Uid(uuid.toString()));
+        c.getComponents().add(vevent);
+        return c;
+    }
+
 }
