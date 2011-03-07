@@ -26,7 +26,7 @@ import java.util.UUID;
 public class CalDavConnectorTest extends Assert {
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080/ucaldav/";
-    private static final String USER_HOME = SERVER_ROOT + "principals/users/vbede/calendar/";
+    private static final String USER_HOME = SERVER_ROOT + "user/vbede/calendar/";
 
     private CalDavConnector connector;
 

@@ -27,6 +27,7 @@
 			   !org.junit.*,
                *
 			</Import-Package>
+            <Export-Package> edu.berkeley.myberkeley.caldav.*, edu.berkeley.myberkeley.caldav.report.* </Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
 		</instructions>
         </configuration>
