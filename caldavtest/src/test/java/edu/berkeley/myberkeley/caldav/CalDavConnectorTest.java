@@ -58,6 +58,26 @@ public class CalDavConnectorTest extends Assert {
         List<String> hrefsBefore = this.connector.getCalendarHrefs(USER_HOME);
 
         UUID uuid = UUID.randomUUID();
+        String href = USER_HOME + uuid.toString() + ".ics";
+
+        CalDavConnector connector = new CalDavConnector("vbede", "bedework");
+        net.fortuna.ical4j.model.Calendar calendar = buildICalObj(uuid);
+        connector.putCalendar(href, calendar);
+
+        List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
+        assertTrue(hrefsAfter.size() == hrefsBefore.size() + 1);
+
+        boolean found = false;
+        for (String thisHref : hrefsAfter) {
+            if ((SERVER_ROOT + thisHref).equals(href)) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
+    }
+
+    private net.fortuna.ical4j.model.Calendar buildICalObj(UUID uuid) {
         CalendarBuilder builder = new CalendarBuilder();
         net.fortuna.ical4j.model.Calendar c = new net.fortuna.ical4j.model.Calendar();
         c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
@@ -71,22 +91,7 @@ public class CalDavConnectorTest extends Assert {
                 new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(uuid.toString()));
         c.getComponents().add(vevent);
-        String href = USER_HOME + uuid.toString() + ".ics";
-
-        CalDavConnector connector = new CalDavConnector("vbede", "bedework");
-        connector.putCalendar(href, c);
-
-        List<String> hrefsAfter = this.connector.getCalendarHrefs(USER_HOME);
-        assertTrue(hrefsAfter.size() == hrefsBefore.size() + 1);
-
-        boolean found = false;
-        for ( String thisHref : hrefsAfter ) {
-            if ( (SERVER_ROOT + thisHref).equals(href) ) {
-                found = true;
-                break;
-            }
-        }
-        assertTrue(found);
+        return c;
     }
 
     @Test
