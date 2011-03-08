@@ -3,7 +3,8 @@ package edu.berkeley.myberkeley.caldav.report;
 import org.apache.jackrabbit.webdav.xml.Namespace;
 
 /**
- *
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
  * @author ricky
  */
 public interface CalDavConstants {

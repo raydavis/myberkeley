@@ -8,6 +8,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
  *
  * <!ELEMENT comp ((allprop | prop*), (allcomp | comp*))>
  * <!ATTLIST comp name CDATA #REQUIRED>

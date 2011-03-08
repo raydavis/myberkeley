@@ -8,6 +8,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
+ *
  * <!ELEMENT filter (comp-filter)>
  * <!ELEMENT comp-filter (is-not-defined |
  *                       (time-range?, prop-filter*, comp-filter*))>

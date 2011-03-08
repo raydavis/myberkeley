@@ -3,6 +3,9 @@ package edu.berkeley.myberkeley.caldav.report;
 import java.util.Date;
 
 /**
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
+ *
  * <!ELEMENT time-range EMPTY>
  * <!ATTLIST time-range start CDATA #IMPLIED
  *                      end   CDATA #IMPLIED>

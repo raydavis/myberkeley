@@ -9,6 +9,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
+ *
  * <!ELEMENT <xmlName> EMPTY>
  * <!ATTLIST <xmlName> start CDATA #REQUIRED
  *                     end   CDATA #REQUIRED>

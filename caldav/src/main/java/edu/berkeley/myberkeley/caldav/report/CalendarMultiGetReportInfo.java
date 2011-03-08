@@ -11,7 +11,8 @@ import org.w3c.dom.Element;
 import java.util.List;
 
 /**
- *
+ * Based on code found in "Introducing CalDAV (Part I and II)" at
+ * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
  * @author ricky
  */
 public class CalendarMultiGetReportInfo extends ReportInfo {
