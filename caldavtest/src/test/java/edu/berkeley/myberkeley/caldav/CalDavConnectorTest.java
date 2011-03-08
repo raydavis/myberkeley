@@ -4,7 +4,7 @@ import junit.framework.Assert;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -112,9 +112,10 @@ public class CalDavConnectorTest extends Assert {
         Calendar originalCalendar = buildVevent(uuid);
         this.connector.putCalendar(href, originalCalendar);
 
+        long newStart = System.currentTimeMillis() + ( 1000 * 60 * 60 * 24 * 2);
         VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
         String newSummary = "Updated event";
-        VEvent newVevent = new VEvent(new Date(1234L),
+        VEvent newVevent = new VEvent(new DateTime(newStart),
                 new Dur(0, 1, 0, 0), newSummary);
         newVevent.getProperties().add(new Uid(uuid.toString()));
         originalCalendar.getComponents().remove(vevent);
@@ -129,7 +130,8 @@ public class CalDavConnectorTest extends Assert {
         Calendar newCalendar = calendars.get(0);
         VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
         assertEquals(newSummary, updatedEvent.getSummary().getValue());
-        assertEquals(new Date(1234L), updatedEvent.getStartDate().getDate());
+        assertEquals(new DateTime(newStart), updatedEvent.getStartDate().getDate());
+
     }
 
     @Test
@@ -162,7 +164,7 @@ public class CalDavConnectorTest extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
         calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new Date(), new Date(), "Test TODO " + uuid);
+        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "Test TODO " + uuid);
         vtodo.getProperties().add(new Uid(uuid.toString()));
         calendar.getComponents().add(vtodo);
         return calendar;
@@ -178,7 +180,7 @@ public class CalDavConnectorTest extends Assert {
         VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
         c.getComponents().add(tz);
         String summary = "caldavtest uuid = " + uuid;
-        VEvent vevent = new VEvent(new Date(),
+        VEvent vevent = new VEvent(new DateTime(),
                 new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(uuid.toString()));
         c.getComponents().add(vevent);
