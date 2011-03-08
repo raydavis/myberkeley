@@ -50,12 +50,6 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void getCalendarHrefs() throws CalDavException {
-        List<String> hrefs = this.connector.getCalendarHrefs();
-        assertTrue(hrefs.isEmpty());
-    }
-
-    @Test
     public void putCalendar() throws CalDavException {
 
         List<String> hrefsBefore = this.connector.getCalendarHrefs();
