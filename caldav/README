@@ -1,0 +1,7 @@
+In this module, by default, tests are skipped (because the tests are really integration tests
+ and require a running Bedework server on test.media.berkeley.edu).
+
+To run the tests in this module, do:
+
+mvn -Dcaldav.skiptests=false test
+
