@@ -9,6 +9,7 @@ import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
+import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
@@ -62,7 +63,7 @@ public class CalDavConnectorTest extends Assert {
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
 
-        Calendar calendar = buildICalObj(uuid);
+        Calendar calendar = buildVevent(uuid);
         this.connector.putCalendar(href, calendar);
 
         List<String> hrefsAfter = this.connector.getCalendarHrefs();
@@ -90,7 +91,7 @@ public class CalDavConnectorTest extends Assert {
 
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
-        Calendar originalCalendar = buildICalObj(uuid);
+        Calendar originalCalendar = buildVevent(uuid);
         this.connector.putCalendar(href, originalCalendar);
 
         List<String> hrefs = new ArrayList<String>();
@@ -110,7 +111,43 @@ public class CalDavConnectorTest extends Assert {
 
     }
 
-    private Calendar buildICalObj(UUID uuid) {
+    @Test
+    public void putTodo() throws CalDavException {
+        UUID uuid = UUID.randomUUID();
+        Calendar calendar = buildVTodo(uuid);
+        String href = USER_HOME + uuid.toString() + ".ics";
+        this.connector.putCalendar(href, calendar);
+
+        List<String> hrefs = new ArrayList<String>(1);
+        hrefs.add(href);
+        List<Calendar> calendars = this.connector.getCalendars(hrefs);
+        Calendar calOnServer = calendars.get(0);
+        VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
+        VToDo originalVTodo = (VToDo) calendar.getComponent(Component.VTODO);
+
+        assertEquals(originalVTodo.getDuration(), vtodoOnServer.getDuration());
+        assertEquals(originalVTodo.getStartDate(), vtodoOnServer.getStartDate());
+        assertEquals(originalVTodo.getDue(), vtodoOnServer.getDue());
+        assertEquals(originalVTodo.getSummary(), vtodoOnServer.getSummary());
+        assertEquals(originalVTodo.getUid(), vtodoOnServer.getUid());
+    }
+
+    private Calendar buildVTodo(UUID uuid) {
+        CalendarBuilder builder = new CalendarBuilder();
+        Calendar calendar = new Calendar();
+        calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+        calendar.getProperties().add(Version.VERSION_2_0);
+        calendar.getProperties().add(CalScale.GREGORIAN);
+        TimeZoneRegistry registry = builder.getRegistry();
+        VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
+        calendar.getComponents().add(tz);
+        VToDo vtodo = new VToDo(new Date(), new Date(), "Test TODO " + uuid);
+        vtodo.getProperties().add(new Uid(uuid.toString()));
+        calendar.getComponents().add(vtodo);
+        return calendar;
+    }
+
+    private Calendar buildVevent(UUID uuid) {
         CalendarBuilder builder = new CalendarBuilder();
         Calendar c = new Calendar();
         c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
