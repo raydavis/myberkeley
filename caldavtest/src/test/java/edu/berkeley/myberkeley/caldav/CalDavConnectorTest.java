@@ -39,7 +39,7 @@ public class CalDavConnectorTest extends Assert {
         this.connector = new CalDavConnector("vbede", "bedework", USER_HOME);
 
         List<String> hrefs = this.connector.getCalendarHrefs();
-        for ( String href : hrefs ) {
+        for (String href : hrefs) {
             this.connector.deleteCalendar(SERVER_ROOT + href);
         }
     }
@@ -109,6 +109,33 @@ public class CalDavConnectorTest extends Assert {
         assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
         assertEquals(originalEvent.getUid(), eventOnServer.getUid());
 
+    }
+
+    @Test
+    public void putThenModify() throws CalDavException {
+        UUID uuid = UUID.randomUUID();
+        String href = USER_HOME + uuid.toString() + ".ics";
+        Calendar originalCalendar = buildVevent(uuid);
+        this.connector.putCalendar(href, originalCalendar);
+
+        VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
+        String newSummary = "Updated event";
+        VEvent newVevent = new VEvent(new Date(1234L),
+                new Dur(0, 1, 0, 0), newSummary);
+        newVevent.getProperties().add(new Uid(uuid.toString()));
+        originalCalendar.getComponents().remove(vevent);
+        originalCalendar.getComponents().add(newVevent);
+
+        this.connector.putCalendar(href, originalCalendar);
+
+        List<String> hrefs = new ArrayList<String>();
+        hrefs.add(href);
+        List<Calendar> calendars = this.connector.getCalendars(hrefs);
+        assertFalse(calendars.isEmpty());
+        Calendar newCalendar = calendars.get(0);
+        VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
+        assertEquals(newSummary, updatedEvent.getSummary().getValue());
+        assertEquals(new Date(1234L), updatedEvent.getStartDate().getDate());
     }
 
     @Test

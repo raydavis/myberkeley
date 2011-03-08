@@ -85,7 +85,6 @@ public class CalDavConnector {
 
     public void putCalendar(String uri, Calendar calendar) throws CalDavException {
         PutMethod put = new PutMethod(uri);
-        put.addRequestHeader("If-None-Match", "*");
         try {
             put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
         } catch (UnsupportedEncodingException uee) {
