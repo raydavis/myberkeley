@@ -37,6 +37,13 @@
         <artifactId>maven-scr-plugin</artifactId>
         <version>1.4.4</version>
       </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <skip>${caldav.skiptests}</skip>
+          </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>

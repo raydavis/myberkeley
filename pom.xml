@@ -5,10 +5,6 @@
   <artifactId>edu.berkeley.myberkeley.base</artifactId>
   <packaging>pom</packaging>
   <version>0.10-SNAPSHOT</version>
-    <modules>
-        <module>caldav</module>
-        <module>caldav</module>
-    </modules>
     <name>MyBerkeley</name>
   <url>http://ets.berkeley.edu/</url>
   <issueManagement>
@@ -22,6 +18,7 @@
     <loaddata.server>http://localhost:8080/</loaddata.server>
     <loaddata.password>admin</loaddata.password>
     <loaddata.numusers>32</loaddata.numusers>
+    <caldav.skiptests>true</caldav.skiptests>
   </properties>
   <profiles>
     <profile>
@@ -32,6 +29,7 @@
       <modules>
         <module>notices</module>
         <module>root</module>
+        <module>caldav</module>
       </modules>
     </profile>
     <profile>
