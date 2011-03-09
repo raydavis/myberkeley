@@ -5,6 +5,7 @@ import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
 import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -38,6 +39,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
+
+    public static final String MYBERKELEY_REQUIRED_PROPERTY_NAME = Component.EXPERIMENTAL_PREFIX + "MYBERKELEY-REQUIRED";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
