@@ -160,9 +160,9 @@ public class CalDavConnectorTest extends Assert {
         calendar.getProperties().add(Version.VERSION_2_0);
         calendar.getProperties().add(CalScale.GREGORIAN);
         TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
+        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "Req'd Test TODO " + uuid);
+        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "Required TODO " + uuid);
         vtodo.getProperties().add(new Uid(uuid.toString()));
         vtodo.getProperties().add(new XProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME, "true"));
         calendar.getComponents().add(vtodo);
@@ -176,7 +176,7 @@ public class CalDavConnectorTest extends Assert {
         c.getProperties().add(Version.VERSION_2_0);
         c.getProperties().add(CalScale.GREGORIAN);
         TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("Europe/Madrid").getVTimeZone();
+        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         c.getComponents().add(tz);
         String summary = "caldavtest uuid = " + uuid;
         VEvent vevent = new VEvent(new DateTime(),
