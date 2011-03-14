@@ -56,21 +56,21 @@ public class CalDavConnector {
 
     private final HttpClient client = new HttpClient();
 
-    private final String uri;
+    private final String baseUri;
 
     private final String username;
 
-    public CalDavConnector(String username, String password, String uri) {
+    public CalDavConnector(String username, String password, String baseUri) {
         HttpState httpState = new HttpState();
         Credentials credentials = new UsernamePasswordCredentials(username, password);
         httpState.setCredentials(AuthScope.ANY, credentials);
         this.client.setState(httpState);
-        this.uri = uri;
+        this.baseUri = baseUri;
         this.username = username;
     }
 
     public void getOptions() throws CalDavException {
-        executeMethod(new OptionsMethod(this.uri));
+        executeMethod(new OptionsMethod(this.baseUri));
     }
 
     /**
@@ -81,7 +81,7 @@ public class CalDavConnector {
     public List<String> getAllUris() throws CalDavException {
         List<String> uris = new ArrayList<String>();
         try {
-            PropFindMethod propFind = executeMethod(new PropFindMethod(this.uri));
+            PropFindMethod propFind = executeMethod(new PropFindMethod(this.baseUri));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
             for (MultiStatusResponse response : responses) {
                 if (response.getHref().endsWith(".ics")) {
@@ -135,7 +135,7 @@ public class CalDavConnector {
             return calendars;
         }
         try {
-            report = new ReportMethod(this.uri, reportInfo);
+            report = new ReportMethod(this.baseUri, reportInfo);
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
