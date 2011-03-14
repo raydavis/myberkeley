@@ -40,7 +40,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
@@ -48,6 +51,9 @@ public class CalDavConnector {
     public static final String MYBERKELEY_REQUIRED_PROPERTY_NAME = Component.EXPERIMENTAL_PREFIX + "MYBERKELEY-REQUIRED";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
+
+    private static final Set<Integer> ALLOWABLE_HTTP_STATUS_CODES = new HashSet<Integer>(Arrays.asList(
+            HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_MULTI_STATUS));
 
     private final HttpClient client = new HttpClient();
 
@@ -170,10 +176,7 @@ public class CalDavConnector {
         try {
             this.client.executeMethod(method);
             logRequest(method);
-            if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST || method.getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                throw new BadRequestException("Bad request on uri " + method.getURI() + "; statusText=" +
-                        method.getStatusText(), method.getStatusCode());
-            }
+            checkStatus(method);
         } catch (HttpClientError hce) {
             throw new CalDavException("Error running " + method.getName(), hce);
         } catch (IOException ioe) {
@@ -186,13 +189,22 @@ public class CalDavConnector {
         return method;
     }
 
+    private void checkStatus(DavMethod request) throws BadRequestException, URIException {
+        if (!ALLOWABLE_HTTP_STATUS_CODES.contains(request.getStatusCode())) {
+            LOGGER.error(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
+                    request.getStatusLine().toString());
+            throw new BadRequestException("Bad request on uri " + request.getURI() + "; statusLine=" +
+                    request.getStatusLine().toString());
+        }
+    }
+
     private void logRequest(DavMethod request) {
         try {
-            LOGGER.info("Request on uri " + request.getURI());
+            LOGGER.info(request.getClass().getSimpleName() + " on uri " + request.getURI());
         } catch (URIException uie) {
             LOGGER.error("Got URIException when trying to log request", uie);
         }
-        LOGGER.info("Status: " + request.getStatusCode() + " " + request.getStatusText());
+        LOGGER.info("Status: " + request.getStatusLine().toString());
         for (Header header : request.getResponseHeaders()) {
             LOGGER.info(header.getName() + ": " + header.getValue());
         }
