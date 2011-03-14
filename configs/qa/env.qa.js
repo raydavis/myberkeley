@@ -4,7 +4,7 @@ define(["/dev/configuration/config.js"], function(config) {
     // Tracking and statistics
     config.Tracking = {
         GoogleAnalytics: {
-            WebPropertyID : "UA-20616179-3"
+            WebPropertyID : "UA-21809393-2"
         }
     };
 	
