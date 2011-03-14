@@ -6,11 +6,13 @@ import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Dur;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
+import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
@@ -189,9 +191,9 @@ public class CalDavConnectorTest extends Assert {
         assertEquals(originalVTodo.getDue(), vtodoOnServer.getDue());
         assertEquals(originalVTodo.getSummary(), vtodoOnServer.getSummary());
         assertEquals(originalVTodo.getUid(), vtodoOnServer.getUid());
-        assertEquals(originalVTodo.getProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME).getValue(),
-                vtodoOnServer.getProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME).getValue());
-        assertEquals("true", vtodoOnServer.getProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME).getValue());
+        assertEquals(originalVTodo.getProperty(Property.CATEGORIES).getValue(),
+                vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
+        assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
     }
 
     private Calendar buildVTodo(UUID uuid) {
@@ -205,7 +207,7 @@ public class CalDavConnectorTest extends Assert {
         calendar.getComponents().add(tz);
         VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "TODO created by admin " + uuid);
         vtodo.getProperties().add(new Uid(uuid.toString()));
-        vtodo.getProperties().add(new XProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME, "true"));
+        vtodo.getProperties().add(new Categories(CalDavConnector.MYBERKELEY_REQUIRED));
         calendar.getComponents().add(vtodo);
         return calendar;
     }

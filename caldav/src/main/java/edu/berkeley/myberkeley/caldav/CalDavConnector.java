@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
-    public static final String MYBERKELEY_REQUIRED_PROPERTY_NAME = Component.EXPERIMENTAL_PREFIX + "MYBERKELEY-REQUIRED";
+    public static final String MYBERKELEY_REQUIRED = "MyBerkeley-Required";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
