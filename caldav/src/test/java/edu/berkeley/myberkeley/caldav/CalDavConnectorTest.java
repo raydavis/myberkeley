@@ -55,53 +55,53 @@ public class CalDavConnectorTest extends Assert {
     @Test
     public void putCalendar() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
 
         Calendar calendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, calendar, OWNER);
+        this.adminConnector.putCalendar(uri, calendar, OWNER);
 
-        boolean found = doesHrefExist(href);
+        boolean found = doesEntryExist(uri);
         assertTrue(found);
     }
 
     @Test
     public void delete() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
 
         Calendar calendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, calendar, OWNER);
-        assertTrue(doesHrefExist(href));
-        this.adminConnector.deleteCalendar(href);
-        assertFalse(doesHrefExist(href));
+        this.adminConnector.putCalendar(uri, calendar, OWNER);
+        assertTrue(doesEntryExist(uri));
+        this.adminConnector.deleteCalendar(uri);
+        assertFalse(doesEntryExist(uri));
     }
 
     @Ignore
     @Test
     public void deleteAll() throws CalDavException {
-        List<String> hrefs = this.adminConnector.getCalendarHrefs();
-        for (String href : hrefs) {
-            this.adminConnector.deleteCalendar(SERVER_ROOT + href);
+        List<String> uris = this.adminConnector.getAllUris();
+        for (String uri : uris) {
+            this.adminConnector.deleteCalendar(SERVER_ROOT + uri);
         }
     }
 
     @Test
     public void getCalendars() throws CalDavException {
-        List<String> hrefs = this.adminConnector.getCalendarHrefs();
-        this.adminConnector.getCalendars(hrefs);
+        List<String> uris = this.adminConnector.getAllUris();
+        this.adminConnector.getCalendars(uris);
     }
 
     @Test
     public void putThenGetCalendarEntry() throws CalDavException {
 
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, originalCalendar, OWNER);
+        this.adminConnector.putCalendar(uri, originalCalendar, OWNER);
 
-        List<String> hrefs = new ArrayList<String>();
-        hrefs.add(href);
-        List<Calendar> calendars = this.adminConnector.getCalendars(hrefs);
+        List<String> uris = new ArrayList<String>();
+        uris.add(uri);
+        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
 
         Calendar calOnServer = calendars.get(0);
@@ -119,35 +119,35 @@ public class CalDavConnectorTest extends Assert {
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToPutAnAdminCreatedEvent() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, originalCalendar, OWNER);
-        this.userConnector.putCalendar(href, originalCalendar, OWNER);
+        this.adminConnector.putCalendar(uri, originalCalendar, OWNER);
+        this.userConnector.putCalendar(uri, originalCalendar, OWNER);
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToDelete() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, originalCalendar, OWNER);
-        this.userConnector.deleteCalendar(href);
+        this.adminConnector.putCalendar(uri, originalCalendar, OWNER);
+        this.userConnector.deleteCalendar(uri);
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserAbleToPutOwnEvent() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.userConnector.putCalendar(href, originalCalendar, OWNER);
+        this.userConnector.putCalendar(uri, originalCalendar, OWNER);
     }
 
     @Test
     public void putThenModify() throws CalDavException {
         UUID uuid = UUID.randomUUID();
-        String href = USER_HOME + uuid.toString() + ".ics";
+        String uri = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.adminConnector.putCalendar(href, originalCalendar, OWNER);
+        this.adminConnector.putCalendar(uri, originalCalendar, OWNER);
 
         long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
         VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -158,11 +158,11 @@ public class CalDavConnectorTest extends Assert {
         originalCalendar.getComponents().remove(vevent);
         originalCalendar.getComponents().add(newVevent);
 
-        this.adminConnector.putCalendar(href, originalCalendar, OWNER);
+        this.adminConnector.putCalendar(uri, originalCalendar, OWNER);
 
-        List<String> hrefs = new ArrayList<String>();
-        hrefs.add(href);
-        List<Calendar> calendars = this.adminConnector.getCalendars(hrefs);
+        List<String> uris = new ArrayList<String>();
+        uris.add(uri);
+        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
         Calendar newCalendar = calendars.get(0);
         VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
@@ -175,12 +175,12 @@ public class CalDavConnectorTest extends Assert {
     public void putTodo() throws CalDavException {
         UUID uuid = UUID.randomUUID();
         Calendar calendar = buildVTodo(uuid);
-        String href = USER_HOME + uuid.toString() + ".ics";
-        this.adminConnector.putCalendar(href, calendar, OWNER);
+        String uri = USER_HOME + uuid.toString() + ".ics";
+        this.adminConnector.putCalendar(uri, calendar, OWNER);
 
-        List<String> hrefs = new ArrayList<String>(1);
-        hrefs.add(href);
-        List<Calendar> calendars = this.adminConnector.getCalendars(hrefs);
+        List<String> uris = new ArrayList<String>(1);
+        uris.add(uri);
+        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
         Calendar calOnServer = calendars.get(0);
         VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
         VToDo originalVTodo = (VToDo) calendar.getComponent(Component.VTODO);
@@ -228,9 +228,9 @@ public class CalDavConnectorTest extends Assert {
         return c;
     }
 
-    private boolean doesHrefExist(String href) throws CalDavException {
-        for (String thisHref : this.adminConnector.getCalendarHrefs()) {
-            if ((SERVER_ROOT + thisHref).equals(href)) {
+    private boolean doesEntryExist(String uri) throws CalDavException {
+        for (String thisURI : this.adminConnector.getAllUris()) {
+            if ((SERVER_ROOT + thisURI).equals(uri)) {
                 return true;
             }
         }

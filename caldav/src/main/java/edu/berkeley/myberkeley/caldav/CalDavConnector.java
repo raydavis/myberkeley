@@ -74,12 +74,12 @@ public class CalDavConnector {
     }
 
     /**
-     * Returns the user's calendar entries (all of them) as a set of HREFs
+     * Returns the user's calendar entries (all of them) as a set of URIs
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<String> getCalendarHrefs() throws CalDavException {
-        List<String> hrefs = new ArrayList<String>();
+    public List<String> getAllUris() throws CalDavException {
+        List<String> uris = new ArrayList<String>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.uri));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
@@ -87,18 +87,21 @@ public class CalDavConnector {
                 if (response.getHref().endsWith(".ics")) {
                     Status[] status = response.getStatus();
                     if (status.length == 1 && status[0].getStatusCode() == HttpServletResponse.SC_OK) {
-                        hrefs.add(response.getHref());
+                        uris.add(response.getHref());
                     }
                 }
             }
         } catch (IOException ioe) {
-            throw new CalDavException("IO error getting calendar hrefs ", ioe);
+            throw new CalDavException("IO error getting calendar URIs ", ioe);
         } catch (DavException de) {
-            throw new CalDavException("DavException getting calendar hrefs", de);
+            throw new CalDavException("DavException getting calendar URIs", de);
         }
-        return hrefs;
+        return uris;
     }
 
+    /**
+     * Write a calendar to specified uri.
+     */
     public void putCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
         PutMethod put = new PutMethod(uri);
         try {
@@ -113,38 +116,22 @@ public class CalDavConnector {
         restrictPermissions(uri, ownerID);
     }
 
-    private void restrictPermissions(String uri, String ownerID) throws CalDavException {
-        // owner can only read and write, admin can do anything
-        Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
-        Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
-        Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
-        Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,
-                Privilege.PRIVILEGE_WRITE_CONTENT, Privilege.PRIVILEGE_WRITE_PROPERTIES};
-        AclProperty.Ace[] aces = new AclProperty.Ace[]{
-                AclProperty.createDenyAce(owner, new Privilege[]{Privilege.PRIVILEGE_ALL}, false, false, null),
-                AclProperty.createGrantAce(owner, ownerPrivs, false, false, null),
-                AclProperty.createGrantAce(admin, adminPrivs, false, false, null)
-        };
-        AclProperty acl = new AclProperty(aces);
-        AclMethod aclMethod;
-        try {
-            aclMethod = new AclMethod(uri, acl);
-            executeMethod(aclMethod);
-        } catch (IOException ioe) {
-            LOGGER.error("Got exception setting ACL", ioe);
-        }
-    }
-
+    /**
+     * Deletes a calendar entry at specified uri.
+     */
     public void deleteCalendar(String uri) throws CalDavException {
         DeleteMethod deleteMethod = new DeleteMethod(uri);
         executeMethod(deleteMethod);
     }
 
-    public List<Calendar> getCalendars(List<String> hrefs) throws CalDavException {
-        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
+    /**
+     * Get calendar entries by their URIs. Use the output of #getAllUris as the input to this method.
+     */
+    public List<Calendar> getCalendars(List<String> uris) throws CalDavException {
+        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uris);
         ReportMethod report = null;
         List<Calendar> calendars = new ArrayList<Calendar>();
-        if (hrefs.isEmpty()) {
+        if (uris.isEmpty()) {
             return calendars;
         }
         try {
@@ -208,4 +195,27 @@ public class CalDavConnector {
             LOGGER.info(header.getName() + ": " + header.getValue());
         }
     }
+
+    private void restrictPermissions(String uri, String ownerID) throws CalDavException {
+        // owner can only read and write, admin can do anything
+        Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
+        Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
+        Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
+        Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,
+                Privilege.PRIVILEGE_WRITE_CONTENT, Privilege.PRIVILEGE_WRITE_PROPERTIES};
+        AclProperty.Ace[] aces = new AclProperty.Ace[]{
+                AclProperty.createDenyAce(owner, new Privilege[]{Privilege.PRIVILEGE_ALL}, false, false, null),
+                AclProperty.createGrantAce(owner, ownerPrivs, false, false, null),
+                AclProperty.createGrantAce(admin, adminPrivs, false, false, null)
+        };
+        AclProperty acl = new AclProperty(aces);
+        AclMethod aclMethod;
+        try {
+            aclMethod = new AclMethod(uri, acl);
+            executeMethod(aclMethod);
+        } catch (IOException ioe) {
+            LOGGER.error("Got exception setting ACL", ioe);
+        }
+    }
+
 }
