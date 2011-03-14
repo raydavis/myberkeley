@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
@@ -95,9 +96,23 @@ public class CalDavConnector {
     }
 
     /**
-     * Write a calendar to specified uri.
+     * Write the specified calendar and grant appropriate permissions on it to ownerID.
+     * @return The URI of the newly created calendar entry.
      */
-    public void putCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
+    public String putCalendar(Calendar calendar, String ownerID) throws CalDavException {
+        return modifyCalendar(null, calendar, ownerID);
+    }
+
+    /**
+     * Write the specified calendar at the specified URI, deleting the previous entry if one already exists at the URI.
+     * @return The URI of the calendar entry.
+     */
+    public String modifyCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
+        if ( uri == null ) {
+           uri = this.baseUri + UUID.randomUUID().toString() + ".ics";
+        } else {
+            deleteCalendar(uri);
+        }
         PutMethod put = new PutMethod(uri);
         try {
             if (LOGGER.isDebugEnabled()) {
@@ -109,6 +124,7 @@ public class CalDavConnector {
         }
         executeMethod(put);
         restrictPermissions(uri, ownerID);
+        return uri;
     }
 
     /**
