@@ -11,6 +11,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpClientError;
 import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -169,6 +170,10 @@ public class CalDavConnector {
         try {
             this.client.executeMethod(method);
             logRequest(method);
+            if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST || method.getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                throw new BadRequestException("Bad request on uri " + method.getURI() + "; statusText=" +
+                        method.getStatusText(), method.getStatusCode());
+            }
         } catch (HttpClientError hce) {
             throw new CalDavException("Error running " + method.getName(), hce);
         } catch (IOException ioe) {
