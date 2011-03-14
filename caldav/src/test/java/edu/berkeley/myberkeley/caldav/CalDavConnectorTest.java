@@ -16,6 +16,7 @@ import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import net.fortuna.ical4j.model.property.XProperty;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -33,11 +34,13 @@ public class CalDavConnectorTest extends Assert {
 
     private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/vbede/calendar/";
 
+    private static final String OWNER = "vbede";
+
     private CalDavConnector connector;
 
     @Before
     public void setup() throws CalDavException {
-        this.connector = new CalDavConnector("vbede", "bedework", USER_HOME);
+        this.connector = new CalDavConnector("admin", "bedework", USER_HOME);
     }
 
     @Test
@@ -51,7 +54,7 @@ public class CalDavConnectorTest extends Assert {
         String href = USER_HOME + uuid.toString() + ".ics";
 
         Calendar calendar = buildVevent(uuid);
-        this.connector.putCalendar(href, calendar);
+        this.connector.putCalendar(href, calendar, OWNER);
 
         boolean found = doesHrefExist(href);
         assertTrue(found);
@@ -63,10 +66,19 @@ public class CalDavConnectorTest extends Assert {
         String href = USER_HOME + uuid.toString() + ".ics";
 
         Calendar calendar = buildVevent(uuid);
-        this.connector.putCalendar(href, calendar);
+        this.connector.putCalendar(href, calendar, OWNER);
         assertTrue(doesHrefExist(href));
         this.connector.deleteCalendar(href);
         assertFalse(doesHrefExist(href));
+    }
+
+    @Ignore
+    @Test
+    public void deleteAll() throws CalDavException {
+        List<String> hrefs = this.connector.getCalendarHrefs();
+        for ( String href : hrefs ) {
+            this.connector.deleteCalendar(SERVER_ROOT + href);
+        }
     }
 
     @Test
@@ -81,7 +93,7 @@ public class CalDavConnectorTest extends Assert {
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.connector.putCalendar(href, originalCalendar);
+        this.connector.putCalendar(href, originalCalendar, OWNER);
 
         List<String> hrefs = new ArrayList<String>();
         hrefs.add(href);
@@ -105,7 +117,7 @@ public class CalDavConnectorTest extends Assert {
         UUID uuid = UUID.randomUUID();
         String href = USER_HOME + uuid.toString() + ".ics";
         Calendar originalCalendar = buildVevent(uuid);
-        this.connector.putCalendar(href, originalCalendar);
+        this.connector.putCalendar(href, originalCalendar, OWNER);
 
         long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
         VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -116,7 +128,7 @@ public class CalDavConnectorTest extends Assert {
         originalCalendar.getComponents().remove(vevent);
         originalCalendar.getComponents().add(newVevent);
 
-        this.connector.putCalendar(href, originalCalendar);
+        this.connector.putCalendar(href, originalCalendar, OWNER);
 
         List<String> hrefs = new ArrayList<String>();
         hrefs.add(href);
@@ -134,7 +146,7 @@ public class CalDavConnectorTest extends Assert {
         UUID uuid = UUID.randomUUID();
         Calendar calendar = buildVTodo(uuid);
         String href = USER_HOME + uuid.toString() + ".ics";
-        this.connector.putCalendar(href, calendar);
+        this.connector.putCalendar(href, calendar, OWNER);
 
         List<String> hrefs = new ArrayList<String>(1);
         hrefs.add(href);
@@ -162,7 +174,7 @@ public class CalDavConnectorTest extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "Required TODO " + uuid);
+        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "TODO created by admin " + uuid);
         vtodo.getProperties().add(new Uid(uuid.toString()));
         vtodo.getProperties().add(new XProperty(CalDavConnector.MYBERKELEY_REQUIRED_PROPERTY_NAME, "true"));
         calendar.getComponents().add(vtodo);

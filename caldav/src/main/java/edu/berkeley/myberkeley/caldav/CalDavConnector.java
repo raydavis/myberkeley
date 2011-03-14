@@ -19,6 +19,7 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
+import org.apache.jackrabbit.webdav.client.methods.AclMethod;
 import org.apache.jackrabbit.webdav.client.methods.DavMethod;
 import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
 import org.apache.jackrabbit.webdav.client.methods.OptionsMethod;
@@ -27,6 +28,9 @@ import org.apache.jackrabbit.webdav.client.methods.PutMethod;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
 import org.apache.jackrabbit.webdav.property.DavProperty;
 import org.apache.jackrabbit.webdav.property.DavPropertySet;
+import org.apache.jackrabbit.webdav.security.AclProperty;
+import org.apache.jackrabbit.webdav.security.Principal;
+import org.apache.jackrabbit.webdav.security.Privilege;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +52,15 @@ public class CalDavConnector {
 
     private final String uri;
 
+    private final String username;
+
     public CalDavConnector(String username, String password, String uri) {
         HttpState httpState = new HttpState();
         Credentials credentials = new UsernamePasswordCredentials(username, password);
         httpState.setCredentials(AuthScope.ANY, credentials);
         this.client.setState(httpState);
         this.uri = uri;
+        this.username = username;
     }
 
     public void getOptions() throws CalDavException {
@@ -86,10 +93,10 @@ public class CalDavConnector {
         return hrefs;
     }
 
-    public void putCalendar(String uri, Calendar calendar) throws CalDavException {
+    public void putCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
         PutMethod put = new PutMethod(uri);
         try {
-            if ( LOGGER.isDebugEnabled() ) {
+            if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Saving calendar data: " + calendar.toString());
             }
             put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
@@ -97,6 +104,29 @@ public class CalDavConnector {
             LOGGER.error("Got unsupported encoding exception", uee);
         }
         executeMethod(put);
+        restrictPermissions(uri, ownerID);
+    }
+
+    private void restrictPermissions(String uri, String ownerID) throws CalDavException {
+        // owner can only read and write, admin can do anything
+        Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
+        Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
+        Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
+        Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,
+                Privilege.PRIVILEGE_WRITE_CONTENT, Privilege.PRIVILEGE_WRITE_PROPERTIES};
+        AclProperty.Ace[] aces = new AclProperty.Ace[]{
+                AclProperty.createDenyAce(owner, new Privilege[]{Privilege.PRIVILEGE_ALL}, false, false, null),
+                AclProperty.createGrantAce(owner, ownerPrivs, false, false, null),
+                AclProperty.createGrantAce(admin, adminPrivs, false, false, null)
+        };
+        AclProperty acl = new AclProperty(aces);
+        AclMethod aclMethod;
+        try {
+            aclMethod = new AclMethod(uri, acl);
+            executeMethod(aclMethod);
+        } catch (IOException ioe) {
+            LOGGER.error("Got exception setting ACL", ioe);
+        }
     }
 
     public void deleteCalendar(String uri) throws CalDavException {
@@ -108,7 +138,7 @@ public class CalDavConnector {
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), hrefs);
         ReportMethod report = null;
         List<Calendar> calendars = new ArrayList<Calendar>();
-        if ( hrefs.isEmpty() ) {
+        if (hrefs.isEmpty()) {
             return calendars;
         }
         try {
