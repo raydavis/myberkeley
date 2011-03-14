@@ -22,7 +22,6 @@ import org.apache.jackrabbit.webdav.Status;
 import org.apache.jackrabbit.webdav.client.methods.AclMethod;
 import org.apache.jackrabbit.webdav.client.methods.DavMethod;
 import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
-import org.apache.jackrabbit.webdav.client.methods.OptionsMethod;
 import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
 import org.apache.jackrabbit.webdav.client.methods.PutMethod;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
@@ -67,10 +66,6 @@ public class CalDavConnector {
         this.client.setState(httpState);
         this.baseUri = baseUri;
         this.username = username;
-    }
-
-    public void getOptions() throws CalDavException {
-        executeMethod(new OptionsMethod(this.baseUri));
     }
 
     /**

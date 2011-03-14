@@ -48,11 +48,6 @@ public class CalDavConnectorTest extends Assert {
     }
 
     @Test
-    public void getOptions() throws CalDavException {
-        this.adminConnector.getOptions();
-    }
-
-    @Test
     public void putCalendar() throws CalDavException {
         UUID uuid = UUID.randomUUID();
         String uri = USER_HOME + uuid.toString() + ".ics";
