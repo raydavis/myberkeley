@@ -16,7 +16,6 @@ import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
-import net.fortuna.ical4j.model.property.XProperty;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
