@@ -201,7 +201,12 @@ public class CalDavConnector {
         } catch (URIException uie) {
             LOGGER.error("Got URIException when trying to log request", uie);
         }
+        LOGGER.info("Request headers: ");
+        for (Header header : request.getRequestHeaders()) {
+            LOGGER.info(header.getName() + ": " + header.getValue());
+        }
         LOGGER.info("Status: " + request.getStatusLine().toString());
+        LOGGER.info("Response headers: ");
         for (Header header : request.getResponseHeaders()) {
             LOGGER.info(header.getName() + ": " + header.getValue());
         }

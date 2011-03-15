@@ -149,6 +149,13 @@ public class CalDavConnectorTest extends Assert {
 
     }
 
+    @Test(expected = BadRequestException.class)
+    public void modifyNonExistent() throws CalDavException {
+        Calendar calendar = buildVevent();
+        String uri = USER_HOME + "random-" + System.currentTimeMillis() + ".ics";
+        this.adminConnector.modifyCalendar(uri, calendar, OWNER);
+    }
+
     @Test
     public void putTodo() throws CalDavException {
         Calendar calendar = buildVTodo();
