@@ -70,8 +70,6 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         try {
             write.object();
-            write.key("entries");
-            write.object();
 
             // VEvents
             write.key("vevents");
@@ -96,8 +94,6 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             write.endArray();
 
             write.endObject();
-            write.endObject();
-
 
         } catch (JSONException je) {
             LOGGER.error("Failed to convert calendar to JSON", je);
