@@ -23,12 +23,11 @@
         <configuration>
           <instructions>
             <Bundle-Category>myberkeley</Bundle-Category>
-            <Import-Package>
-			   !org.junit.*,
-               *
-			</Import-Package>
+            <Import-Package>!com.sun.*,!sun.misc,*!org.junit.*,*</Import-Package>
+            <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
             <Export-Package> edu.berkeley.myberkeley.caldav.*, edu.berkeley.myberkeley.caldav.report.* </Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
+            <Embed-Dependency>ical4j,jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
 		</instructions>
         </configuration>
       </plugin>
@@ -148,6 +147,12 @@
       <artifactId>ical4j</artifactId>
       <version>1.0-rc3</version>
       <scope>compile</scope>
+    </dependency>
+<!-- ical4j requires this package -->
+    <dependency>
+      <groupId>backport-util-concurrent</groupId>
+      <artifactId>backport-util-concurrent</artifactId>
+      <version>3.1</version>
     </dependency>
 
 <!-- java -->

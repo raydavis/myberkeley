@@ -1,27 +1,18 @@
 package edu.berkeley.myberkeley.caldav;
 
-import junit.framework.Assert;
-import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
-import net.fortuna.ical4j.model.property.CalScale;
-import net.fortuna.ical4j.model.property.Categories;
-import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
-import net.fortuna.ical4j.model.property.Version;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +21,7 @@ import java.util.UUID;
  * It assumes test.media.berkeley.edu is up and running Bedework on port 8080.
  */
 
-public class CalDavConnectorTest extends Assert {
+public class CalDavConnectorTest extends CalDavTests {
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
@@ -50,7 +41,7 @@ public class CalDavConnectorTest extends Assert {
 
     @Test
     public void putCalendar() throws CalDavException {
-        Calendar calendar = buildVevent();
+        Calendar calendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(calendar, OWNER);
         boolean found = doesEntryExist(uri);
         assertTrue(found);
@@ -58,7 +49,7 @@ public class CalDavConnectorTest extends Assert {
 
     @Test
     public void delete() throws CalDavException {
-        Calendar calendar = buildVevent();
+        Calendar calendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(calendar, OWNER);
         assertTrue(doesEntryExist(uri));
         this.adminConnector.deleteCalendar(uri);
@@ -82,7 +73,7 @@ public class CalDavConnectorTest extends Assert {
 
     @Test
     public void putThenGetCalendarEntry() throws CalDavException {
-        Calendar originalCalendar = buildVevent();
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
         List<String> uris = new ArrayList<String>();
@@ -104,27 +95,27 @@ public class CalDavConnectorTest extends Assert {
 
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToPutAnAdminCreatedEvent() throws CalDavException {
-        Calendar originalCalendar = buildVevent();
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
         this.adminConnector.putCalendar(originalCalendar, OWNER);
         this.userConnector.putCalendar(originalCalendar, OWNER);
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToDelete() throws CalDavException {
-        Calendar originalCalendar = buildVevent();
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
         this.userConnector.deleteCalendar(uri);
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserAbleToPutOwnEvent() throws CalDavException {
-        Calendar originalCalendar = buildVevent();
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
         this.userConnector.putCalendar(originalCalendar, OWNER);
     }
 
     @Test
     public void putThenModify() throws CalDavException {
-        Calendar originalCalendar = buildVevent();
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
         long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
@@ -151,14 +142,14 @@ public class CalDavConnectorTest extends Assert {
 
     @Test(expected = BadRequestException.class)
     public void modifyNonExistent() throws CalDavException {
-        Calendar calendar = buildVevent();
+        Calendar calendar = buildVevent("Created by CalDavTests");
         String uri = USER_HOME + "random-" + System.currentTimeMillis() + ".ics";
         this.adminConnector.modifyCalendar(uri, calendar, OWNER);
     }
 
     @Test
     public void putTodo() throws CalDavException {
-        Calendar calendar = buildVTodo();
+        Calendar calendar = buildVTodo("Todo created by CalDavTests");
         String uri = this.adminConnector.putCalendar(calendar, OWNER);
 
         List<String> uris = new ArrayList<String>(1);
@@ -176,39 +167,6 @@ public class CalDavConnectorTest extends Assert {
         assertEquals(originalVTodo.getProperty(Property.CATEGORIES).getValue(),
                 vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
         assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
-    }
-
-    private Calendar buildVTodo() {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar calendar = new Calendar();
-        calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        calendar.getProperties().add(Version.VERSION_2_0);
-        calendar.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), "CalDavConnectorTest todo " + new Date().toString());
-        vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        vtodo.getProperties().add(new Categories(CalDavConnector.MYBERKELEY_REQUIRED));
-        calendar.getComponents().add(vtodo);
-        return calendar;
-    }
-
-    private Calendar buildVevent() {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar c = new Calendar();
-        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        c.getProperties().add(Version.VERSION_2_0);
-        c.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        c.getComponents().add(tz);
-        String summary = "CalDavConnectorTest event " + new Date().toString();
-        VEvent vevent = new VEvent(new DateTime(),
-                new Dur(0, 1, 0, 0), summary);
-        vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        c.getComponents().add(vevent);
-        return c;
     }
 
     private boolean doesEntryExist(String uri) throws CalDavException {
