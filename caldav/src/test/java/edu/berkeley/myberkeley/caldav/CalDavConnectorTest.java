@@ -9,7 +9,6 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.Uid;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -40,6 +39,14 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
+    public void deleteAll() throws CalDavException {
+        List<String> uris = this.adminConnector.getAllUris();
+        for (String uri : uris) {
+            this.adminConnector.deleteCalendar(SERVER_ROOT + uri);
+        }
+    }
+
+    @Test
     public void putCalendar() throws CalDavException {
         Calendar calendar = buildVevent("Created by CalDavTests");
         String uri = this.adminConnector.putCalendar(calendar, OWNER);
@@ -54,15 +61,6 @@ public class CalDavConnectorTest extends CalDavTests {
         assertTrue(doesEntryExist(uri));
         this.adminConnector.deleteCalendar(uri);
         assertFalse(doesEntryExist(uri));
-    }
-
-    @Ignore
-    @Test
-    public void deleteAll() throws CalDavException {
-        List<String> uris = this.adminConnector.getAllUris();
-        for (String uri : uris) {
-            this.adminConnector.deleteCalendar(SERVER_ROOT + uri);
-        }
     }
 
     @Test
