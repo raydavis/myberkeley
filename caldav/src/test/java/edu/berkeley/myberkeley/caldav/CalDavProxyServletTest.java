@@ -30,7 +30,7 @@ public class CalDavProxyServletTest extends Assert {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
-        servlet.doPost(request, response);
+        servlet.doGet(request, response);
 
         verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
                 Mockito.anyString());
