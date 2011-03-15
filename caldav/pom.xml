@@ -48,17 +48,23 @@
   </build>
   <dependencies>
 <!-- nakamura packages -->
-	<dependency>
-	  <groupId>org.sakaiproject.nakamura</groupId>
-	  <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-	  <version>0.10-SNAPSHOT</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.sakaiproject.nakamura</groupId>
-	  <artifactId>org.sakaiproject.nakamura.core</artifactId>
-	  <version>0.10-SNAPSHOT</version>
-	  <scope>provided</scope>
-	</dependency>
+      <dependency>
+          <groupId>org.sakaiproject.nakamura</groupId>
+          <artifactId>org.sakaiproject.nakamura.doc</artifactId>
+          <version>0.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+          <groupId>org.sakaiproject.nakamura</groupId>
+          <artifactId>org.sakaiproject.nakamura.core</artifactId>
+          <version>0.10-SNAPSHOT</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.sakaiproject.nakamura</groupId>
+          <artifactId>org.sakaiproject.nakamura.user</artifactId>
+          <version>0.10-SNAPSHOT</version>
+          <scope>provided</scope>
+      </dependency>
 
 <!-- OSGi -->
     <dependency>
@@ -120,6 +126,20 @@
       <artifactId>junit</artifactId>
       <version>4.4</version>
       <scope>test</scope>
+    </dependency>
+
+<!--  Tests -->
+    <dependency>
+      <groupId>org.sakaiproject.nakamura</groupId>
+      <artifactId>org.sakaiproject.nakamura.testutils</artifactId>
+      <version>0.10-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.sling</groupId>
+       <artifactId>org.apache.sling.commons.testing</artifactId>
+       <version>2.0.5-20100823</version>
+       <scope>test</scope>
     </dependency>
 
 <!-- calendar -->
