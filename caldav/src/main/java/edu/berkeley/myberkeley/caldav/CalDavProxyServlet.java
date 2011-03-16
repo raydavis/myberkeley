@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.PropertyList;
@@ -22,12 +21,12 @@ import org.sakaiproject.nakamura.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service(value = Servlet.class)
 @SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET"}, generateComponent = true, generateService = true)
@@ -53,7 +52,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector) throws IOException {
-        List<Calendar> calendars;
+        List<CalendarWrapper> calendars;
 
         try {
             List<CalendarUri> calendarUris = connector.getCalendarUris();
@@ -79,8 +78,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             // VEvents
             write.key("vevents");
             write.array();
-            for (Calendar calendar : calendars) {
-                ComponentList vevents = calendar.getComponents(Component.VEVENT);
+            for (CalendarWrapper wrapper : calendars) {
+                ComponentList vevents = wrapper.getCalendar().getComponents(Component.VEVENT);
                 for (Object vevent : vevents) {
                     writeCalendarComponent((VEvent) vevent, write);
                 }
@@ -90,8 +89,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             // VTodos
             write.key("vtodos");
             write.array();
-            for (Calendar calendar : calendars) {
-                ComponentList vtodos = calendar.getComponents(Component.VTODO);
+            for (CalendarWrapper wrapper : calendars) {
+                ComponentList vtodos = wrapper.getCalendar().getComponents(Component.VTODO);
                 for (Object vtodo : vtodos) {
                     writeCalendarComponent((VToDo) vtodo, write);
                 }

@@ -1,11 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import net.fortuna.ical4j.model.Calendar;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.junit.Before;
@@ -13,12 +7,15 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Mockito.*;
 
 public class CalDavProxyServletTest extends CalDavTests {
 
@@ -47,10 +44,10 @@ public class CalDavProxyServletTest extends CalDavTests {
         when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
         when(response.getWriter()).thenReturn(new PrintWriter(System.out));
         CalDavConnector connector = mock(CalDavConnector.class);
-        List<Calendar> calendars = new ArrayList<Calendar>();
-        calendars.add(buildVevent("Test 1"));
-        calendars.add(buildVevent("Test 2"));
-        calendars.add(buildVTodo("Todo Test 3"));
+        List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
+        calendars.add(new CalendarWrapper(buildVevent("Test 1"), "/url1"));
+        calendars.add(new CalendarWrapper(buildVevent("Test 2"), "/url2"));
+        calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), "/url3"));
         when(connector.getCalendars(anyListOf(String.class))).thenReturn(calendars);
         servlet.handleGet(response, connector);
 

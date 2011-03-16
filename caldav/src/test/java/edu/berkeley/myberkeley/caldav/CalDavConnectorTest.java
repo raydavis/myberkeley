@@ -80,10 +80,10 @@ public class CalDavConnectorTest extends CalDavTests {
 
         List<String> uris = new ArrayList<String>();
         uris.add(uri);
-        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
+        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
 
-        Calendar calOnServer = calendars.get(0);
+        Calendar calOnServer = calendars.get(0).getCalendar();
         VEvent eventOnServer = (VEvent) calOnServer.getComponent(Component.VEVENT);
         VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
 
@@ -133,9 +133,9 @@ public class CalDavConnectorTest extends CalDavTests {
 
         List<String> uris = new ArrayList<String>();
         uris.add(uri);
-        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
+        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
-        Calendar newCalendar = calendars.get(0);
+        Calendar newCalendar = calendars.get(0).getCalendar();
         VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
         assertEquals(newSummary, updatedEvent.getSummary().getValue());
         assertEquals(new DateTime(newStart), updatedEvent.getStartDate().getDate());
@@ -156,8 +156,8 @@ public class CalDavConnectorTest extends CalDavTests {
 
         List<String> uris = new ArrayList<String>(1);
         uris.add(uri);
-        List<Calendar> calendars = this.adminConnector.getCalendars(uris);
-        Calendar calOnServer = calendars.get(0);
+        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
+        Calendar calOnServer = calendars.get(0).getCalendar();
         VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
         VToDo originalVTodo = (VToDo) calendar.getComponent(Component.VTODO);
 

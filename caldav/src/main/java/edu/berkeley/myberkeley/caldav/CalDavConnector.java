@@ -137,10 +137,10 @@ public class CalDavConnector {
     /**
      * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
-    public List<Calendar> getCalendars(List<String> uris) throws CalDavException {
+    public List<CalendarWrapper> getCalendars(List<String> uris) throws CalDavException {
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uris);
         ReportMethod report = null;
-        List<Calendar> calendars = new ArrayList<Calendar>();
+        List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
         if (uris.isEmpty()) {
             return calendars;
         }
@@ -149,14 +149,14 @@ public class CalDavConnector {
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
-            for (MultiStatusResponse msResponse : multiStatus.getResponses()) {
-                DavPropertySet propSet = msResponse.getProperties(HttpServletResponse.SC_OK);
+            for (MultiStatusResponse response : multiStatus.getResponses()) {
+                DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
                 DavProperty prop = propSet.get(
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
                 CalendarBuilder builder = new CalendarBuilder();
-                net.fortuna.ical4j.model.Calendar c = builder.build(
+                net.fortuna.ical4j.model.Calendar calendar = builder.build(
                         new StringReader(prop.getValue().toString()));
-                calendars.add(c);
+                calendars.add(new CalendarWrapper(calendar, response.getHref()));
             }
         } catch (Exception e) {
             throw new CalDavException("Got exception doing report", e);
