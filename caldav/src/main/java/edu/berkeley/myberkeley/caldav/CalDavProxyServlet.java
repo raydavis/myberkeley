@@ -86,7 +86,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             JSONObject thisEvent = new JSONObject();
             ComponentList vevents = wrapper.getCalendar().getComponents(Component.VEVENT);
             for (Object vevent : vevents) {
-                writeCalendarComponent((VEvent) vevent, thisEvent);
+                writeCalendarComponent(wrapper, (VEvent) vevent, thisEvent);
                 events.put(wrapper.getUri().toString(), thisEvent);
             }
         }
@@ -96,7 +96,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             JSONObject thisTodo = new JSONObject();
             ComponentList vtodos = wrapper.getCalendar().getComponents(Component.VTODO);
             for (Object todo : vtodos) {
-                writeCalendarComponent((VToDo) todo, thisTodo);
+                writeCalendarComponent(wrapper, (VToDo) todo, thisTodo);
                 todos.put(wrapper.getUri().toString(), thisTodo);
             }
         }
@@ -107,7 +107,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         return obj;
     }
 
-    private void writeCalendarComponent(CalendarComponent calendarComponent, JSONObject obj) throws JSONException {
+    private void writeCalendarComponent(CalendarWrapper wrapper, CalendarComponent calendarComponent, JSONObject obj) throws JSONException {
+        obj.put("ETAG", DateUtils.iso8601(wrapper.getEtag()));
         PropertyList propertyList = calendarComponent.getProperties();
         for (Object prop : propertyList) {
             Property property = (Property) prop;

@@ -160,13 +160,17 @@ public class CalDavConnector {
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
             for (MultiStatusResponse response : multiStatus.getResponses()) {
                 DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+                DavProperty etag = propSet.get(DavPropertyName.GETETAG);
                 DavProperty prop = propSet.get(
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
                 if (prop != null) {
                     CalendarBuilder builder = new CalendarBuilder();
                     net.fortuna.ical4j.model.Calendar calendar = builder.build(
                             new StringReader(prop.getValue().toString()));
-                    calendars.add(new CalendarWrapper(calendar, new URI(this.serverRoot, response.getHref(), false)));
+                    calendars.add(new CalendarWrapper(
+                            calendar,
+                            new URI(this.serverRoot, response.getHref(), false),
+                            etag.getValue().toString()));
                 }
             }
         } catch (Exception e) {
