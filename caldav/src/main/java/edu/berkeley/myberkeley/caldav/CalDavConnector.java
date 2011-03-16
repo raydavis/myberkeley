@@ -5,28 +5,14 @@ import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
 import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.Date;
-import net.fortuna.ical4j.model.DateTime;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpClientError;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
-import org.apache.jackrabbit.webdav.client.methods.AclMethod;
-import org.apache.jackrabbit.webdav.client.methods.DavMethod;
-import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
-import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
-import org.apache.jackrabbit.webdav.client.methods.PutMethod;
-import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
+import org.apache.jackrabbit.webdav.client.methods.*;
 import org.apache.jackrabbit.webdav.property.DavProperty;
 import org.apache.jackrabbit.webdav.property.DavPropertyName;
 import org.apache.jackrabbit.webdav.property.DavPropertySet;
@@ -37,17 +23,12 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 public class CalDavConnector {
 
@@ -74,11 +55,18 @@ public class CalDavConnector {
     }
 
     /**
+     * Returns the URI of a calendar, given its UID.
+     */
+    public String buildUri(String calendarUID) {
+        return this.baseUri + calendarUID + ".ics";
+    }
+
+    /**
      * Returns the user's calendar entries (all of them) as a set of URIs
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<CalendarUri> getAllUris() throws CalDavException {
+    public List<CalendarUri> getCalendarUris() throws CalDavException {
         List<CalendarUri> uris = new ArrayList<CalendarUri>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.baseUri));
@@ -120,7 +108,7 @@ public class CalDavConnector {
      */
     public String modifyCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
         if ( uri == null ) {
-           uri = this.baseUri + UUID.randomUUID().toString() + ".ics";
+           uri = buildUri(UUID.randomUUID().toString());
         } else {
             deleteCalendar(uri);
         }
@@ -147,7 +135,7 @@ public class CalDavConnector {
     }
 
     /**
-     * Get calendar entries by their URIs. Use the output of #getAllUris as the input to this method.
+     * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
     public List<Calendar> getCalendars(List<String> uris) throws CalDavException {
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uris);

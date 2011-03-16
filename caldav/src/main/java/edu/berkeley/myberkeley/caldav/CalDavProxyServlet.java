@@ -56,7 +56,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         List<Calendar> calendars;
 
         try {
-            List<CalendarUri> calendarUris = connector.getAllUris();
+            List<CalendarUri> calendarUris = connector.getCalendarUris();
             List<String> uriStrings = new ArrayList<String>(calendarUris.size());
             for (CalendarUri uri : calendarUris) {
                 uriStrings.add(uri.getUri());
