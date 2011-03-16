@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void handleGet() throws ServletException, IOException, CalDavException {
+    public void handleGet() throws ServletException, IOException, CalDavException, ParseException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);

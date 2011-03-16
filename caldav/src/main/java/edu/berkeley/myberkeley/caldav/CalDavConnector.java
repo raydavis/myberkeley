@@ -144,7 +144,7 @@ public class CalDavConnector {
     public List<CalendarWrapper> getCalendars(List<CalendarUri> uris) throws CalDavException {
         List<String> uriStrings = new ArrayList<String>(uris.size());
         for ( CalendarUri uri : uris ) {
-            uriStrings.add(uri.getUri().toString());
+            uriStrings.add(uri.toString());
         }
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);
         ReportMethod report = null;

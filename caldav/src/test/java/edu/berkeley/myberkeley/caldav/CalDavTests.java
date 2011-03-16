@@ -20,6 +20,8 @@ import java.util.UUID;
 
 public abstract class CalDavTests extends Assert {
 
+    protected static final String RANDOM_ETAG = "20110316T191659Z-0";
+
     protected Calendar buildVevent(String summary) {
         CalendarBuilder builder = new CalendarBuilder();
         Calendar c = new Calendar();

@@ -27,8 +27,6 @@ public class CalDavConnectorTest extends CalDavTests {
 
     private static final String OWNER = "vbede";
 
-    private static final String RANDOM_ETAG = "20110316T191659Z-0";
-
     private CalDavConnector adminConnector;
 
     private CalDavConnector userConnector;
@@ -43,7 +41,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void deleteAll() throws CalDavException {
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
         for (CalendarUri uri : uris) {
-            this.adminConnector.deleteCalendar(uri.getUri());
+            this.adminConnector.deleteCalendar(uri);
         }
         assertTrue(this.adminConnector.getCalendarUris().isEmpty());
     }
@@ -72,7 +70,7 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void putThenGetCalendarEntry() throws CalDavException, ParseException {
+    public void putThenGetCalendarEntry() throws CalDavException, ParseException, URIException {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
         URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
@@ -114,7 +112,7 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void putThenModify() throws CalDavException, ParseException {
+    public void putThenModify() throws CalDavException, ParseException, URIException {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
         URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
@@ -149,7 +147,7 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void putTodo() throws CalDavException, ParseException {
+    public void putTodo() throws CalDavException, ParseException, URIException {
         Calendar calendar = buildVTodo("Todo created by CalDavTests");
         URI uri = this.adminConnector.putCalendar(calendar, OWNER);
 
@@ -172,7 +170,7 @@ public class CalDavConnectorTest extends CalDavTests {
 
     private boolean doesEntryExist(URI uri) throws CalDavException {
         for (CalendarUri thisURI : this.adminConnector.getCalendarUris()) {
-            if ((thisURI.getUri().toString()).equals(uri.toString())) {
+            if ((thisURI.toString()).equals(uri.toString())) {
                 return true;
             }
         }
