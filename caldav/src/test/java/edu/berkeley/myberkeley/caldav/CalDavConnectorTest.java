@@ -40,9 +40,9 @@ public class CalDavConnectorTest extends CalDavTests {
 
     @Test
     public void deleteAll() throws CalDavException {
-        List<String> uris = this.adminConnector.getAllUris();
-        for (String uri : uris) {
-            this.adminConnector.deleteCalendar(SERVER_ROOT + uri);
+        List<CalendarUri> uris = this.adminConnector.getAllUris();
+        for (CalendarUri uri : uris) {
+            this.adminConnector.deleteCalendar(SERVER_ROOT + uri.getUri());
         }
     }
 
@@ -65,8 +65,12 @@ public class CalDavConnectorTest extends CalDavTests {
 
     @Test
     public void getCalendars() throws CalDavException {
-        List<String> uris = this.adminConnector.getAllUris();
-        this.adminConnector.getCalendars(uris);
+        List<CalendarUri> uris = this.adminConnector.getAllUris();
+        List<String> uriStrings = new ArrayList<String>(uris.size());
+        for ( CalendarUri uri : uris ) {
+            uriStrings.add(uri.getUri());
+        }
+        this.adminConnector.getCalendars(uriStrings);
     }
 
     @Test
@@ -168,8 +172,8 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     private boolean doesEntryExist(String uri) throws CalDavException {
-        for (String thisURI : this.adminConnector.getAllUris()) {
-            if ((SERVER_ROOT + thisURI).equals(uri)) {
+        for (CalendarUri thisURI : this.adminConnector.getAllUris()) {
+            if ((SERVER_ROOT + thisURI.getUri()).equals(uri)) {
                 return true;
             }
         }

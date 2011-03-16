@@ -5,6 +5,8 @@ import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
 import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -26,6 +28,7 @@ import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
 import org.apache.jackrabbit.webdav.client.methods.PutMethod;
 import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
 import org.apache.jackrabbit.webdav.property.DavProperty;
+import org.apache.jackrabbit.webdav.property.DavPropertyName;
 import org.apache.jackrabbit.webdav.property.DavPropertySet;
 import org.apache.jackrabbit.webdav.security.AclProperty;
 import org.apache.jackrabbit.webdav.security.Principal;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,8 +78,8 @@ public class CalDavConnector {
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<String> getAllUris() throws CalDavException {
-        List<String> uris = new ArrayList<String>();
+    public List<CalendarUri> getAllUris() throws CalDavException {
+        List<CalendarUri> uris = new ArrayList<CalendarUri>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.baseUri));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
@@ -83,7 +87,14 @@ public class CalDavConnector {
                 if (response.getHref().endsWith(".ics")) {
                     Status[] status = response.getStatus();
                     if (status.length == 1 && status[0].getStatusCode() == HttpServletResponse.SC_OK) {
-                        uris.add(response.getHref());
+                        DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+                        DavProperty etag = propSet.get(DavPropertyName.GETETAG);
+                        try {
+                            CalendarUri calUri = new CalendarUri(response.getHref(), etag.getValue().toString());
+                            uris.add(calUri);
+                        } catch ( ParseException pe ) {
+                            throw new CalDavException("Invalid etag date", pe);
+                        }
                     }
                 }
             }
@@ -200,10 +211,6 @@ public class CalDavConnector {
             LOGGER.info(request.getClass().getSimpleName() + " on uri " + request.getURI());
         } catch (URIException uie) {
             LOGGER.error("Got URIException when trying to log request", uie);
-        }
-        LOGGER.info("Request headers: ");
-        for (Header header : request.getRequestHeaders()) {
-            LOGGER.info(header.getName() + ": " + header.getValue());
         }
         LOGGER.info("Status: " + request.getStatusLine().toString());
         LOGGER.info("Response headers: ");
