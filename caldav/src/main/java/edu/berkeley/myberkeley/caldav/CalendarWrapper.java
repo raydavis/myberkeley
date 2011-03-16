@@ -1,14 +1,15 @@
 package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Calendar;
+import org.apache.commons.httpclient.URI;
 
 public class CalendarWrapper {
 
     private Calendar calendar;
 
-    private String uri;
+    private URI uri;
 
-    public CalendarWrapper(Calendar calendar, String uri) {
+    public CalendarWrapper(Calendar calendar, URI uri) {
         this.calendar = calendar;
         this.uri = uri;
     }
@@ -17,7 +18,7 @@ public class CalendarWrapper {
         return calendar;
     }
 
-    public String getUri() {
+    public URI getUri() {
         return uri;
     }
 

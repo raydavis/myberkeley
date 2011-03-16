@@ -41,16 +41,19 @@ public class CalDavConnector {
 
     private final HttpClient client = new HttpClient();
 
-    private final String baseUri;
+    private final URI serverRoot;
+
+    private final URI userHome;
 
     private final String username;
 
-    public CalDavConnector(String username, String password, String baseUri) {
+    public CalDavConnector(String username, String password, URI serverRoot, URI userHome) {
         HttpState httpState = new HttpState();
         Credentials credentials = new UsernamePasswordCredentials(username, password);
         httpState.setCredentials(AuthScope.ANY, credentials);
         this.client.setState(httpState);
-        this.baseUri = baseUri;
+        this.serverRoot = serverRoot;
+        this.userHome = userHome;
         this.username = username;
     }
 
@@ -58,7 +61,7 @@ public class CalDavConnector {
      * Returns the URI of a calendar, given its UID.
      */
     public String buildUri(String calendarUID) {
-        return this.baseUri + calendarUID + ".ics";
+        return this.userHome.toString() + calendarUID + ".ics";
     }
 
     /**
@@ -69,7 +72,7 @@ public class CalDavConnector {
     public List<CalendarUri> getCalendarUris() throws CalDavException {
         List<CalendarUri> uris = new ArrayList<CalendarUri>();
         try {
-            PropFindMethod propFind = executeMethod(new PropFindMethod(this.baseUri));
+            PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
             for (MultiStatusResponse response : responses) {
                 if (response.getHref().endsWith(".ics")) {
@@ -78,9 +81,11 @@ public class CalDavConnector {
                         DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
                         DavProperty etag = propSet.get(DavPropertyName.GETETAG);
                         try {
-                            CalendarUri calUri = new CalendarUri(response.getHref(), etag.getValue().toString());
+                            CalendarUri calUri = new CalendarUri(
+                                    new URI(this.serverRoot, response.getHref(), false),
+                                    etag.getValue().toString());
                             uris.add(calUri);
-                        } catch ( ParseException pe ) {
+                        } catch (ParseException pe) {
                             throw new CalDavException("Invalid etag date", pe);
                         }
                     }
@@ -96,6 +101,7 @@ public class CalDavConnector {
 
     /**
      * Write the specified calendar and grant appropriate permissions on it to ownerID.
+     *
      * @return The URI of the newly created calendar entry.
      */
     public String putCalendar(Calendar calendar, String ownerID) throws CalDavException {
@@ -104,11 +110,12 @@ public class CalDavConnector {
 
     /**
      * Write the specified calendar at the specified URI, deleting the previous entry if one already exists at the URI.
+     *
      * @return The URI of the calendar entry.
      */
     public String modifyCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
-        if ( uri == null ) {
-           uri = buildUri(UUID.randomUUID().toString());
+        if (uri == null) {
+            uri = buildUri(UUID.randomUUID().toString());
         } else {
             deleteCalendar(uri);
         }
@@ -145,7 +152,8 @@ public class CalDavConnector {
             return calendars;
         }
         try {
-            report = new ReportMethod(this.baseUri, reportInfo);
+            String reportURL = this.userHome.toString();
+            report = new ReportMethod(reportURL, reportInfo);
             this.client.executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
@@ -153,10 +161,12 @@ public class CalDavConnector {
                 DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
                 DavProperty prop = propSet.get(
                         CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
-                CalendarBuilder builder = new CalendarBuilder();
-                net.fortuna.ical4j.model.Calendar calendar = builder.build(
-                        new StringReader(prop.getValue().toString()));
-                calendars.add(new CalendarWrapper(calendar, response.getHref()));
+                if (prop != null) {
+                    CalendarBuilder builder = new CalendarBuilder();
+                    net.fortuna.ical4j.model.Calendar calendar = builder.build(
+                            new StringReader(prop.getValue().toString()));
+                    calendars.add(new CalendarWrapper(calendar, new URI(this.serverRoot, response.getHref(), false)));
+                }
             }
         } catch (Exception e) {
             throw new CalDavException("Got exception doing report", e);

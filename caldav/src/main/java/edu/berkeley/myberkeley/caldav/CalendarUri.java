@@ -1,23 +1,23 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
+import org.apache.commons.httpclient.URI;
 
 import java.text.ParseException;
 
 public class CalendarUri {
 
-    private String uri;
+    private URI uri;
 
     private Date etag;
 
-    public CalendarUri(String uri, String etag) throws ParseException {
+    public CalendarUri(URI uri, String etag) throws ParseException {
         this.uri = uri;
         this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
     }
 
-    public String getUri() {
+    public URI getUri() {
         return uri;
     }
 

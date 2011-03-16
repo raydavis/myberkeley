@@ -1,13 +1,11 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Dur;
-import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.*;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.Uid;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,17 +31,18 @@ public class CalDavConnectorTest extends CalDavTests {
     private CalDavConnector userConnector;
 
     @Before
-    public void setup() throws CalDavException {
-        this.adminConnector = new CalDavConnector("admin", "bedework", USER_HOME);
-        this.userConnector = new CalDavConnector("vbede", "bedework", USER_HOME);
+    public void setup() throws CalDavException, URIException {
+        this.adminConnector = new CalDavConnector("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+        this.userConnector = new CalDavConnector("vbede", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
     }
 
     @Test
     public void deleteAll() throws CalDavException {
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
         for (CalendarUri uri : uris) {
-            this.adminConnector.deleteCalendar(SERVER_ROOT + uri.getUri());
+            this.adminConnector.deleteCalendar(uri.getUri().toString());
         }
+        assertTrue(this.adminConnector.getCalendarUris().isEmpty());
     }
 
     @Test
@@ -68,7 +67,7 @@ public class CalDavConnectorTest extends CalDavTests {
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
         List<String> uriStrings = new ArrayList<String>(uris.size());
         for ( CalendarUri uri : uris ) {
-            uriStrings.add(uri.getUri());
+            uriStrings.add(uri.getUri().toString());
         }
         this.adminConnector.getCalendars(uriStrings);
     }
@@ -173,7 +172,7 @@ public class CalDavConnectorTest extends CalDavTests {
 
     private boolean doesEntryExist(String uri) throws CalDavException {
         for (CalendarUri thisURI : this.adminConnector.getCalendarUris()) {
-            if ((SERVER_ROOT + thisURI.getUri()).equals(uri)) {
+            if ((thisURI.getUri().toString()).equals(uri)) {
                 return true;
             }
         }
