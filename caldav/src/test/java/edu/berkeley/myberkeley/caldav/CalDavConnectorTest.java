@@ -9,6 +9,7 @@ import org.apache.commons.httpclient.URIException;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,8 @@ public class CalDavConnectorTest extends CalDavTests {
 
     private static final String OWNER = "vbede";
 
+    private static final String RANDOM_ETAG = "20110316T191659Z-0";
+
     private CalDavConnector adminConnector;
 
     private CalDavConnector userConnector;
@@ -40,7 +43,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void deleteAll() throws CalDavException {
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
         for (CalendarUri uri : uris) {
-            this.adminConnector.deleteCalendar(uri.getUri().toString());
+            this.adminConnector.deleteCalendar(uri.getUri());
         }
         assertTrue(this.adminConnector.getCalendarUris().isEmpty());
     }
@@ -48,7 +51,7 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test
     public void putCalendar() throws CalDavException {
         Calendar calendar = buildVevent("Created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(calendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
         boolean found = doesEntryExist(uri);
         assertTrue(found);
     }
@@ -56,7 +59,7 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test
     public void delete() throws CalDavException {
         Calendar calendar = buildVevent("Created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(calendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
         assertTrue(doesEntryExist(uri));
         this.adminConnector.deleteCalendar(uri);
         assertFalse(doesEntryExist(uri));
@@ -65,20 +68,16 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test
     public void getCalendars() throws CalDavException {
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
-        List<String> uriStrings = new ArrayList<String>(uris.size());
-        for ( CalendarUri uri : uris ) {
-            uriStrings.add(uri.getUri().toString());
-        }
-        this.adminConnector.getCalendars(uriStrings);
+        this.adminConnector.getCalendars(uris);
     }
 
     @Test
-    public void putThenGetCalendarEntry() throws CalDavException {
+    public void putThenGetCalendarEntry() throws CalDavException, ParseException {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-        List<String> uris = new ArrayList<String>();
-        uris.add(uri);
+        List<CalendarUri> uris = new ArrayList<CalendarUri>();
+        uris.add(new CalendarUri(uri, RANDOM_ETAG));
         List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
 
@@ -104,7 +103,7 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToDelete() throws CalDavException {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
         this.userConnector.deleteCalendar(uri);
     }
 
@@ -115,9 +114,9 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void putThenModify() throws CalDavException {
+    public void putThenModify() throws CalDavException, ParseException {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
         long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
         VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -130,8 +129,8 @@ public class CalDavConnectorTest extends CalDavTests {
 
         this.adminConnector.modifyCalendar(uri, originalCalendar, OWNER);
 
-        List<String> uris = new ArrayList<String>();
-        uris.add(uri);
+        List<CalendarUri> uris = new ArrayList<CalendarUri>();
+        uris.add(new CalendarUri(uri, RANDOM_ETAG));
         List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
         assertFalse(calendars.isEmpty());
         Calendar newCalendar = calendars.get(0).getCalendar();
@@ -142,19 +141,20 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test(expected = BadRequestException.class)
-    public void modifyNonExistent() throws CalDavException {
+    public void modifyNonExistent() throws CalDavException, URIException, ParseException {
         Calendar calendar = buildVevent("Created by CalDavTests");
-        String uri = USER_HOME + "random-" + System.currentTimeMillis() + ".ics";
+        URI uri = new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false);
+
         this.adminConnector.modifyCalendar(uri, calendar, OWNER);
     }
 
     @Test
-    public void putTodo() throws CalDavException {
+    public void putTodo() throws CalDavException, ParseException {
         Calendar calendar = buildVTodo("Todo created by CalDavTests");
-        String uri = this.adminConnector.putCalendar(calendar, OWNER);
+        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
 
-        List<String> uris = new ArrayList<String>(1);
-        uris.add(uri);
+        List<CalendarUri> uris = new ArrayList<CalendarUri>(1);
+        uris.add(new CalendarUri(uri, RANDOM_ETAG));
         List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
         Calendar calOnServer = calendars.get(0).getCalendar();
         VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
@@ -170,9 +170,9 @@ public class CalDavConnectorTest extends CalDavTests {
         assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
     }
 
-    private boolean doesEntryExist(String uri) throws CalDavException {
+    private boolean doesEntryExist(URI uri) throws CalDavException {
         for (CalendarUri thisURI : this.adminConnector.getCalendarUris()) {
-            if ((thisURI.getUri().toString()).equals(uri)) {
+            if ((thisURI.getUri().toString()).equals(uri.toString())) {
                 return true;
             }
         }

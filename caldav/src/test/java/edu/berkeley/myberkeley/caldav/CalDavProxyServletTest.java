@@ -49,7 +49,7 @@ public class CalDavProxyServletTest extends CalDavTests {
         calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false)));
         calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false)));
         calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), new URI("/url3", false)));
-        when(connector.getCalendars(anyListOf(String.class))).thenReturn(calendars);
+        when(connector.getCalendars(anyListOf(CalendarUri.class))).thenReturn(calendars);
         servlet.handleGet(response, connector);
 
     }

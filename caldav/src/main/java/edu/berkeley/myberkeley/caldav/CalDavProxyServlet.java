@@ -26,7 +26,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service(value = Servlet.class)
@@ -59,11 +58,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         try {
             List<CalendarUri> calendarUris = connector.getCalendarUris();
-            List<String> uriStrings = new ArrayList<String>(calendarUris.size());
-            for (CalendarUri uri : calendarUris) {
-                uriStrings.add(uri.getUri().toString());
-            }
-            calendars = connector.getCalendars(uriStrings);
+            calendars = connector.getCalendars(calendarUris);
         } catch (CalDavException cde) {
             LOGGER.error("Exception fetching calendars", cde);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);

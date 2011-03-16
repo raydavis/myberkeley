@@ -58,13 +58,6 @@ public class CalDavConnector {
     }
 
     /**
-     * Returns the URI of a calendar, given its UID.
-     */
-    public String buildUri(String calendarUID) {
-        return this.userHome.toString() + calendarUID + ".ics";
-    }
-
-    /**
      * Returns the user's calendar entries (all of them) as a set of URIs
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
@@ -104,7 +97,7 @@ public class CalDavConnector {
      *
      * @return The URI of the newly created calendar entry.
      */
-    public String putCalendar(Calendar calendar, String ownerID) throws CalDavException {
+    public URI putCalendar(Calendar calendar, String ownerID) throws CalDavException {
         return modifyCalendar(null, calendar, ownerID);
     }
 
@@ -113,13 +106,17 @@ public class CalDavConnector {
      *
      * @return The URI of the calendar entry.
      */
-    public String modifyCalendar(String uri, Calendar calendar, String ownerID) throws CalDavException {
+    public URI modifyCalendar(URI uri, Calendar calendar, String ownerID) throws CalDavException {
         if (uri == null) {
-            uri = buildUri(UUID.randomUUID().toString());
+            try {
+                uri = new URI(this.userHome, UUID.randomUUID() + ".ics", false);
+            }catch (URIException uie) {
+                throw new CalDavException("Unexpected URIException", uie);
+            }
         } else {
             deleteCalendar(uri);
         }
-        PutMethod put = new PutMethod(uri);
+        PutMethod put = new PutMethod(uri.toString());
         try {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Saving calendar data: " + calendar.toString());
@@ -136,16 +133,20 @@ public class CalDavConnector {
     /**
      * Deletes a calendar entry at specified uri.
      */
-    public void deleteCalendar(String uri) throws CalDavException {
-        DeleteMethod deleteMethod = new DeleteMethod(uri);
+    public void deleteCalendar(URI uri) throws CalDavException {
+        DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
         executeMethod(deleteMethod);
     }
 
     /**
      * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
-    public List<CalendarWrapper> getCalendars(List<String> uris) throws CalDavException {
-        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uris);
+    public List<CalendarWrapper> getCalendars(List<CalendarUri> uris) throws CalDavException {
+        List<String> uriStrings = new ArrayList<String>(uris.size());
+        for ( CalendarUri uri : uris ) {
+            uriStrings.add(uri.getUri().toString());
+        }
+        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);
         ReportMethod report = null;
         List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
         if (uris.isEmpty()) {
@@ -217,7 +218,7 @@ public class CalDavConnector {
         }
     }
 
-    private void restrictPermissions(String uri, String ownerID) throws CalDavException {
+    private void restrictPermissions(URI uri, String ownerID) throws CalDavException {
         // owner can only read and write, admin can do anything
         Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
         Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
@@ -232,7 +233,7 @@ public class CalDavConnector {
         AclProperty acl = new AclProperty(aces);
         AclMethod aclMethod;
         try {
-            aclMethod = new AclMethod(uri, acl);
+            aclMethod = new AclMethod(uri.toString(), acl);
             executeMethod(aclMethod);
         } catch (IOException ioe) {
             LOGGER.error("Got exception setting ACL", ioe);
