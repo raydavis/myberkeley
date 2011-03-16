@@ -2,6 +2,7 @@ package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -14,8 +15,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.io.JSONStringer;
-import org.apache.sling.commons.json.io.JSONWriter;
+import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.sakaiproject.nakamura.util.DateUtils;
 import org.slf4j.Logger;
@@ -69,64 +69,57 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        JSONStringer write = new JSONStringer();
-        write.setTidy(true);
 
         try {
-            write.object();
-
-            // VEvents
-            write.key("vevents");
-            write.array();
-            for (CalendarWrapper wrapper : calendars) {
-                ComponentList vevents = wrapper.getCalendar().getComponents(Component.VEVENT);
-                for (Object vevent : vevents) {
-                    writeCalendarComponent((VEvent) vevent, write);
-                }
-            }
-            write.endArray();
-
-            // VTodos
-            write.key("vtodos");
-            write.array();
-            for (CalendarWrapper wrapper : calendars) {
-                ComponentList vtodos = wrapper.getCalendar().getComponents(Component.VTODO);
-                for (Object vtodo : vtodos) {
-                    writeCalendarComponent((VToDo) vtodo, write);
-                }
-            }
-            write.endArray();
-
-            write.endObject();
-
+            JSONObject json = toJSON(calendars);
+            LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
+            response.getWriter().write(json.toString());
         } catch (JSONException je) {
             LOGGER.error("Failed to convert calendar to JSON", je);
         }
 
-        LOGGER.info("CalDavProxyServlet's JSON response: " + write.toString());
-        response.getWriter().write(write.toString());
-
     }
 
-    private void writeCalendarComponent(CalendarComponent calendarComponent, JSONWriter write) throws JSONException {
-        write.object();
-        PropertyList pList = calendarComponent.getProperties();
-        int i = 0;
-        int size = pList.size();
-        while (i < size) {
-            net.fortuna.ical4j.model.Property p = (net.fortuna.ical4j.model.Property) pList
-                    .get(i);
-            write.key(p.getName());
+    private JSONObject toJSON(List<CalendarWrapper> calendars) throws JSONException {
+        JSONObject obj = new JSONObject();
+
+        JSONObject events = new JSONObject();
+        for (CalendarWrapper wrapper : calendars) {
+            JSONObject thisEvent = new JSONObject();
+            ComponentList vevents = wrapper.getCalendar().getComponents(Component.VEVENT);
+            for (Object vevent : vevents) {
+                writeCalendarComponent((VEvent) vevent, thisEvent);
+                events.put(wrapper.getUri(), thisEvent);
+            }
+        }
+
+        JSONObject todos = new JSONObject();
+        for (CalendarWrapper wrapper : calendars) {
+            JSONObject thisTodo = new JSONObject();
+            ComponentList vtodos = wrapper.getCalendar().getComponents(Component.VTODO);
+            for (Object todo : vtodos) {
+                writeCalendarComponent((VToDo) todo, thisTodo);
+                todos.put(wrapper.getUri(), thisTodo);
+            }
+        }
+
+        obj.put("vevents", events);
+        obj.put("vtodos", todos);
+
+        return obj;
+    }
+
+    private void writeCalendarComponent(CalendarComponent calendarComponent, JSONObject obj) throws JSONException {
+        PropertyList propertyList = calendarComponent.getProperties();
+        for (Object prop : propertyList) {
+            Property property = (Property) prop;
             // Check if it is a date
-            String value = p.getValue();
-            if (p instanceof DateProperty) {
-                DateProperty start = (DateProperty) p;
+            String value = property.getValue();
+            if (property instanceof DateProperty) {
+                DateProperty start = (DateProperty) property;
                 value = DateUtils.iso8601(start.getDate());
             }
-
-            write.value(value);
-            i++;
+            obj.put(property.getName(), value);
         }
-        write.endObject();
     }
 }
