@@ -1,5 +1,7 @@
 package edu.berkeley.myberkeley.caldav.report;
 
+import org.apache.jackrabbit.webdav.property.DavPropertyName;
+import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
 import org.apache.jackrabbit.webdav.xml.Namespace;
 
 /**
@@ -7,7 +9,7 @@ import org.apache.jackrabbit.webdav.xml.Namespace;
  * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
  * @author ricky
  */
-public interface CalDavConstants {
+public final class CalDavConstants {
 
     //---< CALDAV Namespace >---------------------------------------------------
     public static final Namespace CALDAV_NAMESPACE =
@@ -47,5 +49,11 @@ public interface CalDavConstants {
 
     //-------------------------------------------------< PropFind Constants >---
     public static final int PROPFIND_NONE = -1;
+
+    public static final DavPropertyNameSet ETAG = new DavPropertyNameSet();
+
+    static {
+        ETAG.add(DavPropertyName.GETETAG);
+    }
 
 }

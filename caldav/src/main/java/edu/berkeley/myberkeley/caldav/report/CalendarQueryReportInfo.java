@@ -1,7 +1,6 @@
 package edu.berkeley.myberkeley.caldav.report;
 
 import org.apache.jackrabbit.webdav.DavConstants;
-import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.apache.jackrabbit.webdav.xml.DomUtil;
 import org.apache.jackrabbit.webdav.xml.Namespace;
@@ -20,33 +19,10 @@ public class CalendarQueryReportInfo extends ReportInfo {
     private String timezone = null;
 
     public CalendarQueryReportInfo(RequestCalendarData calendarData, Filter filter) {
-        super(CalendarQueryReport.CALENDAR_QUERY, DavConstants.DEPTH_1, null);
+        super(CalendarQueryReport.CALENDAR_QUERY, DavConstants.DEPTH_1, CalDavConstants.ETAG);
         this.calendarData = calendarData;
         this.filter = filter;
         this.timezone = null;
-    }
-
-    public CalendarQueryReportInfo(RequestCalendarData calendarData, Filter filter, String timezone) {
-        super(CalendarQueryReport.CALENDAR_QUERY, DavConstants.DEPTH_1, null);
-        this.calendarData = calendarData;
-        this.filter = filter;
-        this.timezone = timezone;
-    }
-
-    public CalendarQueryReportInfo(DavPropertyNameSet propertyNames,
-            RequestCalendarData calendarData, Filter filter) {
-        super(CalendarQueryReport.CALENDAR_QUERY, DavConstants.DEPTH_1, propertyNames);
-        this.calendarData = calendarData;
-        this.filter = filter;
-        this.timezone = null;
-    }
-
-    public CalendarQueryReportInfo(DavPropertyNameSet propertyNames,
-            RequestCalendarData calendarData, Filter filter, String timezone) {
-        super(CalendarQueryReport.CALENDAR_QUERY, DavConstants.DEPTH_1, propertyNames);
-        this.calendarData = calendarData;
-        this.filter = filter;
-        this.timezone = timezone;
     }
 
     @Override

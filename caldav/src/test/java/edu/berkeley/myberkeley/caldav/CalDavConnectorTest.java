@@ -1,6 +1,11 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.*;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.Dur;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.Uid;
@@ -89,6 +94,25 @@ public class CalDavConnectorTest extends CalDavTests {
         assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
         assertEquals(originalEvent.getUid(), eventOnServer.getUid());
 
+    }
+
+    @Test
+    public void searchByDate() throws CalDavException {
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
+        this.adminConnector.putCalendar(originalCalendar, OWNER);
+
+        DateTime monthAgo = new DateTime(org.apache.commons.lang.time.DateUtils.addDays(new Date(), -30));
+        DateTime tomorrow = new DateTime(org.apache.commons.lang.time.DateUtils.addDays(new Date(), 1));
+        List<CalendarWrapper> calendars = this.adminConnector.searchByDate(monthAgo, tomorrow);
+        assertFalse(calendars.isEmpty());
+
+        List<CalendarUri> uris = this.adminConnector.getCalendarUris();
+        for (CalendarUri uri : uris) {
+            this.adminConnector.deleteCalendar(uri);
+        }
+
+        calendars = this.adminConnector.searchByDate(monthAgo, tomorrow);
+        assertTrue(calendars.isEmpty());
     }
 
     @Test(expected = BadRequestException.class)

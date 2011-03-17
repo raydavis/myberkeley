@@ -1,7 +1,6 @@
 package edu.berkeley.myberkeley.caldav.report;
 
 import org.apache.jackrabbit.webdav.DavConstants;
-import org.apache.jackrabbit.webdav.property.DavPropertyName;
 import org.apache.jackrabbit.webdav.property.DavPropertyNameSet;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.apache.jackrabbit.webdav.xml.DomUtil;
@@ -18,17 +17,11 @@ import java.util.List;
  */
 public class CalendarMultiGetReportInfo extends ReportInfo {
 
-    private static final DavPropertyNameSet ETAG = new DavPropertyNameSet();
-
     RequestCalendarData calendarData = null;
     List<String> hrefs = null;
 
-    static {
-        ETAG.add(DavPropertyName.GETETAG);
-    }
-
     public CalendarMultiGetReportInfo(RequestCalendarData calendarData, List<String> hrefs) {
-        super(CalendarMultiGetReport.CALENDAR_MULTI_GET, DavConstants.DEPTH_0, ETAG);
+        super(CalendarMultiGetReport.CALENDAR_MULTI_GET, DavConstants.DEPTH_0, CalDavConstants.ETAG);
         this.calendarData = calendarData;
         this.hrefs = hrefs;
     }

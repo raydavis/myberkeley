@@ -1,11 +1,12 @@
 package edu.berkeley.myberkeley.caldav.report;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.jackrabbit.webdav.xml.DomUtil;
 import org.apache.jackrabbit.webdav.xml.XmlSerializable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Based on code found in "Introducing CalDAV (Part I and II)" at
@@ -56,6 +57,10 @@ public class Filter implements XmlSerializable {
 
     public List<Filter> getCompFilter() {
         return compFilter;
+    }
+
+    public void setCompFilter(List<Filter> compFilter) {
+        this.compFilter = compFilter;
     }
 
     public List<PropFilter> getPropFilter() {
