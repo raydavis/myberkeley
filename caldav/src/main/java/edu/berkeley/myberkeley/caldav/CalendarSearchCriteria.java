@@ -11,16 +11,13 @@ public class CalendarSearchCriteria {
 
     private Date end;
 
-    private Boolean required;
+    private MODE mode;
 
-    private Boolean archive;
-
-    public CalendarSearchCriteria(CalDavConstants.COMPONENT component, Date start, Date end, Boolean required, Boolean archive) {
+    public CalendarSearchCriteria(CalDavConstants.COMPONENT component, Date start, Date end, MODE mode) {
         this.component = component;
         this.start = start;
         this.end = end;
-        this.required = required;
-        this.archive = archive;
+        this.mode = mode;
     }
 
     public CalDavConstants.COMPONENT getComponent() {
@@ -47,20 +44,20 @@ public class CalendarSearchCriteria {
         this.end = end;
     }
 
-    public Boolean getRequired() {
-        return required;
+    public MODE getMode() {
+        return mode;
     }
 
-    public void setRequired(Boolean required) {
-        this.required = required;
+    public void setMode(MODE mode) {
+        this.mode = mode;
     }
 
-    public Boolean getArchive() {
-        return archive;
+    public enum MODE {
+        REQUIRED,
+        UNREQUIRED,
+        ALL_UNARCHIVED,
+        ALL_ARCHIVED
     }
 
-    public void setArchive(Boolean archive) {
-        this.archive = archive;
-    }
 }
 

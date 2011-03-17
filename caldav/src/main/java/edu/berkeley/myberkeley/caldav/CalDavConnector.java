@@ -8,6 +8,8 @@ import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import edu.berkeley.myberkeley.caldav.report.TimeRange;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Property;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -55,6 +57,8 @@ import javax.servlet.http.HttpServletResponse;
 public class CalDavConnector {
 
     public static final String MYBERKELEY_REQUIRED = "MyBerkeley-Required";
+
+    public static final String MYBERKELEY_ARCHIVED = "MyBerkeley-Archived";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
@@ -182,8 +186,8 @@ public class CalDavConnector {
         vcalComp.setCompFilter(Arrays.asList(subcomponent));
 
         ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
-        return search(reportInfo);
-
+        List<CalendarWrapper> rawResults = search(reportInfo);
+        return filterResults(rawResults, criteria);
     }
 
     private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException {
@@ -285,6 +289,48 @@ public class CalDavConnector {
         } catch (IOException ioe) {
             LOGGER.error("Got exception setting ACL", ioe);
         }
+    }
+
+    // filter in memory for now because Bedework has bugs searching on categories.
+    // TODO do the searching on the Bedework side if bugs get fixed.
+    private List<CalendarWrapper> filterResults(List<CalendarWrapper> rawResults, CalendarSearchCriteria criteria) {
+        List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(rawResults.size());
+        for (CalendarWrapper wrapper : rawResults) {
+            Component component = wrapper.getCalendar().getComponent(criteria.getComponent().toString());
+            switch (criteria.getMode()) {
+                case REQUIRED:
+                    if (isRequired(component) && !isArchived(component)) {
+                        filteredResults.add(wrapper);
+                    }
+                    break;
+                case UNREQUIRED:
+                    if (!isRequired(component) && !isArchived(component)) {
+                        filteredResults.add(wrapper);
+                    }
+                    break;
+                case ALL_UNARCHIVED:
+                    if (!isArchived(component)) {
+                        filteredResults.add(wrapper);
+                    }
+                    break;
+                case ALL_ARCHIVED:
+                    if (isArchived(component)) {
+                        filteredResults.add(wrapper);
+                    }
+                    break;
+            }
+        }
+        return filteredResults;
+    }
+
+    private boolean isRequired(Component comp) {
+        Property prop = comp.getProperty(Property.CATEGORIES);
+        return prop != null && prop.getValue().equals(MYBERKELEY_REQUIRED);
+    }
+
+    private boolean isArchived(Component comp) {
+        Property prop = comp.getProperty(Property.CATEGORIES);
+        return prop != null && prop.getValue().equals(MYBERKELEY_ARCHIVED);
     }
 
 }

@@ -114,7 +114,16 @@ public class CalDavConnectorTest extends CalDavTests {
 
         // search for event just created, should find it
         CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, null, null);
+                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        criteria.setMode(CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
         assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
         // search for a vtodo, there should be none
@@ -127,6 +136,19 @@ public class CalDavConnectorTest extends CalDavTests {
         criteria.setEnd(monthAgo);
         criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
         assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        Calendar vtodo = buildVTodo("Required Todo");
+        this.adminConnector.putCalendar(vtodo, OWNER);
+
+        criteria.setStart(monthAgo);
+        criteria.setEnd(tomorrow);
+        criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
+        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+
     }
 
     @Test(expected = BadRequestException.class)
