@@ -109,17 +109,24 @@ public class CalDavConnectorTest extends CalDavTests {
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
         this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-        // search for event just created, should find it
         DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
         DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
-        assertFalse(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.COMPONENT.VEVENT).isEmpty());
+
+        // search for event just created, should find it
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(
+                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, null, null);
+        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
         // search for a vtodo, there should be none
-        assertTrue(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.COMPONENT.VTODO).isEmpty());
+        criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
         // search for an event but in a different time, should be none
         DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
-        assertTrue(this.adminConnector.searchByDate(twoMonthsAgo, monthAgo, CalDavConstants.COMPONENT.VEVENT).isEmpty());
+        criteria.setStart(twoMonthsAgo);
+        criteria.setEnd(monthAgo);
+        criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
     }
 
     @Test(expected = BadRequestException.class)

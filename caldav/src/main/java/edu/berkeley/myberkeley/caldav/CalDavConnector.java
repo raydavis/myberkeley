@@ -8,7 +8,6 @@ import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import edu.berkeley.myberkeley.caldav.report.TimeRange;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -176,10 +175,10 @@ public class CalDavConnector {
         return search(reportInfo);
     }
 
-    public List<CalendarWrapper> searchByDate(DateTime start, DateTime end, CalDavConstants.COMPONENT subcomponentType) throws CalDavException {
+    public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException {
         Filter vcalComp = new Filter("VCALENDAR");
-        Filter subcomponent = new Filter(subcomponentType.toString());
-        subcomponent.setTimeRange(new TimeRange(start, end));
+        Filter subcomponent = new Filter(criteria.getComponent().toString());
+        subcomponent.setTimeRange(new TimeRange(criteria.getStart(), criteria.getEnd()));
         vcalComp.setCompFilter(Arrays.asList(subcomponent));
 
         ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
