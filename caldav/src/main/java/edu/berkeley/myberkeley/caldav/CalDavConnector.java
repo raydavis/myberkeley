@@ -176,9 +176,9 @@ public class CalDavConnector {
         return search(reportInfo);
     }
 
-    public List<CalendarWrapper> searchByDate(DateTime start, DateTime end, String subcomponentType) throws CalDavException {
+    public List<CalendarWrapper> searchByDate(DateTime start, DateTime end, CalDavConstants.COMPONENT subcomponentType) throws CalDavException {
         Filter vcalComp = new Filter("VCALENDAR");
-        Filter subcomponent = new Filter(subcomponentType);
+        Filter subcomponent = new Filter(subcomponentType.toString());
         subcomponent.setTimeRange(new TimeRange(start, end));
         vcalComp.setCompFilter(Arrays.asList(subcomponent));
 

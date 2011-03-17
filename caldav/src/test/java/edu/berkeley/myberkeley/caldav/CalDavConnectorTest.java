@@ -112,14 +112,14 @@ public class CalDavConnectorTest extends CalDavTests {
         // search for event just created, should find it
         DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
         DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
-        assertFalse(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.CALDAV_XML_COMPONENT_VEVENT).isEmpty());
+        assertFalse(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.COMPONENT.VEVENT).isEmpty());
 
         // search for a vtodo, there should be none
-        assertTrue(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.CALDAV_XML_COMPONENT_VTODO).isEmpty());
+        assertTrue(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.COMPONENT.VTODO).isEmpty());
 
         // search for an event but in a different time, should be none
         DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
-        assertTrue(this.adminConnector.searchByDate(twoMonthsAgo, monthAgo, CalDavConstants.CALDAV_XML_COMPONENT_VEVENT).isEmpty());
+        assertTrue(this.adminConnector.searchByDate(twoMonthsAgo, monthAgo, CalDavConstants.COMPONENT.VEVENT).isEmpty());
     }
 
     @Test(expected = BadRequestException.class)

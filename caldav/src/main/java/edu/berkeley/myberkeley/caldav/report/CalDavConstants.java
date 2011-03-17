@@ -19,8 +19,6 @@ public final class CalDavConstants {
     public static final String METHOD_REPORT = "REPORT";
 
     //---< XML Element, Attribute Names >---------------------------------------
-    public static final String CALDAV_XML_COMPONENT_VEVENT = "VEVENT";
-    public static final String CALDAV_XML_COMPONENT_VTODO = "VTODO";
     public static final String CALDAV_XML_CALENDAR_MULTI_GET = "calendar-multiget";
     public static final String CALDAV_XML_CALENDAR_QUERY = "calendar-query";
     public static final String CALDAV_XML_CALENDAR_DATA = "calendar-data";
@@ -56,6 +54,11 @@ public final class CalDavConstants {
 
     static {
         ETAG.add(DavPropertyName.GETETAG);
+    }
+
+    public enum COMPONENT {
+        VEVENT,
+        VTODO
     }
 
 }
