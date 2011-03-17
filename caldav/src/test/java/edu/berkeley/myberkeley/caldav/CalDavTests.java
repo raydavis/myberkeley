@@ -9,7 +9,6 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
-import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
@@ -47,9 +46,9 @@ public abstract class CalDavTests extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), summary + " " + new Date().toString());
+        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        vtodo.getProperties().add(new Categories(CalDavConnector.MYBERKELEY_REQUIRED));
+        vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
         calendar.getComponents().add(vtodo);
         return calendar;
     }

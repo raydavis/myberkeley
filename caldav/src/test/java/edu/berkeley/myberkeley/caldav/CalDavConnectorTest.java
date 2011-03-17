@@ -99,12 +99,8 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void searchByDate() throws CalDavException {
-        List<CalendarUri> uris = this.adminConnector.getCalendarUris();
-        for (CalendarUri uri : uris) {
-            this.adminConnector.deleteCalendar(uri);
-        }
-        assertTrue(this.adminConnector.getCalendarUris().isEmpty());
+    public void searchForEvent() throws CalDavException {
+        deleteAll();
 
         Calendar originalCalendar = buildVevent("Created by CalDavTests");
         this.adminConnector.putCalendar(originalCalendar, OWNER);
@@ -136,10 +132,19 @@ public class CalDavConnectorTest extends CalDavTests {
         criteria.setEnd(monthAgo);
         criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
         assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+    }
 
-        Calendar vtodo = buildVTodo("Required Todo");
-        this.adminConnector.putCalendar(vtodo, OWNER);
+    @Test
+    public void searchForTodo() throws CalDavException {
+        deleteAll();
 
+        Calendar vtodo = buildVTodo("Archived VTODO");
+        URI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
+        DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
+                DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(
+                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
         criteria.setStart(monthAgo);
         criteria.setEnd(tomorrow);
         criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
@@ -147,6 +152,16 @@ public class CalDavConnectorTest extends CalDavTests {
         assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
         criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
+        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        // now archive the vtodo and search for it again
+        Component vtodoComp = vtodo.getComponent(Component.VTODO);
+        vtodoComp.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
+        this.adminConnector.modifyCalendar(todoURI, vtodo, OWNER);
+
+        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+
+        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
         assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
     }
@@ -225,7 +240,7 @@ public class CalDavConnectorTest extends CalDavTests {
         assertEquals(originalVTodo.getUid(), vtodoOnServer.getUid());
         assertEquals(originalVTodo.getProperty(Property.CATEGORIES).getValue(),
                 vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
-        assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
+        assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES));
     }
 
     private boolean doesEntryExist(URI uri) throws CalDavException {

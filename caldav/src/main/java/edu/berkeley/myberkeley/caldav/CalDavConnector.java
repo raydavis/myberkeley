@@ -10,6 +10,8 @@ import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.property.Categories;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -56,9 +58,9 @@ import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
-    public static final String MYBERKELEY_REQUIRED = "MyBerkeley-Required";
+    public static final Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
 
-    public static final String MYBERKELEY_ARCHIVED = "MyBerkeley-Archived";
+    public static final Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
@@ -324,13 +326,13 @@ public class CalDavConnector {
     }
 
     private boolean isRequired(Component comp) {
-        Property prop = comp.getProperty(Property.CATEGORIES);
-        return prop != null && prop.getValue().equals(MYBERKELEY_REQUIRED);
+        PropertyList propList = comp.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(MYBERKELEY_REQUIRED);
     }
 
     private boolean isArchived(Component comp) {
-        Property prop = comp.getProperty(Property.CATEGORIES);
-        return prop != null && prop.getValue().equals(MYBERKELEY_ARCHIVED);
+        PropertyList propList = comp.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(MYBERKELEY_ARCHIVED);
     }
 
 }
