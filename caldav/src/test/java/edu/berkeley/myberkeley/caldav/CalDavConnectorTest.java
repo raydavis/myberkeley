@@ -1,5 +1,6 @@
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
@@ -11,6 +12,7 @@ import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.Uid;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -98,21 +100,26 @@ public class CalDavConnectorTest extends CalDavTests {
 
     @Test
     public void searchByDate() throws CalDavException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        this.adminConnector.putCalendar(originalCalendar, OWNER);
-
-        DateTime monthAgo = new DateTime(org.apache.commons.lang.time.DateUtils.addDays(new Date(), -30));
-        DateTime tomorrow = new DateTime(org.apache.commons.lang.time.DateUtils.addDays(new Date(), 1));
-        List<CalendarWrapper> calendars = this.adminConnector.searchByDate(monthAgo, tomorrow);
-        assertFalse(calendars.isEmpty());
-
         List<CalendarUri> uris = this.adminConnector.getCalendarUris();
         for (CalendarUri uri : uris) {
             this.adminConnector.deleteCalendar(uri);
         }
+        assertTrue(this.adminConnector.getCalendarUris().isEmpty());
 
-        calendars = this.adminConnector.searchByDate(monthAgo, tomorrow);
-        assertTrue(calendars.isEmpty());
+        Calendar originalCalendar = buildVevent("Created by CalDavTests");
+        this.adminConnector.putCalendar(originalCalendar, OWNER);
+
+        // search for event just created, should find it
+        DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
+        DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+        assertFalse(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.CALDAV_XML_COMPONENT_VEVENT).isEmpty());
+
+        // search for a vtodo, there should be none
+        assertTrue(this.adminConnector.searchByDate(monthAgo, tomorrow, CalDavConstants.CALDAV_XML_COMPONENT_VTODO).isEmpty());
+
+        // search for an event but in a different time, should be none
+        DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
+        assertTrue(this.adminConnector.searchByDate(twoMonthsAgo, monthAgo, CalDavConstants.CALDAV_XML_COMPONENT_VEVENT).isEmpty());
     }
 
     @Test(expected = BadRequestException.class)
