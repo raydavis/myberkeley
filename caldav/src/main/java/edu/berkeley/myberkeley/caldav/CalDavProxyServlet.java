@@ -60,8 +60,11 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 
-        handleGet(response, connector, criteria);
-
+        try {
+            handleGet(response, connector, criteria);
+        } finally {
+            response.getWriter().close();
+        }
     }
 
     protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ServletException {
@@ -118,7 +121,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         try {
             JSONObject json = toJSON(calendars, criteria.getComponent().toString());
             LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
-            response.getWriter().write(json.toString());
+            response.getWriter().write(json.toString(2));
         } catch (JSONException je) {
             LOGGER.error("Failed to convert calendar to JSON", je);
         }
