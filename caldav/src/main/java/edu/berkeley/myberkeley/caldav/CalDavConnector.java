@@ -1,26 +1,13 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
-import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
-import edu.berkeley.myberkeley.caldav.report.CalendarQueryReportInfo;
-import edu.berkeley.myberkeley.caldav.report.Filter;
-import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
-import edu.berkeley.myberkeley.caldav.report.TimeRange;
+import edu.berkeley.myberkeley.caldav.report.*;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.Categories;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpClientError;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -28,12 +15,7 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
-import org.apache.jackrabbit.webdav.client.methods.AclMethod;
-import org.apache.jackrabbit.webdav.client.methods.DavMethod;
-import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
-import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
-import org.apache.jackrabbit.webdav.client.methods.PutMethod;
-import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
+import org.apache.jackrabbit.webdav.client.methods.*;
 import org.apache.jackrabbit.webdav.property.DavProperty;
 import org.apache.jackrabbit.webdav.property.DavPropertyName;
 import org.apache.jackrabbit.webdav.property.DavPropertySet;
@@ -44,17 +26,12 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 public class CalDavConnector {
 
@@ -90,8 +67,8 @@ public class CalDavConnector {
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<CalendarUri> getCalendarUris() throws CalDavException {
-        List<CalendarUri> uris = new ArrayList<CalendarUri>();
+    public List<CalendarWrapper.CalendarUri> getCalendarUris() throws CalDavException {
+        List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
@@ -102,7 +79,7 @@ public class CalDavConnector {
                         DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
                         DavProperty etag = propSet.get(DavPropertyName.GETETAG);
                         try {
-                            CalendarUri calUri = new CalendarUri(
+                            CalendarWrapper.CalendarUri calUri = new CalendarWrapper.CalendarUri(
                                     new URI(this.serverRoot, response.getHref(), false),
                                     etag.getValue().toString());
                             uris.add(calUri);
@@ -169,12 +146,12 @@ public class CalDavConnector {
     /**
      * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
-    public List<CalendarWrapper> getCalendars(List<CalendarUri> uris) throws CalDavException {
+    public List<CalendarWrapper> getCalendars(List<CalendarWrapper.CalendarUri> uris) throws CalDavException {
         if (uris.isEmpty()) {
             return new ArrayList<CalendarWrapper>(0);
         }
         List<String> uriStrings = new ArrayList<String>(uris.size());
-        for (CalendarUri uri : uris) {
+        for (CalendarWrapper.CalendarUri uri : uris) {
             uriStrings.add(uri.toString());
         }
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);

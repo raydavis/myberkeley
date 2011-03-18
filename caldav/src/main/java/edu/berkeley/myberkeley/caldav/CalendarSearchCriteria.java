@@ -5,6 +5,13 @@ import net.fortuna.ical4j.model.Date;
 
 public class CalendarSearchCriteria {
 
+    public enum MODE {
+        REQUIRED,
+        UNREQUIRED,
+        ALL_UNARCHIVED,
+        ALL_ARCHIVED
+    }
+
     private CalDavConstants.COMPONENT component;
 
     private Date start;
@@ -52,12 +59,14 @@ public class CalendarSearchCriteria {
         this.mode = mode;
     }
 
-    public enum MODE {
-        REQUIRED,
-        UNREQUIRED,
-        ALL_UNARCHIVED,
-        ALL_ARCHIVED
+    @Override
+    public String toString() {
+        return "CalendarSearchCriteria{" +
+                "component=" + component +
+                ", mode=" + mode +
+                ", start=" + start +
+                ", end=" + end +
+                '}';
     }
-
 }
 

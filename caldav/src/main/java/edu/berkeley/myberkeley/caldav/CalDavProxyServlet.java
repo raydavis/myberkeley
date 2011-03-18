@@ -57,7 +57,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         List<CalendarWrapper> calendars;
 
         try {
-            List<CalendarUri> calendarUris = connector.getCalendarUris();
+            List<CalendarWrapper.CalendarUri> calendarUris = connector.getCalendarUris();
             calendars = connector.getCalendars(calendarUris);
         } catch (CalDavException cde) {
             LOGGER.error("Exception fetching calendars", cde);
