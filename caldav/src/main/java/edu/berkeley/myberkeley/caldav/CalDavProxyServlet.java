@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
@@ -73,14 +72,14 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ParseException {
         Date defaultStart = new DateTime();
         Date defaultEnd = new DateTime();
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalDavConstants.COMPONENT.VEVENT,
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.COMPONENT.VEVENT,
                 defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
 
         // apply non-default values from request if they're available
 
         RequestParameter type = request.getRequestParameter(REQUEST_PARAMS.type.toString());
         if (type != null) {
-            criteria.setComponent(CalDavConstants.COMPONENT.valueOf(type.getString()));
+            criteria.setComponent(CalendarSearchCriteria.COMPONENT.valueOf(type.getString()));
         }
         RequestParameter mode = request.getRequestParameter(REQUEST_PARAMS.mode.toString());
         if (mode != null) {

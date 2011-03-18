@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.Date;
 
 public class CalendarSearchCriteria {
@@ -12,26 +11,31 @@ public class CalendarSearchCriteria {
         ALL_ARCHIVED
     }
 
-    private CalDavConstants.COMPONENT component;
+    public enum COMPONENT {
+        VEVENT,
+        VTODO
+    }
+
+    private COMPONENT component;
+
+    private MODE mode;
 
     private Date start;
 
     private Date end;
 
-    private MODE mode;
-
-    public CalendarSearchCriteria(CalDavConstants.COMPONENT component, Date start, Date end, MODE mode) {
+    public CalendarSearchCriteria(COMPONENT component, Date start, Date end, MODE mode) {
         this.component = component;
         this.start = start;
         this.end = end;
         this.mode = mode;
     }
 
-    public CalDavConstants.COMPONENT getComponent() {
+    public COMPONENT getComponent() {
         return component;
     }
 
-    public void setComponent(CalDavConstants.COMPONENT component) {
+    public void setComponent(COMPONENT component) {
         this.component = component;
     }
 
@@ -68,5 +72,6 @@ public class CalendarSearchCriteria {
                 ", end=" + end +
                 '}';
     }
+
 }
 

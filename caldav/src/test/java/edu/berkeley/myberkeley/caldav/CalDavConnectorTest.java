@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
@@ -136,7 +135,7 @@ public class CalDavConnectorTest extends CalDavTests {
 
             // search for event just created, should find it
             CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+                    CalendarSearchCriteria.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
             assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
             criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
@@ -149,14 +148,14 @@ public class CalDavConnectorTest extends CalDavTests {
             assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
             // search for a vtodo, there should be none
-            criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+            criteria.setComponent(CalendarSearchCriteria.COMPONENT.VTODO);
             assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
             // search for an event but in a different time, should be none
             DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
             criteria.setStart(twoMonthsAgo);
             criteria.setEnd(monthAgo);
-            criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
+            criteria.setComponent(CalendarSearchCriteria.COMPONENT.VEVENT);
             assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
         } catch (IOException ioe) {
             LOGGER.error("Trouble contacting server", ioe);
@@ -174,10 +173,10 @@ public class CalDavConnectorTest extends CalDavTests {
             DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
 
             CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+                    CalendarSearchCriteria.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
             criteria.setStart(monthAgo);
             criteria.setEnd(tomorrow);
-            criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+            criteria.setComponent(CalendarSearchCriteria.COMPONENT.VTODO);
             criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
             assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
