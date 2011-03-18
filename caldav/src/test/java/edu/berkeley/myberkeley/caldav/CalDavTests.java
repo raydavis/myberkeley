@@ -20,6 +20,8 @@ public abstract class CalDavTests extends Assert {
 
     protected static final String RANDOM_ETAG = "20110316T191659Z-0";
 
+    protected static final String MONTH_AFTER_RANDOM_ETAG = "20110416T191659Z-0";
+
     protected Calendar buildVevent(String summary) {
         CalendarBuilder builder = new CalendarBuilder();
         Calendar c = new Calendar();

@@ -1,5 +1,8 @@
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
+import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -7,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
+import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -16,8 +20,9 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class CalDavProxyServletTest extends CalDavTests {
 
@@ -50,9 +55,56 @@ public class CalDavProxyServletTest extends CalDavTests {
         calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), new URI("/url3", false), RANDOM_ETAG));
-        when(connector.getCalendars(anyListOf(CalendarWrapper.CalendarUri.class))).thenReturn(calendars);
-        servlet.handleGet(response, connector);
+        Date defaultStart = new DateTime();
+        Date defaultEnd = new DateTime();
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalDavConstants.COMPONENT.VEVENT,
+                defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
+
+        when(connector.searchByDate(criteria)).thenReturn(calendars);
+        servlet.handleGet(response, connector, criteria);
 
     }
 
+    @Test
+    public void getCalendarSearchCriteria() throws ParseException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.type.toString())).thenReturn(
+                new ContainerRequestParameter("VTODO", "utf-8"));
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.mode.toString())).thenReturn(
+                new ContainerRequestParameter(CalendarSearchCriteria.MODE.ALL_ARCHIVED.toString(), "utf-8"));
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
+                new ContainerRequestParameter(RANDOM_ETAG, "utf-8"));
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
+                new ContainerRequestParameter(MONTH_AFTER_RANDOM_ETAG, "utf-8"));
+
+        CalendarSearchCriteria criteria = servlet.getCalendarSearchCriteria(request);
+        assertEquals(CalDavConstants.COMPONENT.VTODO, criteria.getComponent());
+        assertEquals(CalendarSearchCriteria.MODE.ALL_ARCHIVED, criteria.getMode());
+        assertEquals(new DateTime(RANDOM_ETAG, "yyyyMMdd'T'HHmmss", true), criteria.getStart());
+        assertEquals(new DateTime(MONTH_AFTER_RANDOM_ETAG, "yyyyMMdd'T'HHmmss", true), criteria.getEnd());
+    }
+
+    @Test
+    public void getDefaultSearchCriteria() throws ParseException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        servlet.getCalendarSearchCriteria(request);
+    }
+
+    @Test(expected = ParseException.class)
+    public void bogusStartDate() throws ParseException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
+                new ContainerRequestParameter("not a date", "utf-8"));
+
+        servlet.getCalendarSearchCriteria(request);
+    }
+
+    @Test(expected = ParseException.class)
+    public void bogusEndDate() throws ParseException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
+                new ContainerRequestParameter("not a date either", "utf-8"));
+
+        servlet.getCalendarSearchCriteria(request);
+    }
 }

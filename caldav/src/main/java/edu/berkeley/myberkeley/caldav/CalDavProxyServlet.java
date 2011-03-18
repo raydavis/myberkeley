@@ -1,7 +1,10 @@
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
+import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.CalendarComponent;
@@ -14,6 +17,7 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -26,6 +30,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @Service(value = Servlet.class)
@@ -34,6 +39,13 @@ import java.util.List;
 public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CalDavProxyServlet.class);
+
+    public enum REQUEST_PARAMS {
+        type,
+        mode,
+        start_date,
+        end_date
+    }
 
     @Override
     protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -49,16 +61,52 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         CalDavConnector connector = new CalDavConnector("vbede", "bedework",
                 new URI("http://test.media.berkeley.edu:8080", false),
                 new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
-        handleGet(response, connector);
+
+        CalendarSearchCriteria criteria;
+        try {
+            criteria = getCalendarSearchCriteria(request);
+        } catch (ParseException pe) {
+            throw new ServletException("Invalid date in request", pe);
+        }
+
+        handleGet(response, connector, criteria);
 
     }
 
-    protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector) throws IOException {
+    protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ParseException {
+        Date defaultStart = new DateTime();
+        Date defaultEnd = new DateTime();
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalDavConstants.COMPONENT.VEVENT,
+                defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
+
+        // apply non-default values from request if they're available
+
+        RequestParameter type = request.getRequestParameter(REQUEST_PARAMS.type.toString());
+        if (type != null) {
+            criteria.setComponent(CalDavConstants.COMPONENT.valueOf(type.getString()));
+        }
+        RequestParameter mode = request.getRequestParameter(REQUEST_PARAMS.mode.toString());
+        if (mode != null) {
+            criteria.setMode(CalendarSearchCriteria.MODE.valueOf(mode.getString()));
+        }
+        RequestParameter startDate = request.getRequestParameter(REQUEST_PARAMS.start_date.toString());
+        if (startDate != null) {
+            criteria.setStart(new DateTime(startDate.getString()));
+        }
+        RequestParameter endDate = request.getRequestParameter(REQUEST_PARAMS.end_date.toString());
+        if (endDate != null) {
+            criteria.setEnd(new DateTime(endDate.getString()));
+        }
+
+        return criteria;
+    }
+
+    protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector,
+                             CalendarSearchCriteria criteria) throws IOException {
         List<CalendarWrapper> calendars;
 
         try {
-            List<CalendarWrapper.CalendarUri> calendarUris = connector.getCalendarUris();
-            calendars = connector.getCalendars(calendarUris);
+            calendars = connector.searchByDate(criteria);
         } catch (CalDavException cde) {
             LOGGER.error("Exception fetching calendars", cde);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
