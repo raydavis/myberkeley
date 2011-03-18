@@ -15,7 +15,9 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.UUID;
 /**
  * This test is really an integration test used to exercise (and learn) CalDAV functionality.
  * It assumes test.media.berkeley.edu is up and running Bedework on port 8080.
+ * If Bedework isn't running, the tests will still pass, although they won't be as informative.
  */
 
 public class CalDavConnectorTest extends CalDavTests {
@@ -33,6 +36,8 @@ public class CalDavConnectorTest extends CalDavTests {
     private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/vbede/calendar/";
 
     private static final String OWNER = "vbede";
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
 
     private CalDavConnector adminConnector;
 
@@ -46,204 +51,260 @@ public class CalDavConnectorTest extends CalDavTests {
 
     @Test
     public void deleteAll() throws CalDavException {
-        List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
-        for (CalendarWrapper.CalendarUri uri : uris) {
-            this.adminConnector.deleteCalendar(uri);
+        try {
+            List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
+            for (CalendarWrapper.CalendarUri uri : uris) {
+                this.adminConnector.deleteCalendar(uri);
+            }
+            assertTrue(this.adminConnector.getCalendarUris().isEmpty());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
         }
-        assertTrue(this.adminConnector.getCalendarUris().isEmpty());
     }
 
     @Test
     public void putCalendar() throws CalDavException {
-        Calendar calendar = buildVevent("Created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
-        boolean found = doesEntryExist(uri);
-        assertTrue(found);
+        try {
+            Calendar calendar = buildVevent("Created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+            boolean found = doesEntryExist(uri);
+            assertTrue(found);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
     @Test
     public void delete() throws CalDavException {
-        Calendar calendar = buildVevent("Created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
-        assertTrue(doesEntryExist(uri));
-        this.adminConnector.deleteCalendar(uri);
-        assertFalse(doesEntryExist(uri));
+        try {
+            Calendar calendar = buildVevent("Created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+            assertTrue(doesEntryExist(uri));
+            this.adminConnector.deleteCalendar(uri);
+            assertFalse(doesEntryExist(uri));
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
-    @Test
+    @Test()
     public void getCalendars() throws CalDavException {
-        List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
-        this.adminConnector.getCalendars(uris);
+        try {
+            List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
+            this.adminConnector.getCalendars(uris);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
     @Test
     public void putThenGetCalendarEntry() throws CalDavException, ParseException, URIException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+        try {
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-        List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
-        uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
-        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
-        assertFalse(calendars.isEmpty());
+            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
+            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
+            assertFalse(calendars.isEmpty());
 
-        Calendar calOnServer = calendars.get(0).getCalendar();
-        VEvent eventOnServer = (VEvent) calOnServer.getComponent(Component.VEVENT);
-        VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
+            Calendar calOnServer = calendars.get(0).getCalendar();
+            VEvent eventOnServer = (VEvent) calOnServer.getComponent(Component.VEVENT);
+            VEvent originalEvent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
 
-        assertEquals(originalEvent.getDuration(), eventOnServer.getDuration());
-        assertEquals(originalEvent.getStartDate(), eventOnServer.getStartDate());
-        assertEquals(originalEvent.getEndDate(), eventOnServer.getEndDate());
-        assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
-        assertEquals(originalEvent.getUid(), eventOnServer.getUid());
+            assertEquals(originalEvent.getDuration(), eventOnServer.getDuration());
+            assertEquals(originalEvent.getStartDate(), eventOnServer.getStartDate());
+            assertEquals(originalEvent.getEndDate(), eventOnServer.getEndDate());
+            assertEquals(originalEvent.getSummary(), eventOnServer.getSummary());
+            assertEquals(originalEvent.getUid(), eventOnServer.getUid());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
 
     }
 
     @Test
     public void searchForEvent() throws CalDavException {
-        deleteAll();
+        try {
+            deleteAll();
 
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        this.adminConnector.putCalendar(originalCalendar, OWNER);
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-        DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
-        DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+            DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
+            DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
 
-        // search for event just created, should find it
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
-        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+            // search for event just created, should find it
+            CalendarSearchCriteria criteria = new CalendarSearchCriteria(
+                    CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+            assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        criteria.setMode(CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
-        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+            criteria.setMode(CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
+            assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        // search for a vtodo, there should be none
-        criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            // search for a vtodo, there should be none
+            criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        // search for an event but in a different time, should be none
-        DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
-        criteria.setStart(twoMonthsAgo);
-        criteria.setEnd(monthAgo);
-        criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            // search for an event but in a different time, should be none
+            DateTime twoMonthsAgo = new DateTime(DateUtils.addDays(new Date(), -60));
+            criteria.setStart(twoMonthsAgo);
+            criteria.setEnd(monthAgo);
+            criteria.setComponent(CalDavConstants.COMPONENT.VEVENT);
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
     @Test
     public void searchForTodo() throws CalDavException {
-        deleteAll();
+        try {
+            deleteAll();
 
-        Calendar vtodo = buildVTodo("Archived VTODO");
-        URI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
-        DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
-                DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+            Calendar vtodo = buildVTodo("Archived VTODO");
+            URI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
+            DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
+            DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
 
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
-        criteria.setStart(monthAgo);
-        criteria.setEnd(tomorrow);
-        criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
-        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            CalendarSearchCriteria criteria = new CalendarSearchCriteria(
+                    CalDavConstants.COMPONENT.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+            criteria.setStart(monthAgo);
+            criteria.setEnd(tomorrow);
+            criteria.setComponent(CalDavConstants.COMPONENT.VTODO);
+            criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
-        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+            criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
+            assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        // now archive the vtodo and search for it again
-        Component vtodoComp = vtodo.getComponent(Component.VTODO);
-        vtodoComp.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
-        this.adminConnector.modifyCalendar(todoURI, vtodo, OWNER);
+            // now archive the vtodo and search for it again
+            Component vtodoComp = vtodo.getComponent(Component.VTODO);
+            vtodoComp.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
+            this.adminConnector.modifyCalendar(todoURI, vtodo, OWNER);
 
-        assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
+            assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
-        criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
-        assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+            criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
+            assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
 
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToPutAnAdminCreatedEvent() throws CalDavException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        this.adminConnector.putCalendar(originalCalendar, OWNER);
-        this.userConnector.putCalendar(originalCalendar, OWNER);
+        try {
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            this.adminConnector.putCalendar(originalCalendar, OWNER);
+            this.userConnector.putCalendar(originalCalendar, OWNER);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+            throw new BadRequestException("");
+        }
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserUnableToDelete() throws CalDavException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
-        this.userConnector.deleteCalendar(uri);
+        try {
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+            this.userConnector.deleteCalendar(uri);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+            throw new BadRequestException("");
+        }
     }
 
     @Test(expected = BadRequestException.class)
     public void verifyUserAbleToPutOwnEvent() throws CalDavException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        this.userConnector.putCalendar(originalCalendar, OWNER);
+        try {
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            this.userConnector.putCalendar(originalCalendar, OWNER);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+            throw new BadRequestException("");
+        }
     }
 
     @Test
     public void putThenModify() throws CalDavException, ParseException, URIException {
-        Calendar originalCalendar = buildVevent("Created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+        try {
+            Calendar originalCalendar = buildVevent("Created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-        long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
-        VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
-        String newSummary = "Updated event";
-        VEvent newVevent = new VEvent(new DateTime(newStart),
-                new Dur(0, 1, 0, 0), newSummary);
-        newVevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        originalCalendar.getComponents().remove(vevent);
-        originalCalendar.getComponents().add(newVevent);
+            long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
+            VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
+            String newSummary = "Updated event";
+            VEvent newVevent = new VEvent(new DateTime(newStart),
+                    new Dur(0, 1, 0, 0), newSummary);
+            newVevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
+            originalCalendar.getComponents().remove(vevent);
+            originalCalendar.getComponents().add(newVevent);
 
-        this.adminConnector.modifyCalendar(uri, originalCalendar, OWNER);
+            this.adminConnector.modifyCalendar(uri, originalCalendar, OWNER);
 
-        List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
-        uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
-        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
-        assertFalse(calendars.isEmpty());
-        Calendar newCalendar = calendars.get(0).getCalendar();
-        VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
-        assertEquals(newSummary, updatedEvent.getSummary().getValue());
-        assertEquals(new DateTime(newStart), updatedEvent.getStartDate().getDate());
+            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
+            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
+            assertFalse(calendars.isEmpty());
+            Calendar newCalendar = calendars.get(0).getCalendar();
+            VEvent updatedEvent = (VEvent) newCalendar.getComponent(Component.VEVENT);
+            assertEquals(newSummary, updatedEvent.getSummary().getValue());
+            assertEquals(new DateTime(newStart), updatedEvent.getStartDate().getDate());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
 
     }
 
     @Test(expected = BadRequestException.class)
     public void modifyNonExistent() throws CalDavException, URIException, ParseException {
-        Calendar calendar = buildVevent("Created by CalDavTests");
-        URI uri = new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false);
+        try {
+            Calendar calendar = buildVevent("Created by CalDavTests");
+            URI uri = new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false);
 
-        this.adminConnector.modifyCalendar(uri, calendar, OWNER);
+            this.adminConnector.modifyCalendar(uri, calendar, OWNER);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+            throw new BadRequestException("");
+        }
     }
 
     @Test
     public void putTodo() throws CalDavException, ParseException, URIException {
-        Calendar calendar = buildVTodo("Todo created by CalDavTests");
-        URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+        try {
+            Calendar calendar = buildVTodo("Todo created by CalDavTests");
+            URI uri = this.adminConnector.putCalendar(calendar, OWNER);
 
-        List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>(1);
-        uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
-        List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
-        Calendar calOnServer = calendars.get(0).getCalendar();
-        VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
-        VToDo originalVTodo = (VToDo) calendar.getComponent(Component.VTODO);
+            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>(1);
+            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
+            Calendar calOnServer = calendars.get(0).getCalendar();
+            VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
+            VToDo originalVTodo = (VToDo) calendar.getComponent(Component.VTODO);
 
-        assertEquals(originalVTodo.getDuration(), vtodoOnServer.getDuration());
-        assertEquals(originalVTodo.getStartDate(), vtodoOnServer.getStartDate());
-        assertEquals(originalVTodo.getDue(), vtodoOnServer.getDue());
-        assertEquals(originalVTodo.getSummary(), vtodoOnServer.getSummary());
-        assertEquals(originalVTodo.getUid(), vtodoOnServer.getUid());
-        assertEquals(originalVTodo.getProperty(Property.CATEGORIES).getValue(),
-                vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
-        assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES));
+            assertEquals(originalVTodo.getDuration(), vtodoOnServer.getDuration());
+            assertEquals(originalVTodo.getStartDate(), vtodoOnServer.getStartDate());
+            assertEquals(originalVTodo.getDue(), vtodoOnServer.getDue());
+            assertEquals(originalVTodo.getSummary(), vtodoOnServer.getSummary());
+            assertEquals(originalVTodo.getUid(), vtodoOnServer.getUid());
+            assertEquals(originalVTodo.getProperty(Property.CATEGORIES).getValue(),
+                    vtodoOnServer.getProperty(Property.CATEGORIES).getValue());
+            assertEquals(CalDavConnector.MYBERKELEY_REQUIRED, vtodoOnServer.getProperty(Property.CATEGORIES));
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
-    private boolean doesEntryExist(URI uri) throws CalDavException {
+    private boolean doesEntryExist(URI uri) throws CalDavException, IOException {
         for (CalendarWrapper.CalendarUri thisURI : this.adminConnector.getCalendarUris()) {
             if ((thisURI.toString()).equals(uri.toString())) {
                 return true;

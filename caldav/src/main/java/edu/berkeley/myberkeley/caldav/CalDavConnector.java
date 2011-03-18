@@ -67,7 +67,7 @@ public class CalDavConnector {
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<CalendarWrapper.CalendarUri> getCalendarUris() throws CalDavException {
+    public List<CalendarWrapper.CalendarUri> getCalendarUris() throws CalDavException, IOException {
         List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
@@ -89,8 +89,6 @@ public class CalDavConnector {
                     }
                 }
             }
-        } catch (IOException ioe) {
-            throw new CalDavException("IO error getting calendar URIs ", ioe);
         } catch (DavException de) {
             throw new CalDavException("DavException getting calendar URIs", de);
         }
@@ -102,7 +100,7 @@ public class CalDavConnector {
      *
      * @return The URI of the newly created calendar entry.
      */
-    public URI putCalendar(Calendar calendar, String ownerID) throws CalDavException {
+    public URI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
         return modifyCalendar(null, calendar, ownerID);
     }
 
@@ -111,7 +109,7 @@ public class CalDavConnector {
      *
      * @return The URI of the calendar entry.
      */
-    public URI modifyCalendar(URI uri, Calendar calendar, String ownerID) throws CalDavException {
+    public URI modifyCalendar(URI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
         if (uri == null) {
             try {
                 uri = new URI(this.userHome, UUID.randomUUID() + ".ics", false);
@@ -138,7 +136,7 @@ public class CalDavConnector {
     /**
      * Deletes a calendar entry at specified uri.
      */
-    public void deleteCalendar(URI uri) throws CalDavException {
+    public void deleteCalendar(URI uri) throws CalDavException, IOException {
         DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
         executeMethod(deleteMethod);
     }
@@ -181,7 +179,7 @@ public class CalDavConnector {
             report.getRequestEntity().writeRequest(requestOut);
             LOGGER.info("Request body: " + requestOut.toString("utf-8"));
 
-            this.client.executeMethod(report);
+            executeMethod(report);
 
             MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
             for (MultiStatusResponse response : multiStatus.getResponses()) {
@@ -209,15 +207,14 @@ public class CalDavConnector {
         return calendars;
     }
 
-    private <T extends DavMethod> T executeMethod(T method) throws CalDavException {
+    private <T extends DavMethod> T executeMethod(T method) throws CalDavException, IOException {
         try {
+            method.getParams().setSoTimeout(5000);
             this.client.executeMethod(method);
             logRequest(method);
             checkStatus(method);
         } catch (HttpClientError hce) {
             throw new CalDavException("Error running " + method.getName(), hce);
-        } catch (IOException ioe) {
-            throw new CalDavException("IO error running " + method.getName(), ioe);
         } finally {
             if (method != null) {
                 method.releaseConnection();
