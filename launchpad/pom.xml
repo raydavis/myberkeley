@@ -67,6 +67,12 @@
               <version>0.10-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
+            <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
+              <version>0.10-SNAPSHOT</version>
+              <startLevel>30</startLevel>
+            </bundle>
           </additionalBundles>
           <bundleExclusions>
             <bundle>
