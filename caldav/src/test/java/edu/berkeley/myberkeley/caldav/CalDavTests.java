@@ -14,7 +14,6 @@ import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.junit.Assert;
 
-import java.util.Date;
 import java.util.UUID;
 
 public abstract class CalDavTests extends Assert {
@@ -31,7 +30,7 @@ public abstract class CalDavTests extends Assert {
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         c.getComponents().add(tz);
         VEvent vevent = new VEvent(new DateTime(),
-                new Dur(0, 1, 0, 0), summary + " " + new Date().toString());
+                new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
         c.getComponents().add(vevent);
         return c;
