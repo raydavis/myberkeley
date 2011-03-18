@@ -1,15 +1,12 @@
 package edu.berkeley.myberkeley.caldav;
 
 import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
-import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.CalendarComponent;
-import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.DateProperty;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
@@ -117,7 +114,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            JSONObject json = toJSON(calendars);
+            JSONObject json = toJSON(calendars, criteria.getComponent().toString());
             LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
             response.getWriter().write(json.toString());
         } catch (JSONException je) {
@@ -126,32 +123,18 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     }
 
-    private JSONObject toJSON(List<CalendarWrapper> calendars) throws JSONException {
+    private JSONObject toJSON(List<CalendarWrapper> calendars, String componentName) throws JSONException {
         JSONObject obj = new JSONObject();
-
-        JSONObject events = new JSONObject();
+        JSONObject results = new JSONObject();
         for (CalendarWrapper wrapper : calendars) {
-            JSONObject thisEvent = new JSONObject();
-            ComponentList vevents = wrapper.getCalendar().getComponents(Component.VEVENT);
-            for (Object vevent : vevents) {
-                writeCalendarComponent(wrapper, (VEvent) vevent, thisEvent);
-                events.put(wrapper.getUri().toString(), thisEvent);
+            JSONObject result = new JSONObject();
+            ComponentList componentList = wrapper.getCalendar().getComponents(componentName);
+            for (Object component : componentList) {
+                writeCalendarComponent(wrapper, (CalendarComponent) component, result);
+                results.put(wrapper.getUri().toString(), result);
             }
         }
-
-        JSONObject todos = new JSONObject();
-        for (CalendarWrapper wrapper : calendars) {
-            JSONObject thisTodo = new JSONObject();
-            ComponentList vtodos = wrapper.getCalendar().getComponents(Component.VTODO);
-            for (Object todo : vtodos) {
-                writeCalendarComponent(wrapper, (VToDo) todo, thisTodo);
-                todos.put(wrapper.getUri().toString(), thisTodo);
-            }
-        }
-
-        obj.put("vevents", events);
-        obj.put("vtodos", todos);
-
+        obj.put("results", results);
         return obj;
     }
 
