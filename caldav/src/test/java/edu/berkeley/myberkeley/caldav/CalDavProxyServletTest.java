@@ -65,7 +65,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void getCalendarSearchCriteria() throws ParseException {
+    public void getCalendarSearchCriteria() throws ServletException, ParseException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.type.toString())).thenReturn(
                 new ContainerRequestParameter("VTODO", "utf-8"));
@@ -84,13 +84,13 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void getDefaultSearchCriteria() throws ParseException {
+    public void getDefaultSearchCriteria() throws ServletException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         servlet.getCalendarSearchCriteria(request);
     }
 
-    @Test(expected = ParseException.class)
-    public void bogusStartDate() throws ParseException {
+    @Test(expected = ServletException.class)
+    public void bogusStartDate() throws ServletException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
                 new ContainerRequestParameter("not a date", "utf-8"));
@@ -98,8 +98,8 @@ public class CalDavProxyServletTest extends CalDavTests {
         servlet.getCalendarSearchCriteria(request);
     }
 
-    @Test(expected = ParseException.class)
-    public void bogusEndDate() throws ParseException {
+    @Test(expected = ServletException.class)
+    public void bogusEndDate() throws ServletException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
                 new ContainerRequestParameter("not a date either", "utf-8"));

@@ -58,18 +58,13 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
                 new URI("http://test.media.berkeley.edu:8080", false),
                 new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
 
-        CalendarSearchCriteria criteria;
-        try {
-            criteria = getCalendarSearchCriteria(request);
-        } catch (ParseException pe) {
-            throw new ServletException("Invalid date in request", pe);
-        }
+        CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 
         handleGet(response, connector, criteria);
 
     }
 
-    protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ParseException {
+    protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ServletException {
         Date defaultStart = new DateTime();
         Date defaultEnd = new DateTime();
         CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.COMPONENT.VEVENT,
@@ -87,11 +82,19 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         }
         RequestParameter startDate = request.getRequestParameter(REQUEST_PARAMS.start_date.toString());
         if (startDate != null) {
+            try {
             criteria.setStart(new DateTime(startDate.getString()));
+            } catch ( ParseException pe ) {
+                throw new ServletException("Invalid start date passed: " + startDate.getString(), pe);
+            }
         }
         RequestParameter endDate = request.getRequestParameter(REQUEST_PARAMS.end_date.toString());
         if (endDate != null) {
-            criteria.setEnd(new DateTime(endDate.getString()));
+            try {
+                criteria.setEnd(new DateTime(endDate.getString()));
+            }catch ( ParseException pe ) {
+                throw new ServletException("Invalid end date passed: " + endDate.getString(), pe);
+            }
         }
 
         return criteria;
