@@ -50,6 +50,11 @@ public class CalendarWrapper {
 
         private Date etag;
 
+        public CalendarUri(URI uri, Date etag) throws URIException {
+            super(uri.toString(), false);
+            this.etag = etag;
+        }
+
         public CalendarUri(URI uri, String etag) throws URIException, ParseException {
             super(uri.toString(), false);
             this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);

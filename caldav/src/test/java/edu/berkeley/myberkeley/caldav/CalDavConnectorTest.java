@@ -77,7 +77,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void delete() throws CalDavException {
         try {
             Calendar calendar = buildVevent("Created by CalDavTests");
-            URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(calendar, OWNER);
             assertTrue(doesEntryExist(uri));
             this.adminConnector.deleteCalendar(uri);
             assertFalse(doesEntryExist(uri));
@@ -168,7 +168,7 @@ public class CalDavConnectorTest extends CalDavTests {
             deleteAll();
 
             Calendar vtodo = buildVTodo("Archived VTODO");
-            URI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
+            CalendarWrapper.CalendarUri todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
             DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
             DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
 
@@ -214,7 +214,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void verifyUserUnableToDelete() throws CalDavException {
         try {
             Calendar originalCalendar = buildVevent("Created by CalDavTests");
-            URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
             this.userConnector.deleteCalendar(uri);
         } catch (IOException ioe) {
             LOGGER.error("Trouble contacting server", ioe);
@@ -237,7 +237,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void putThenModify() throws CalDavException, ParseException, URIException {
         try {
             Calendar originalCalendar = buildVevent("Created by CalDavTests");
-            URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
             long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
             VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -268,7 +268,9 @@ public class CalDavConnectorTest extends CalDavTests {
     public void modifyNonExistent() throws CalDavException, URIException, ParseException {
         try {
             Calendar calendar = buildVevent("Created by CalDavTests");
-            URI uri = new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false);
+            CalendarWrapper.CalendarUri uri = new CalendarWrapper.CalendarUri(
+                    new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false),
+                    new DateTime());
 
             this.adminConnector.modifyCalendar(uri, calendar, OWNER);
         } catch (IOException ioe) {

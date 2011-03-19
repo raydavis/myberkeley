@@ -1,13 +1,27 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.*;
+import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
+import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
+import edu.berkeley.myberkeley.caldav.report.CalendarQueryReportInfo;
+import edu.berkeley.myberkeley.caldav.report.Filter;
+import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
+import edu.berkeley.myberkeley.caldav.report.TimeRange;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.Categories;
-import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpClientError;
+import org.apache.commons.httpclient.HttpState;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -15,7 +29,12 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
 import org.apache.jackrabbit.webdav.Status;
-import org.apache.jackrabbit.webdav.client.methods.*;
+import org.apache.jackrabbit.webdav.client.methods.AclMethod;
+import org.apache.jackrabbit.webdav.client.methods.DavMethod;
+import org.apache.jackrabbit.webdav.client.methods.DeleteMethod;
+import org.apache.jackrabbit.webdav.client.methods.PropFindMethod;
+import org.apache.jackrabbit.webdav.client.methods.PutMethod;
+import org.apache.jackrabbit.webdav.client.methods.ReportMethod;
 import org.apache.jackrabbit.webdav.property.DavProperty;
 import org.apache.jackrabbit.webdav.property.DavPropertyName;
 import org.apache.jackrabbit.webdav.property.DavPropertySet;
@@ -31,7 +50,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class CalDavConnector {
 
@@ -100,7 +124,7 @@ public class CalDavConnector {
      *
      * @return The URI of the newly created calendar entry.
      */
-    public URI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
+    public CalendarWrapper.CalendarUri putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
         return modifyCalendar(null, calendar, ownerID);
     }
 
@@ -109,10 +133,11 @@ public class CalDavConnector {
      *
      * @return The URI of the calendar entry.
      */
-    public URI modifyCalendar(URI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
+    public CalendarWrapper.CalendarUri modifyCalendar(CalendarWrapper.CalendarUri uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
         if (uri == null) {
             try {
-                uri = new URI(this.userHome, UUID.randomUUID() + ".ics", false);
+                uri = new CalendarWrapper.CalendarUri(
+                        new URI(this.userHome, UUID.randomUUID() + ".ics", false), new DateTime());
             } catch (URIException uie) {
                 throw new CalDavException("Unexpected URIException", uie);
             }
@@ -136,7 +161,7 @@ public class CalDavConnector {
     /**
      * Deletes a calendar entry at specified uri.
      */
-    public void deleteCalendar(URI uri) throws CalDavException, IOException {
+    public void deleteCalendar(CalendarWrapper.CalendarUri uri) throws CalDavException, IOException {
         DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
         executeMethod(deleteMethod);
     }
@@ -245,7 +270,7 @@ public class CalDavConnector {
         }
     }
 
-    private void restrictPermissions(URI uri, String ownerID) throws CalDavException {
+    private void restrictPermissions(CalendarWrapper.CalendarUri uri, String ownerID) throws CalDavException {
         // owner can only read and write, admin can do anything
         Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
         Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
