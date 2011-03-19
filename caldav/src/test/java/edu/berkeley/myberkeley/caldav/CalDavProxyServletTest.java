@@ -56,7 +56,7 @@ public class CalDavProxyServletTest extends CalDavTests {
         calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), new URI("/url3", false), RANDOM_ETAG));
         Date defaultStart = new DateTime();
         Date defaultEnd = new DateTime();
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.COMPONENT.VEVENT,
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.TYPE.VEVENT,
                 defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
 
         when(connector.searchByDate(criteria)).thenReturn(calendars);
@@ -77,7 +77,7 @@ public class CalDavProxyServletTest extends CalDavTests {
                 new ContainerRequestParameter(MONTH_AFTER_RANDOM_ETAG, "utf-8"));
 
         CalendarSearchCriteria criteria = servlet.getCalendarSearchCriteria(request);
-        assertEquals(CalendarSearchCriteria.COMPONENT.VTODO, criteria.getComponent());
+        assertEquals(CalendarSearchCriteria.TYPE.VTODO, criteria.getType());
         assertEquals(CalendarSearchCriteria.MODE.ALL_ARCHIVED, criteria.getMode());
         assertEquals(new DateTime(RANDOM_ETAG, "yyyyMMdd'T'HHmmss", true), criteria.getStart());
         assertEquals(new DateTime(MONTH_AFTER_RANDOM_ETAG, "yyyyMMdd'T'HHmmss", true), criteria.getEnd());

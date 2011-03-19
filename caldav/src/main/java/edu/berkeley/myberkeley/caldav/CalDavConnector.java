@@ -183,7 +183,7 @@ public class CalDavConnector {
 
     public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException {
         Filter vcalComp = new Filter("VCALENDAR");
-        Filter subcomponent = new Filter(criteria.getComponent().toString());
+        Filter subcomponent = new Filter(criteria.getType().toString());
         subcomponent.setTimeRange(new TimeRange(criteria.getStart(), criteria.getEnd()));
         vcalComp.setCompFilter(Arrays.asList(subcomponent));
 
@@ -297,7 +297,7 @@ public class CalDavConnector {
     private List<CalendarWrapper> filterResults(List<CalendarWrapper> rawResults, CalendarSearchCriteria criteria) {
         List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(rawResults.size());
         for (CalendarWrapper wrapper : rawResults) {
-            Component component = wrapper.getCalendar().getComponent(criteria.getComponent().toString());
+            Component component = wrapper.getCalendar().getComponent(criteria.getType().toString());
             switch (criteria.getMode()) {
                 case REQUIRED:
                     if (isRequired(component) && !isArchived(component)) {

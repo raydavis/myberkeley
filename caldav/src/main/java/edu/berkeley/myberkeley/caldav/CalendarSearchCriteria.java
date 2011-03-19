@@ -11,12 +11,12 @@ public class CalendarSearchCriteria {
         ALL_ARCHIVED
     }
 
-    public enum COMPONENT {
+    public enum TYPE {
         VEVENT,
         VTODO
     }
 
-    private COMPONENT component;
+    private TYPE type;
 
     private MODE mode;
 
@@ -24,19 +24,19 @@ public class CalendarSearchCriteria {
 
     private Date end;
 
-    public CalendarSearchCriteria(COMPONENT component, Date start, Date end, MODE mode) {
-        this.component = component;
+    public CalendarSearchCriteria(TYPE type, Date start, Date end, MODE mode) {
+        this.type = type;
         this.start = start;
         this.end = end;
         this.mode = mode;
     }
 
-    public COMPONENT getComponent() {
-        return component;
+    public TYPE getType() {
+        return type;
     }
 
-    public void setComponent(COMPONENT component) {
-        this.component = component;
+    public void setType(TYPE type) {
+        this.type = type;
     }
 
     public Date getStart() {
@@ -66,7 +66,7 @@ public class CalendarSearchCriteria {
     @Override
     public String toString() {
         return "CalendarSearchCriteria{" +
-                "component=" + component +
+                "type=" + type +
                 ", mode=" + mode +
                 ", start=" + start +
                 ", end=" + end +

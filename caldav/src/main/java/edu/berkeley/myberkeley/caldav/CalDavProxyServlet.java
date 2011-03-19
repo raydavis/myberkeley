@@ -70,14 +70,14 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ServletException {
         Date defaultStart = new DateTime();
         Date defaultEnd = new DateTime();
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.COMPONENT.VEVENT,
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.TYPE.VEVENT,
                 defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
 
         // apply non-default values from request if they're available
 
         RequestParameter type = request.getRequestParameter(REQUEST_PARAMS.type.toString());
         if (type != null) {
-            criteria.setComponent(CalendarSearchCriteria.COMPONENT.valueOf(type.getString()));
+            criteria.setType(CalendarSearchCriteria.TYPE.valueOf(type.getString()));
         }
         RequestParameter mode = request.getRequestParameter(REQUEST_PARAMS.mode.toString());
         if (mode != null) {
@@ -119,7 +119,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            JSONObject json = toJSON(calendars, criteria.getComponent().toString());
+            JSONObject json = toJSON(calendars, criteria.getType().toString());
             LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
             response.getWriter().write(json.toString(2));
         } catch (JSONException je) {
