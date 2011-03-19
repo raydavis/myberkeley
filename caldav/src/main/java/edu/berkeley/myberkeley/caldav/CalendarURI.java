@@ -7,13 +7,6 @@ import org.apache.commons.httpclient.URIException;
 
 import java.text.ParseException;
 
-/**
-* Created by IntelliJ IDEA.
-* User: cat
-* Date: 3/19/11
-* Time: 8:14 AM
-* To change this template use File | Settings | File Templates.
-*/
 public class CalendarURI extends URI {
 
     private Date etag;
