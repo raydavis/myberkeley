@@ -51,8 +51,8 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test
     public void deleteAll() throws CalDavException {
         try {
-            List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
-            for (CalendarWrapper.CalendarUri uri : uris) {
+            List<CalendarURI> uris = this.adminConnector.getCalendarUris();
+            for (CalendarURI uri : uris) {
                 this.adminConnector.deleteCalendar(uri);
             }
             assertTrue(this.adminConnector.getCalendarUris().isEmpty());
@@ -77,7 +77,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void delete() throws CalDavException {
         try {
             Calendar calendar = buildVevent("Created by CalDavTests");
-            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(calendar, OWNER);
+            CalendarURI uri = this.adminConnector.putCalendar(calendar, OWNER);
             assertTrue(doesEntryExist(uri));
             this.adminConnector.deleteCalendar(uri);
             assertFalse(doesEntryExist(uri));
@@ -89,7 +89,7 @@ public class CalDavConnectorTest extends CalDavTests {
     @Test()
     public void getCalendars() throws CalDavException {
         try {
-            List<CalendarWrapper.CalendarUri> uris = this.adminConnector.getCalendarUris();
+            List<CalendarURI> uris = this.adminConnector.getCalendarUris();
             this.adminConnector.getCalendars(uris);
         } catch (IOException ioe) {
             LOGGER.error("Trouble contacting server", ioe);
@@ -102,8 +102,8 @@ public class CalDavConnectorTest extends CalDavTests {
             Calendar originalCalendar = buildVevent("Created by CalDavTests");
             URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
-            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
-            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarURI> uris = new ArrayList<CalendarURI>();
+            uris.add(new CalendarURI(uri, RANDOM_ETAG));
             List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
             assertFalse(calendars.isEmpty());
 
@@ -168,7 +168,7 @@ public class CalDavConnectorTest extends CalDavTests {
             deleteAll();
 
             Calendar vtodo = buildVTodo("Archived VTODO");
-            CalendarWrapper.CalendarUri todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
+            CalendarURI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
             DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
             DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
 
@@ -214,7 +214,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void verifyUserUnableToDelete() throws CalDavException {
         try {
             Calendar originalCalendar = buildVevent("Created by CalDavTests");
-            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+            CalendarURI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
             this.userConnector.deleteCalendar(uri);
         } catch (IOException ioe) {
             LOGGER.error("Trouble contacting server", ioe);
@@ -237,7 +237,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void putThenModify() throws CalDavException, ParseException, URIException {
         try {
             Calendar originalCalendar = buildVevent("Created by CalDavTests");
-            CalendarWrapper.CalendarUri uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+            CalendarURI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
 
             long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
             VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -250,8 +250,8 @@ public class CalDavConnectorTest extends CalDavTests {
 
             this.adminConnector.modifyCalendar(uri, originalCalendar, OWNER);
 
-            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
-            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarURI> uris = new ArrayList<CalendarURI>();
+            uris.add(new CalendarURI(uri, RANDOM_ETAG));
             List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
             assertFalse(calendars.isEmpty());
             Calendar newCalendar = calendars.get(0).getCalendar();
@@ -268,7 +268,7 @@ public class CalDavConnectorTest extends CalDavTests {
     public void modifyNonExistent() throws CalDavException, URIException, ParseException {
         try {
             Calendar calendar = buildVevent("Created by CalDavTests");
-            CalendarWrapper.CalendarUri uri = new CalendarWrapper.CalendarUri(
+            CalendarURI uri = new CalendarURI(
                     new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false),
                     new DateTime());
 
@@ -285,8 +285,8 @@ public class CalDavConnectorTest extends CalDavTests {
             Calendar calendar = buildVTodo("Todo created by CalDavTests");
             URI uri = this.adminConnector.putCalendar(calendar, OWNER);
 
-            List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>(1);
-            uris.add(new CalendarWrapper.CalendarUri(uri, RANDOM_ETAG));
+            List<CalendarURI> uris = new ArrayList<CalendarURI>(1);
+            uris.add(new CalendarURI(uri, RANDOM_ETAG));
             List<CalendarWrapper> calendars = this.adminConnector.getCalendars(uris);
             Calendar calOnServer = calendars.get(0).getCalendar();
             VToDo vtodoOnServer = (VToDo) calOnServer.getComponent(Component.VTODO);
@@ -306,7 +306,7 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     private boolean doesEntryExist(URI uri) throws CalDavException, IOException {
-        for (CalendarWrapper.CalendarUri thisURI : this.adminConnector.getCalendarUris()) {
+        for (CalendarURI thisURI : this.adminConnector.getCalendarUris()) {
             if ((thisURI.toString()).equals(uri.toString())) {
                 return true;
             }

@@ -91,8 +91,8 @@ public class CalDavConnector {
      * by doing a PROPFIND on a user calendar home, eg:
      * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
      */
-    public List<CalendarWrapper.CalendarUri> getCalendarUris() throws CalDavException, IOException {
-        List<CalendarWrapper.CalendarUri> uris = new ArrayList<CalendarWrapper.CalendarUri>();
+    public List<CalendarURI> getCalendarUris() throws CalDavException, IOException {
+        List<CalendarURI> uris = new ArrayList<CalendarURI>();
         try {
             PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
             MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
@@ -103,7 +103,7 @@ public class CalDavConnector {
                         DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
                         DavProperty etag = propSet.get(DavPropertyName.GETETAG);
                         try {
-                            CalendarWrapper.CalendarUri calUri = new CalendarWrapper.CalendarUri(
+                            CalendarURI calUri = new CalendarURI(
                                     new URI(this.serverRoot, response.getHref(), false),
                                     etag.getValue().toString());
                             uris.add(calUri);
@@ -124,7 +124,7 @@ public class CalDavConnector {
      *
      * @return The URI of the newly created calendar entry.
      */
-    public CalendarWrapper.CalendarUri putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
+    public CalendarURI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
         return modifyCalendar(null, calendar, ownerID);
     }
 
@@ -133,10 +133,10 @@ public class CalDavConnector {
      *
      * @return The URI of the calendar entry.
      */
-    public CalendarWrapper.CalendarUri modifyCalendar(CalendarWrapper.CalendarUri uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
+    public CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
         if (uri == null) {
             try {
-                uri = new CalendarWrapper.CalendarUri(
+                uri = new CalendarURI(
                         new URI(this.userHome, UUID.randomUUID() + ".ics", false), new DateTime());
             } catch (URIException uie) {
                 throw new CalDavException("Unexpected URIException", uie);
@@ -161,7 +161,7 @@ public class CalDavConnector {
     /**
      * Deletes a calendar entry at specified uri.
      */
-    public void deleteCalendar(CalendarWrapper.CalendarUri uri) throws CalDavException, IOException {
+    public void deleteCalendar(CalendarURI uri) throws CalDavException, IOException {
         DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
         executeMethod(deleteMethod);
     }
@@ -169,12 +169,12 @@ public class CalDavConnector {
     /**
      * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
-    public List<CalendarWrapper> getCalendars(List<CalendarWrapper.CalendarUri> uris) throws CalDavException {
+    public List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException {
         if (uris.isEmpty()) {
             return new ArrayList<CalendarWrapper>(0);
         }
         List<String> uriStrings = new ArrayList<String>(uris.size());
-        for (CalendarWrapper.CalendarUri uri : uris) {
+        for (CalendarURI uri : uris) {
             uriStrings.add(uri.toString());
         }
         ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);
@@ -270,7 +270,7 @@ public class CalDavConnector {
         }
     }
 
-    private void restrictPermissions(CalendarWrapper.CalendarUri uri, String ownerID) throws CalDavException {
+    private void restrictPermissions(CalendarURI uri, String ownerID) throws CalDavException {
         // owner can only read and write, admin can do anything
         Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
         Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);

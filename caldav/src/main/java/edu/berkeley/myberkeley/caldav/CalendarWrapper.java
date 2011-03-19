@@ -2,7 +2,6 @@ package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Date;
-import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 
@@ -12,12 +11,12 @@ public class CalendarWrapper {
 
     private Calendar calendar;
 
-    private CalendarUri calendarUri;
+    private CalendarURI calendarUri;
 
     public CalendarWrapper(Calendar calendar, URI uri, String etag) throws CalDavException {
         this.calendar = calendar;
         try {
-            this.calendarUri = new CalendarUri(uri,  etag);
+            this.calendarUri = new CalendarURI(uri,  etag);
         } catch ( ParseException pe ) {
             throw new CalDavException("Exception parsing date '" + etag + "'", pe);
         } catch ( URIException uie ) {
@@ -29,7 +28,7 @@ public class CalendarWrapper {
         return calendar;
     }
 
-    public CalendarUri getUri() {
+    public CalendarURI getUri() {
         return calendarUri;
     }
 
@@ -46,23 +45,4 @@ public class CalendarWrapper {
                 '}';
     }
 
-    public static class CalendarUri extends URI {
-
-        private Date etag;
-
-        public CalendarUri(URI uri, Date etag) throws URIException {
-            super(uri.toString(), false);
-            this.etag = etag;
-        }
-
-        public CalendarUri(URI uri, String etag) throws URIException, ParseException {
-            super(uri.toString(), false);
-            this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
-        }
-
-        public Date getEtag() {
-            return etag;
-        }
-
-    }
 }
