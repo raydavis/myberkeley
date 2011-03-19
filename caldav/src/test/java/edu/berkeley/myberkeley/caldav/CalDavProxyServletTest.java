@@ -3,13 +3,18 @@ package edu.berkeley.myberkeley.caldav;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +32,8 @@ public class CalDavProxyServletTest extends CalDavTests {
 
     private CalDavProxyServlet servlet;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavProxyServletTest.class);
+
     @Before
     public void setUp() throws Exception {
         this.servlet = new CalDavProxyServlet();
@@ -41,6 +48,24 @@ public class CalDavProxyServletTest extends CalDavTests {
 
         verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
                 Mockito.anyString());
+    }
+
+    @Test
+    public void adminUser() throws ServletException, IOException, JSONException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
+        when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
+        ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
+        when(response.getWriter()).thenReturn(new PrintWriter(responseStream));
+
+        try {
+            servlet.doGet(request, response);
+            JSONObject json = new JSONObject(responseStream.toString("utf-8"));
+            JSONObject results = (JSONObject) json.get("results");
+            assertNotNull(results);
+        } catch ( IOException ioe ) {
+            LOGGER.error("Trouble contacting bedework server", ioe);
+        }
     }
 
     @Test
