@@ -12,8 +12,11 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 
+import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 public abstract class CalDavTests extends Assert {
@@ -31,7 +34,8 @@ public abstract class CalDavTests extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         c.getComponents().add(tz);
-        VEvent vevent = new VEvent(new DateTime(),
+        DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+        VEvent vevent = new VEvent(start,
                 new Dur(0, 1, 0, 0), summary);
         vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
         c.getComponents().add(vevent);
@@ -47,7 +51,8 @@ public abstract class CalDavTests extends Assert {
         TimeZoneRegistry registry = builder.getRegistry();
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         calendar.getComponents().add(tz);
-        VToDo vtodo = new VToDo(new DateTime(), new DateTime(), summary);
+        DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+        VToDo vtodo = new VToDo(due, due, summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
         calendar.getComponents().add(vtodo);

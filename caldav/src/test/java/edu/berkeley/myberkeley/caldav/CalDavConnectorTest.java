@@ -12,6 +12,7 @@ import net.fortuna.ical4j.model.property.Uid;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.time.DateUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,7 @@ import java.util.UUID;
 
 public class CalDavConnectorTest extends CalDavTests {
 
-    private static final String OWNER = "vbede";
+    private static final String OWNER = "mtwain";
 
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
@@ -46,6 +47,12 @@ public class CalDavConnectorTest extends CalDavTests {
     public void setup() throws CalDavException, URIException {
         this.adminConnector = new CalDavConnector("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
         this.userConnector = new CalDavConnector(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+        deleteAll();
+    }
+
+    @After
+    public void cleanup() throws CalDavException {
+        deleteAll();
     }
 
     @Test
@@ -131,11 +138,11 @@ public class CalDavConnectorTest extends CalDavTests {
             this.adminConnector.putCalendar(originalCalendar, OWNER);
 
             DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
-            DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+            DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
 
             // search for event just created, should find it
             CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, fourWeeksHence, CalendarSearchCriteria.MODE.UNREQUIRED);
             assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
             criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
@@ -170,12 +177,12 @@ public class CalDavConnectorTest extends CalDavTests {
             Calendar vtodo = buildVTodo("Archived VTODO");
             CalendarURI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
             DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
-            DateTime tomorrow = new DateTime(DateUtils.addDays(new Date(), 1));
+            DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
 
             CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, tomorrow, CalendarSearchCriteria.MODE.UNREQUIRED);
+                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, fourWeeksHence, CalendarSearchCriteria.MODE.UNREQUIRED);
             criteria.setStart(monthAgo);
-            criteria.setEnd(tomorrow);
+            criteria.setEnd(fourWeeksHence);
             criteria.setType(CalendarSearchCriteria.TYPE.VTODO);
             criteria.setMode(CalendarSearchCriteria.MODE.ALL_ARCHIVED);
             assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
