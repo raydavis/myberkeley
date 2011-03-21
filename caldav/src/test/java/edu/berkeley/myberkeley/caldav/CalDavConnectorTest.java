@@ -30,11 +30,11 @@ import java.util.UUID;
 
 public class CalDavConnectorTest extends CalDavTests {
 
+    private static final String OWNER = "vbede";
+
     private static final String SERVER_ROOT = "http://test.media.berkeley.edu:8080";
 
-    private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/vbede/calendar/";
-
-    private static final String OWNER = "vbede";
+    private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/" + OWNER + "/calendar/";
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
 
@@ -45,7 +45,7 @@ public class CalDavConnectorTest extends CalDavTests {
     @Before
     public void setup() throws CalDavException, URIException {
         this.adminConnector = new CalDavConnector("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
-        this.userConnector = new CalDavConnector("vbede", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+        this.userConnector = new CalDavConnector(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
     }
 
     @Test
