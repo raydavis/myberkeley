@@ -59,6 +59,9 @@ public class EventGeneratorTest extends CalDavTests {
             optionalVTodo.getProperties().remove(CalDavConnector.MYBERKELEY_REQUIRED);
             this.adminConnector.putCalendar(optional, OWNER);
 
+            Calendar overdue = buildOverdueTask("Overdue thing");
+            this.adminConnector.putCalendar(overdue, OWNER);
+
         } catch (IOException ioe) {
             LOGGER.error("Trouble contacting server", ioe);
         }

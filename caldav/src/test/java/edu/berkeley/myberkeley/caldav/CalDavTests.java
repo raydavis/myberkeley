@@ -15,7 +15,6 @@ import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
-import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -74,6 +73,24 @@ public abstract class CalDavTests extends Assert {
         VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
         calendar.getComponents().add(tz);
         DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+        VToDo vtodo = new VToDo(due, due, summary);
+        vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
+        vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+        vtodo.getProperties().add(new Description("Exciting description."));
+        calendar.getComponents().add(vtodo);
+        return calendar;
+    }
+
+    protected Calendar buildOverdueTask(String summary) {
+        CalendarBuilder builder = new CalendarBuilder();
+        Calendar calendar = new Calendar();
+        calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+        calendar.getProperties().add(Version.VERSION_2_0);
+        calendar.getProperties().add(CalScale.GREGORIAN);
+        TimeZoneRegistry registry = builder.getRegistry();
+        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+        calendar.getComponents().add(tz);
+        DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
         VToDo vtodo = new VToDo(due, due, summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);

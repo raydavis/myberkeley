@@ -45,7 +45,6 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -56,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
@@ -190,6 +190,44 @@ public class CalDavConnector {
         ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
         List<CalendarWrapper> rawResults = search(reportInfo);
         return filterResults(rawResults, criteria);
+    }
+
+    public boolean hasOverdueTasks() throws CalDavException {
+        ReportMethod report = null;
+
+        Filter vcalComp = new Filter("VCALENDAR");
+        Filter subcomponent = new Filter(Component.VTODO);
+        subcomponent.setTimeRange(new TimeRange(new DateTime(0), new DateTime()));
+        vcalComp.setCompFilter(Arrays.asList(subcomponent));
+        ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
+
+        try {
+            report = new ReportMethod(this.userHome.toString(), reportInfo);
+
+            ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
+            report.getRequestEntity().writeRequest(requestOut);
+            LOGGER.info("Request body: " + requestOut.toString("utf-8"));
+
+            executeMethod(report);
+
+            MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
+            for (MultiStatusResponse response : multiStatus.getResponses()) {
+                DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+                DavProperty etag = propSet.get(DavPropertyName.GETETAG);
+                if (etag != null) {
+                    return true;
+                }
+            }
+
+        } catch (Exception e) {
+            throw new CalDavException("Got exception doing report", e);
+        } finally {
+            if (report != null) {
+                report.releaseConnection();
+            }
+        }
+
+        return false;
     }
 
     private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException {

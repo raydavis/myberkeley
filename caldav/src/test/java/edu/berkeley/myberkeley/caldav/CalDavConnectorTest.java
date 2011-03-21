@@ -294,6 +294,22 @@ public class CalDavConnectorTest extends CalDavTests {
         }
     }
 
+    @Test
+    public void hasNoOverdueTasks() throws CalDavException {
+        assertFalse(this.adminConnector.hasOverdueTasks());
+    }
+
+    @Test
+    public void hasAnOverdueTask() throws CalDavException {
+        Calendar calendar = buildOverdueTask("Overdue test task");
+        try {
+            this.adminConnector.putCalendar(calendar, OWNER);
+            assertTrue(this.adminConnector.hasOverdueTasks());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
+    }
+
     private boolean doesEntryExist(URI uri) throws CalDavException, IOException {
         for (CalendarURI thisURI : this.adminConnector.getCalendarUris()) {
             if ((thisURI.toString()).equals(uri.toString())) {
