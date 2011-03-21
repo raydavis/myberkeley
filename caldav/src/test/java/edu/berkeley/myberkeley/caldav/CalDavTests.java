@@ -15,8 +15,12 @@ import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -25,6 +29,22 @@ public abstract class CalDavTests extends Assert {
     protected static final String RANDOM_ETAG = "20110316T191659Z-0";
 
     protected static final String MONTH_AFTER_RANDOM_ETAG = "20110416T191659Z-0";
+
+    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
+
+    protected CalDavConnector adminConnector;
+
+    protected void deleteAll() throws CalDavException {
+        try {
+            List<CalendarURI> uris = this.adminConnector.getCalendarUris();
+            for (CalendarURI uri : uris) {
+                this.adminConnector.deleteCalendar(uri);
+            }
+            assertTrue(this.adminConnector.getCalendarUris().isEmpty());
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
+    }
 
     protected Calendar buildVevent(String summary) {
         CalendarBuilder builder = new CalendarBuilder();

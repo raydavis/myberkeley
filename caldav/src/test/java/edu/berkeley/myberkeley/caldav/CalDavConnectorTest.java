@@ -15,7 +15,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -37,10 +36,6 @@ public class CalDavConnectorTest extends CalDavTests {
 
     private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/" + OWNER + "/calendar/";
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
-
-    private CalDavConnector adminConnector;
-
     private CalDavConnector userConnector;
 
     @Before
@@ -53,19 +48,6 @@ public class CalDavConnectorTest extends CalDavTests {
     @After
     public void cleanup() throws CalDavException {
         deleteAll();
-    }
-
-    @Test
-    public void deleteAll() throws CalDavException {
-        try {
-            List<CalendarURI> uris = this.adminConnector.getCalendarUris();
-            for (CalendarURI uri : uris) {
-                this.adminConnector.deleteCalendar(uri);
-            }
-            assertTrue(this.adminConnector.getCalendarUris().isEmpty());
-        } catch (IOException ioe) {
-            LOGGER.error("Trouble contacting server", ioe);
-        }
     }
 
     @Test
