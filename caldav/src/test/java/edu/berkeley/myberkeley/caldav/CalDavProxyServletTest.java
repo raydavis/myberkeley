@@ -1,11 +1,16 @@
 package edu.berkeley.myberkeley.caldav;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;
@@ -16,17 +21,13 @@ import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 public class CalDavProxyServletTest extends CalDavTests {
 
@@ -61,7 +62,7 @@ public class CalDavProxyServletTest extends CalDavTests {
         try {
             servlet.doGet(request, response);
             JSONObject json = new JSONObject(responseStream.toString("utf-8"));
-            JSONObject results = (JSONObject) json.get("results");
+            JSONArray results = (JSONArray) json.get("results");
             assertNotNull(results);
         } catch ( IOException ioe ) {
             LOGGER.error("Trouble contacting bedework server", ioe);

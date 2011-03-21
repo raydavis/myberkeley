@@ -15,6 +15,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.user.UserConstants;
@@ -22,12 +23,12 @@ import org.sakaiproject.nakamura.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 @Service(value = Servlet.class)
 @SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET"}, generateComponent = true, generateService = true)
@@ -130,20 +131,21 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     private JSONObject toJSON(List<CalendarWrapper> calendars, String componentName) throws JSONException {
         JSONObject obj = new JSONObject();
-        JSONObject results = new JSONObject();
+        JSONArray results = new JSONArray();
         for (CalendarWrapper wrapper : calendars) {
             JSONObject result = new JSONObject();
             ComponentList componentList = wrapper.getCalendar().getComponents(componentName);
             for (Object component : componentList) {
                 writeCalendarComponent(wrapper, (CalendarComponent) component, result);
-                results.put(wrapper.getUri().toString(), result);
             }
+            results.put(result);
         }
         obj.put("results", results);
         return obj;
     }
 
     private void writeCalendarComponent(CalendarWrapper wrapper, CalendarComponent calendarComponent, JSONObject obj) throws JSONException {
+        obj.put("URI", wrapper.getUri().toString());
         obj.put("ETAG", DateUtils.iso8601(wrapper.getEtag()));
         PropertyList propertyList = calendarComponent.getProperties();
         for (Object prop : propertyList) {
