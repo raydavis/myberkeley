@@ -1,31 +1,42 @@
 package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import net.fortuna.ical4j.model.Date;
 
 public class CalendarSearchCriteria {
 
-    private CalDavConstants.COMPONENT component;
+    public enum MODE {
+        REQUIRED,
+        UNREQUIRED,
+        ALL_UNARCHIVED,
+        ALL_ARCHIVED
+    }
+
+    public enum TYPE {
+        VEVENT,
+        VTODO
+    }
+
+    private TYPE type;
+
+    private MODE mode;
 
     private Date start;
 
     private Date end;
 
-    private MODE mode;
-
-    public CalendarSearchCriteria(CalDavConstants.COMPONENT component, Date start, Date end, MODE mode) {
-        this.component = component;
+    public CalendarSearchCriteria(TYPE type, Date start, Date end, MODE mode) {
+        this.type = type;
         this.start = start;
         this.end = end;
         this.mode = mode;
     }
 
-    public CalDavConstants.COMPONENT getComponent() {
-        return component;
+    public TYPE getType() {
+        return type;
     }
 
-    public void setComponent(CalDavConstants.COMPONENT component) {
-        this.component = component;
+    public void setType(TYPE type) {
+        this.type = type;
     }
 
     public Date getStart() {
@@ -52,11 +63,14 @@ public class CalendarSearchCriteria {
         this.mode = mode;
     }
 
-    public enum MODE {
-        REQUIRED,
-        UNREQUIRED,
-        ALL_UNARCHIVED,
-        ALL_ARCHIVED
+    @Override
+    public String toString() {
+        return "CalendarSearchCriteria{" +
+                "type=" + type +
+                ", mode=" + mode +
+                ", start=" + start +
+                ", end=" + end +
+                '}';
     }
 
 }

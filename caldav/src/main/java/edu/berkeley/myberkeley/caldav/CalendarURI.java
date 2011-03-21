@@ -7,11 +7,16 @@ import org.apache.commons.httpclient.URIException;
 
 import java.text.ParseException;
 
-public class CalendarUri extends URI {
+public class CalendarURI extends URI {
 
     private Date etag;
 
-    public CalendarUri(URI uri, String etag) throws ParseException, URIException {
+    public CalendarURI(URI uri, Date etag) throws URIException {
+        super(uri.toString(), false);
+        this.etag = etag;
+    }
+
+    public CalendarURI(URI uri, String etag) throws URIException, ParseException {
         super(uri.toString(), false);
         this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
     }

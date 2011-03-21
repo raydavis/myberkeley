@@ -56,9 +56,4 @@ public final class CalDavConstants {
         ETAG.add(DavPropertyName.GETETAG);
     }
 
-    public enum COMPONENT {
-        VEVENT,
-        VTODO
-    }
-
 }
