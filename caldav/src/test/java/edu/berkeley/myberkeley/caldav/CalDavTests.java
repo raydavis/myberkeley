@@ -9,6 +9,7 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
+import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
@@ -37,6 +38,7 @@ public abstract class CalDavTests extends Assert {
         DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
         VEvent vevent = new VEvent(start,
                 new Dur(0, 1, 0, 0), summary);
+        vevent.getProperties().add(new Description("this is the description"));
         vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
         c.getComponents().add(vevent);
         return c;
@@ -55,6 +57,7 @@ public abstract class CalDavTests extends Assert {
         VToDo vtodo = new VToDo(due, due, summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+        vtodo.getProperties().add(new Description("Exciting description."));
         calendar.getComponents().add(vtodo);
         return calendar;
     }

@@ -32,7 +32,7 @@ public class EventGeneratorTest extends CalDavTests {
     }
 
     @Test
-    public void putCalendar() throws CalDavException {
+    public void putEvent() throws CalDavException {
         try {
             Calendar calendar = buildVevent("Put here by CalDavTests");
             this.adminConnector.putCalendar(calendar, OWNER);
