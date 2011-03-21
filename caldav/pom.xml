@@ -25,7 +25,7 @@
             <Bundle-Category>myberkeley</Bundle-Category>
             <Import-Package>!com.sun.*,!sun.misc,*!org.junit.*,*</Import-Package>
             <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
-            <Export-Package> edu.berkeley.myberkeley.caldav.*, edu.berkeley.myberkeley.caldav.report.* </Export-Package>
+            <Export-Package>edu.berkeley.myberkeley.caldav.*</Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
             <Embed-Dependency>ical4j,jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
 		</instructions>
