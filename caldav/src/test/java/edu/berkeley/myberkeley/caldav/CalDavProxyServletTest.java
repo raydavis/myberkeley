@@ -64,6 +64,8 @@ public class CalDavProxyServletTest extends CalDavTests {
             JSONObject json = new JSONObject(responseStream.toString("utf-8"));
             JSONArray results = (JSONArray) json.get("results");
             assertNotNull(results);
+            Boolean hasOverdue = json.getBoolean("hasOverdueTasks");
+            assertNotNull(hasOverdue);
         } catch ( IOException ioe ) {
             LOGGER.error("Trouble contacting bedework server", ioe);
         }

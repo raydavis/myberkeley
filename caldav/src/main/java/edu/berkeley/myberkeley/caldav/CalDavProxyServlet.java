@@ -87,8 +87,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         RequestParameter startDate = request.getRequestParameter(REQUEST_PARAMS.start_date.toString());
         if (startDate != null) {
             try {
-            criteria.setStart(new DateTime(startDate.getString()));
-            } catch ( ParseException pe ) {
+                criteria.setStart(new DateTime(startDate.getString()));
+            } catch (ParseException pe) {
                 throw new ServletException("Invalid start date passed: " + startDate.getString(), pe);
             }
         }
@@ -96,7 +96,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         if (endDate != null) {
             try {
                 criteria.setEnd(new DateTime(endDate.getString()));
-            }catch ( ParseException pe ) {
+            } catch (ParseException pe) {
                 throw new ServletException("Invalid end date passed: " + endDate.getString(), pe);
             }
         }
@@ -107,9 +107,11 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector,
                              CalendarSearchCriteria criteria) throws IOException {
         List<CalendarWrapper> calendars;
+        boolean hasOverdue;
 
         try {
             calendars = connector.searchByDate(criteria);
+            hasOverdue = connector.hasOverdueTasks();
         } catch (CalDavException cde) {
             LOGGER.error("Exception fetching calendars", cde);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -121,6 +123,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         try {
             JSONObject json = toJSON(calendars, criteria.getType().toString());
+            json.put("hasOverdueTasks", hasOverdue);
+
             LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
             response.getWriter().write(json.toString(2));
         } catch (JSONException je) {
