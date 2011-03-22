@@ -13,7 +13,6 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.Categories;
-import net.fortuna.ical4j.util.CompatibilityHints;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -76,11 +75,6 @@ public class CalDavConnector {
     private final URI userHome;
 
     private final String username;
-
-    static {
-        // set this so ical4j will handle Bedework's line wrapping properly
-        CompatibilityHints.setHintEnabled(CompatibilityHints.KEY_RELAXED_UNFOLDING, true);
-    }
 
     public CalDavConnector(String username, String password, URI serverRoot, URI userHome) {
         HttpState httpState = new HttpState();
