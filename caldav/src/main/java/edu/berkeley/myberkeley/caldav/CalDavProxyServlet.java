@@ -1,12 +1,7 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyList;
-import net.fortuna.ical4j.model.component.CalendarComponent;
-import net.fortuna.ical4j.model.property.DateProperty;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.felix.scr.annotations.Service;
@@ -19,7 +14,6 @@ import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.user.UserConstants;
-import org.sakaiproject.nakamura.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +116,12 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         response.setCharacterEncoding("UTF-8");
 
         try {
-            JSONObject json = toJSON(calendars, criteria.getType().toString());
+            JSONObject json = new JSONObject();
+            JSONArray results = new JSONArray();
+            for (CalendarWrapper wrapper : calendars) {
+                results.put(wrapper.toJSON());
+            }
+            json.put("results", results);
             json.put("hasOverdueTasks", hasOverdue);
 
             LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
@@ -133,34 +132,4 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     }
 
-    private JSONObject toJSON(List<CalendarWrapper> calendars, String componentName) throws JSONException {
-        JSONObject obj = new JSONObject();
-        JSONArray results = new JSONArray();
-        for (CalendarWrapper wrapper : calendars) {
-            JSONObject result = new JSONObject();
-            ComponentList componentList = wrapper.getCalendar().getComponents(componentName);
-            for (Object component : componentList) {
-                writeCalendarComponent(wrapper, (CalendarComponent) component, result);
-            }
-            results.put(result);
-        }
-        obj.put("results", results);
-        return obj;
-    }
-
-    private void writeCalendarComponent(CalendarWrapper wrapper, CalendarComponent calendarComponent, JSONObject obj) throws JSONException {
-        obj.put("URI", wrapper.getUri().toString());
-        obj.put("ETAG", DateUtils.iso8601(wrapper.getEtag()));
-        PropertyList propertyList = calendarComponent.getProperties();
-        for (Object prop : propertyList) {
-            Property property = (Property) prop;
-            // Check if it is a date
-            String value = property.getValue();
-            if (property instanceof DateProperty) {
-                DateProperty start = (DateProperty) property;
-                value = DateUtils.iso8601(start.getDate());
-            }
-            obj.put(property.getName(), value);
-        }
-    }
 }
