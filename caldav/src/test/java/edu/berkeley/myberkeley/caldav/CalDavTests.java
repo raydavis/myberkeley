@@ -11,6 +11,7 @@ import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.ProdId;
+import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.lang.time.DateUtils;
@@ -79,6 +80,7 @@ public abstract class CalDavTests extends Assert {
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
         vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
                 "specified standard 75th column"));
+        vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
         calendar.getComponents().add(vtodo);
         return calendar;
     }
@@ -98,6 +100,7 @@ public abstract class CalDavTests extends Assert {
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
         vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
                 "specified standard 75th column"));
+        vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
         calendar.getComponents().add(vtodo);
         return calendar;
     }
