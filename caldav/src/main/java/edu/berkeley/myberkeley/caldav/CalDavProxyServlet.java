@@ -25,7 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 @Service(value = Servlet.class)
-@SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET"}, generateComponent = true, generateService = true)
+@SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET", "POST"}, generateComponent = true, generateService = true)
 
 public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
@@ -35,7 +35,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         type,
         mode,
         start_date,
-        end_date
+        end_date,
+        json
     }
 
     @Override
@@ -57,6 +58,30 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         try {
             handleGet(response, connector, criteria);
+        } finally {
+            response.getWriter().close();
+        }
+    }
+
+    @Override
+    protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
+        // Keep out anon users.
+        if (UserConstants.ANON_USERID.equals(request.getRemoteUser())) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                    "Anonymous users can't use the CalDAV Proxy Service.");
+            return;
+        }
+
+        CalendarWrapper wrapper = null;
+
+        try {
+            getCalendarWrapper(request);
+        } catch (JSONException je) {
+            throw new ServletException("JSON parse error", je);
+        }
+
+        try {
+            handlePost(response, wrapper);
         } finally {
             response.getWriter().close();
         }
@@ -132,4 +157,16 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     }
 
+    protected CalendarWrapper getCalendarWrapper(SlingHttpServletRequest request) throws JSONException {
+        RequestParameter jsonParam = request.getRequestParameter(REQUEST_PARAMS.json.toString());
+        if (jsonParam != null) {
+            JSONObject json = new JSONObject(jsonParam.toString());
+            LOGGER.info("POST with JSON data: " + json.toString(2));
+        }
+        return null;
+    }
+
+    protected void handlePost(SlingHttpServletResponse response, CalendarWrapper wrapper) throws IOException {
+
+    }
 }

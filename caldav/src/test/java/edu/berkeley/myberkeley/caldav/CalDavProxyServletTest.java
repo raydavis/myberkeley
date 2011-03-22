@@ -17,11 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
+import org.sakaiproject.nakamura.util.IOUtils;
 import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void noAnonymousUsers() throws ServletException, IOException {
+    public void noAnonymousUsersInGet() throws ServletException, IOException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
@@ -52,7 +54,18 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void adminUser() throws ServletException, IOException, JSONException {
+    public void noAnonymousUsersInPost() throws ServletException, IOException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
+        when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
+        servlet.doPost(request, response);
+
+        verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
+                Mockito.anyString());
+    }
+
+    @Test
+    public void adminUserGet() throws ServletException, IOException, JSONException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
@@ -66,7 +79,7 @@ public class CalDavProxyServletTest extends CalDavTests {
             assertNotNull(results);
             Boolean hasOverdue = json.getBoolean("hasOverdueTasks");
             assertNotNull(hasOverdue);
-        } catch ( IOException ioe ) {
+        } catch (IOException ioe) {
             LOGGER.error("Trouble contacting bedework server", ioe);
         }
     }
@@ -134,4 +147,17 @@ public class CalDavProxyServletTest extends CalDavTests {
 
         servlet.getCalendarSearchCriteria(request);
     }
+
+    @Test
+    public void getCalendarWrapper() throws JSONException, IOException {
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
+        String json = IOUtils.readFully(in, "utf-8");
+
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.json.toString())).thenReturn(
+                new ContainerRequestParameter(json, "utf-8"));
+
+        servlet.getCalendarWrapper(request);
+    }
+
 }
