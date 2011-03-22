@@ -2,18 +2,20 @@ package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.ComponentList;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.util.DateUtils;
 
 import java.text.ParseException;
+import java.util.Iterator;
 
 public class CalendarWrapper {
 
@@ -58,13 +60,23 @@ public class CalendarWrapper {
         json.put("URI", getUri().toString());
         json.put("ETAG", DateUtils.iso8601(getEtag()));
 
-        ComponentList components = getCalendar().getComponents();
-        for (Object object : components) {
-            Component component = (Component) object;
-            PropertyList propertyList = component.getProperties();
-            for (Object prop : propertyList) {
-                Property property = (Property) prop;
-                // Check if it is a date
+        Component component = getCalendar().getComponent(Component.VEVENT);
+        if (component == null) {
+            component = getCalendar().getComponent(Component.VTODO);
+        }
+        PropertyList propertyList = component.getProperties();
+        for (Object prop : propertyList) {
+            Property property = (Property) prop;
+            if (property instanceof Categories) {
+                JSONArray categoriesArray = new JSONArray();
+                Categories catProp = (Categories) property;
+                Iterator iterator = catProp.getCategories().iterator();
+                while (iterator.hasNext()) {
+                    String cat = (String) iterator.next();
+                    categoriesArray.put(cat);
+                }
+                json.put(catProp.getName(), categoriesArray);
+            } else {
                 String value = property.getValue();
                 if (property instanceof DateProperty) {
                     DateProperty start = (DateProperty) property;
