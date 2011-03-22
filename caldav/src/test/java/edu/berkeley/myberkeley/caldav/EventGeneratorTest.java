@@ -7,6 +7,7 @@ import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +34,15 @@ public class EventGeneratorTest extends CalDavTests {
     }
 
     @Test
+    @Ignore
+    public void cleanup() throws CalDavException {
+        deleteAll();
+    }
+
+    @Test
     public void putEvent() throws CalDavException {
         try {
-            Calendar calendar = buildVevent("Test optional event");
+            Calendar calendar = buildVevent("Test optional event with a long description");
             this.adminConnector.putCalendar(calendar, OWNER);
 
             Calendar required = buildVevent("Mandatory event");

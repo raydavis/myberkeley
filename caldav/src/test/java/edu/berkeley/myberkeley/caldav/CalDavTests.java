@@ -57,7 +57,8 @@ public abstract class CalDavTests extends Assert {
         DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
         VEvent vevent = new VEvent(start,
                 new Dur(0, 1, 0, 0), summary);
-        vevent.getProperties().add(new Description("this is the description"));
+        vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+                "specified standard 75th column"));
         vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
         c.getComponents().add(vevent);
         return c;
@@ -76,7 +77,8 @@ public abstract class CalDavTests extends Assert {
         VToDo vtodo = new VToDo(due, due, summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        vtodo.getProperties().add(new Description("Exciting description."));
+        vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+                "specified standard 75th column"));
         calendar.getComponents().add(vtodo);
         return calendar;
     }
@@ -94,7 +96,8 @@ public abstract class CalDavTests extends Assert {
         VToDo vtodo = new VToDo(due, due, summary);
         vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
         vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        vtodo.getProperties().add(new Description("Exciting description."));
+        vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+                "specified standard 75th column"));
         calendar.getComponents().add(vtodo);
         return calendar;
     }
