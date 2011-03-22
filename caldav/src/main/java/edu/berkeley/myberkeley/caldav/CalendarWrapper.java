@@ -7,6 +7,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
+import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONArray;
@@ -15,7 +16,6 @@ import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.util.DateUtils;
 
 import java.text.ParseException;
-import java.util.Iterator;
 
 public class CalendarWrapper {
 
@@ -57,35 +57,49 @@ public class CalendarWrapper {
 
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
-        json.put("URI", getUri().toString());
-        json.put("ETAG", DateUtils.iso8601(getEtag()));
+        json.put("uri", getUri().toString());
+        json.put("etag", DateUtils.iso8601(getEtag()));
+
+        JSONObject icalData = new JSONObject();
+        JSONArray categoriesArray = new JSONArray();
+        boolean isRequired = false;
+        boolean isArchived = false;
+        boolean isCompleted = false;
 
         Component component = getCalendar().getComponent(Component.VEVENT);
         if (component == null) {
             component = getCalendar().getComponent(Component.VTODO);
         }
         PropertyList propertyList = component.getProperties();
-        for (Object prop : propertyList) {
-            Property property = (Property) prop;
-            if (property instanceof Categories) {
-                JSONArray categoriesArray = new JSONArray();
-                Categories catProp = (Categories) property;
-                Iterator iterator = catProp.getCategories().iterator();
-                while (iterator.hasNext()) {
-                    String cat = (String) iterator.next();
-                    categoriesArray.put(cat);
+        for (Object o : propertyList) {
+            Property property = (Property) o;
+            String value = property.getValue();
+
+            if (property instanceof DateProperty) {
+                DateProperty start = (DateProperty) property;
+                value = DateUtils.iso8601(start.getDate());
+            } else if (property instanceof Status) {
+                if (Status.VTODO_COMPLETED.getValue().equals(value)) {
+                    isCompleted = true;
                 }
-                json.put(catProp.getName(), categoriesArray);
-            } else {
-                String value = property.getValue();
-                if (property instanceof DateProperty) {
-                    DateProperty start = (DateProperty) property;
-                    value = DateUtils.iso8601(start.getDate());
+            } else if (property instanceof Categories) {
+                categoriesArray.put(value);
+                if (CalDavConnector.MYBERKELEY_ARCHIVED.getValue().equals(value)) {
+                    isArchived = true;
                 }
-                json.put(property.getName(), value);
+                if (CalDavConnector.MYBERKELEY_REQUIRED.getValue().equals(value)) {
+                    isRequired = true;
+                }
             }
+            icalData.put(property.getName(), value);
         }
 
+        icalData.put(Property.CATEGORIES, categoriesArray);
+
+        json.put("isRequired", isRequired);
+        json.put("isArchived", isArchived);
+        json.put("isCompleted", isCompleted);
+        json.put("icalData", icalData);
         return json;
     }
 }
