@@ -18,13 +18,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
-import org.sakaiproject.nakamura.util.IOUtils;
 import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -150,37 +148,32 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void getJSON() throws JSONException, IOException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
-        String json = IOUtils.readFully(in, "utf-8");
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.json.toString())).thenReturn(
-                new ContainerRequestParameter(json, "utf-8"));
-        JSONObject obj = servlet.getJSONData(request);
-        assertNotNull(obj);
-    }
-
-    @Test
     public void getCalendarWrapper() throws JSONException, IOException, CalDavException {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
-        String json = IOUtils.readFully(in, "utf-8");
-        JSONObject jsonObject = new JSONObject(json);
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.uri.toString())).thenReturn(
+                new ContainerRequestParameter("/uri1", "utf-8"));
+
 
         List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
         calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
 
         CalDavConnector connector = mock(CalDavConnector.class);
         when(connector.getCalendars(anyList())).thenReturn(calendars);
-        CalendarWrapper wrapper = servlet.getCalendarWrapper(connector, jsonObject);
+        CalendarWrapper wrapper = servlet.getCalendarWrapper(request, connector);
 
         assertNotNull(wrapper);
     }
 
     @Test
     public void applyChangesToCalendar() throws JSONException, IOException, CalDavException {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
-        String json = IOUtils.readFully(in, "utf-8");
-        JSONObject jsonObject = new JSONObject(json);
+        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.uri.toString())).thenReturn(
+                new ContainerRequestParameter("/uri1", "utf-8"));
+        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.isArchived.toString())).thenReturn(
+                        new ContainerRequestParameter("true", "utf-8"));
+        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.isCompleted.toString())).thenReturn(
+                        new ContainerRequestParameter("true", "utf-8"));
+
         CalDavConnector connector = mock(CalDavConnector.class);
 
         CalendarWrapper wrapper = new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG);
@@ -189,10 +182,10 @@ public class CalDavProxyServletTest extends CalDavTests {
         assertFalse(beforeChange.getBoolean("isRequired"));
         assertFalse(beforeChange.getBoolean("isArchived"));
 
-        servlet.applyChangesToCalendar(connector, jsonObject, wrapper);
+        servlet.applyChangesToCalendar(request, connector, wrapper);
         JSONObject afterChange = wrapper.toJSON();
         assertTrue(afterChange.getBoolean("isCompleted"));
-        assertTrue(afterChange.getBoolean("isRequired"));
+        assertFalse(afterChange.getBoolean("isRequired"));
         assertTrue(afterChange.getBoolean("isArchived"));
 
     }

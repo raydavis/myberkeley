@@ -40,8 +40,13 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         type,
         mode,
         start_date,
-        end_date,
-        json
+        end_date
+    }
+
+    public enum POST_PARAMS {
+        uri,
+        isArchived,
+        isCompleted
     }
 
     @Override
@@ -55,7 +60,10 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             return;
         }
 
-        CalDavConnector connector = getConnector();
+        // TODO set the correct username instead of hardcoding vbede
+        CalDavConnector connector = new CalDavConnector("vbede", "bedework",
+                new URI("http://test.media.berkeley.edu:8080", false),
+                new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
 
         CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 
@@ -64,12 +72,6 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         } finally {
             response.getWriter().close();
         }
-    }
-
-    private CalDavConnector getConnector() throws URIException {
-        return new CalDavConnector("vbede", "bedework",
-                new URI("http://test.media.berkeley.edu:8080", false),
-                new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
     }
 
     @Override
@@ -81,26 +83,19 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             return;
         }
 
-        CalendarWrapper wrapper = null;
-        CalDavConnector connector = getConnector();
-
-
         try {
-            JSONObject json = getJSONData(request);
-            getCalendarWrapper(connector, json);
-        } catch (JSONException je) {
-            throw new ServletException("JSON parse error", je);
-        } catch (CalDavException cde) {
-            LOGGER.error("Exception fetching calendars", cde);
+            CalDavConnector connector = new CalDavConnector("admin", "bedework",
+                    new URI("http://test.media.berkeley.edu:8080", false),
+                    new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
+            CalendarWrapper wrapper = getCalendarWrapper(request, connector);
+            applyChangesToCalendar(request, connector, wrapper);
+        } catch (Exception e) {
+            LOGGER.error("Exception fetching calendar", e);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-            return;
-        }
-
-        try {
-            handlePost(response, wrapper);
         } finally {
             response.getWriter().close();
         }
+
     }
 
     protected CalendarSearchCriteria getCalendarSearchCriteria(SlingHttpServletRequest request) throws ServletException {
@@ -173,47 +168,34 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
     }
 
-    protected JSONObject getJSONData(SlingHttpServletRequest request) throws JSONException {
-        RequestParameter jsonParam = request.getRequestParameter(REQUEST_PARAMS.json.toString());
-        if (jsonParam != null) {
-            JSONObject json = new JSONObject(jsonParam.toString());
-            LOGGER.info("JSON data: " + json.toString(2));
-            return json;
-        }
-        return null;
-    }
-
-    protected CalendarWrapper getCalendarWrapper(CalDavConnector connector, JSONObject json)
-            throws JSONException, URIException, CalDavException {
-        CalendarURI uri = new CalendarURI(new URI(json.getString("uri"), false), new DateTime());
+    protected CalendarWrapper getCalendarWrapper(SlingHttpServletRequest request, CalDavConnector connector)
+            throws URIException, CalDavException {
+        RequestParameter uriParam = request.getRequestParameter(POST_PARAMS.uri.toString());
+        CalendarURI uri = new CalendarURI(new URI(uriParam.toString(), false), new DateTime());
         List<CalendarWrapper> wrappers = connector.getCalendars(Arrays.asList(uri));
         return wrappers.get(0);
     }
 
-    protected void applyChangesToCalendar(CalDavConnector connector, JSONObject json, CalendarWrapper wrapper)
-    throws JSONException, CalDavException, IOException {
+    protected void applyChangesToCalendar(SlingHttpServletRequest request, CalDavConnector connector, CalendarWrapper wrapper)
+            throws CalDavException, IOException {
         Component component = wrapper.getCalendar().getComponent(Component.VEVENT);
-        if ( component == null ) {
+        if (component == null) {
             component = wrapper.getCalendar().getComponent(Component.VTODO);
         }
         component.getProperties().remove(CalDavConnector.MYBERKELEY_ARCHIVED);
-        component.getProperties().remove(CalDavConnector.MYBERKELEY_REQUIRED);
 
-        if ( json.getBoolean("isRequired")) {
-            component.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        }
-        if ( json.getBoolean("isArchived")) {
+        RequestParameter isArchived = request.getRequestParameter(POST_PARAMS.isArchived.toString());
+        if (isArchived != null && isArchived.toString().equals("true")) {
             component.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
         }
-        if ( json.getBoolean("isCompleted")) {
+        RequestParameter isCompleted = request.getRequestParameter(POST_PARAMS.isCompleted.toString());
+        if (isCompleted != null && isCompleted.toString().equals("true")) {
             component.getProperties().remove(Property.STATUS);
             component.getProperties().add(new Status(Status.COMPLETED));
         }
 
+        // TODO set the correct owner of this calendar instead of hardcoding vbede
         connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar(), "vbede");
     }
 
-    protected void handlePost(SlingHttpServletResponse response, CalendarWrapper wrapper) throws IOException {
-
-    }
 }
