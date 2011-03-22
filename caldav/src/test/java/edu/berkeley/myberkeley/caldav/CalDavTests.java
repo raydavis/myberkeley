@@ -104,4 +104,25 @@ public abstract class CalDavTests extends Assert {
         calendar.getComponents().add(vtodo);
         return calendar;
     }
+
+    protected Calendar buildPastEvent(String summary) {
+        CalendarBuilder builder = new CalendarBuilder();
+        Calendar c = new Calendar();
+        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+        c.getProperties().add(Version.VERSION_2_0);
+        c.getProperties().add(CalScale.GREGORIAN);
+        TimeZoneRegistry registry = builder.getRegistry();
+        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+        c.getComponents().add(tz);
+        DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * new Random().nextInt(28)));
+        VEvent vevent = new VEvent(start,
+                new Dur(0, 1, 0, 0), summary);
+        vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+                "specified standard 75th column"));
+        vevent.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+        vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
+        c.getComponents().add(vevent);
+        return c;
+    }
+
 }

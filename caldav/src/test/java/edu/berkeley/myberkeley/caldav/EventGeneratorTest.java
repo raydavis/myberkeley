@@ -40,6 +40,16 @@ public class EventGeneratorTest extends CalDavTests {
     }
 
     @Test
+    public void putPastEvent() throws CalDavException {
+        try {
+            Calendar calendar = buildPastEvent("Past event, required");
+            this.adminConnector.putCalendar(calendar, OWNER);
+        } catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
+    }
+
+    @Test
     public void putEvent() throws CalDavException {
         try {
             Calendar calendar = buildVevent("Test optional event with a long description");
