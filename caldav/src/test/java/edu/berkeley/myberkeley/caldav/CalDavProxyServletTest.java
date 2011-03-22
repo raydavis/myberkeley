@@ -1,5 +1,6 @@
 package edu.berkeley.myberkeley.caldav;
 
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -149,15 +150,50 @@ public class CalDavProxyServletTest extends CalDavTests {
     }
 
     @Test
-    public void getCalendarWrapper() throws JSONException, IOException {
+    public void getJSON() throws JSONException, IOException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
         String json = IOUtils.readFully(in, "utf-8");
-
         when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.json.toString())).thenReturn(
                 new ContainerRequestParameter(json, "utf-8"));
-
-        servlet.getCalendarWrapper(request);
+        JSONObject obj = servlet.getJSONData(request);
+        assertNotNull(obj);
     }
 
+    @Test
+    public void getCalendarWrapper() throws JSONException, IOException, CalDavException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
+        String json = IOUtils.readFully(in, "utf-8");
+        JSONObject jsonObject = new JSONObject(json);
+
+        List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
+        calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
+
+        CalDavConnector connector = mock(CalDavConnector.class);
+        when(connector.getCalendars(anyList())).thenReturn(calendars);
+        CalendarWrapper wrapper = servlet.getCalendarWrapper(connector, jsonObject);
+
+        assertNotNull(wrapper);
+    }
+
+    @Test
+    public void applyChangesToCalendar() throws JSONException, IOException, CalDavException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("postData.json");
+        String json = IOUtils.readFully(in, "utf-8");
+        JSONObject jsonObject = new JSONObject(json);
+        CalDavConnector connector = mock(CalDavConnector.class);
+
+        CalendarWrapper wrapper = new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG);
+        JSONObject beforeChange = wrapper.toJSON();
+        assertFalse(beforeChange.getBoolean("isCompleted"));
+        assertFalse(beforeChange.getBoolean("isRequired"));
+        assertFalse(beforeChange.getBoolean("isArchived"));
+
+        servlet.applyChangesToCalendar(connector, jsonObject, wrapper);
+        JSONObject afterChange = wrapper.toJSON();
+        assertTrue(afterChange.getBoolean("isCompleted"));
+        assertTrue(afterChange.getBoolean("isRequired"));
+        assertTrue(afterChange.getBoolean("isArchived"));
+
+    }
 }
