@@ -295,7 +295,7 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void hasNoOverdueTasks() throws CalDavException {
+    public void hasNoOverdueTasks() throws CalDavException, IOException {
         assertFalse(this.adminConnector.hasOverdueTasks());
     }
 

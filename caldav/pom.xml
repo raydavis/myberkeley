@@ -23,7 +23,7 @@
         <configuration>
           <instructions>
             <Bundle-Category>myberkeley</Bundle-Category>
-            <Import-Package>!com.sun.*,!sun.misc,*!org.junit.*,*</Import-Package>
+            <Import-Package>!sun.misc,*</Import-Package>
             <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
             <Export-Package>edu.berkeley.myberkeley.caldav.*</Export-Package>
             <Embed-Transitive>true</Embed-Transitive>

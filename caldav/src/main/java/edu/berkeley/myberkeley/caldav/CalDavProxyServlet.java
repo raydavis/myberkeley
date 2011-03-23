@@ -7,7 +7,6 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -142,8 +141,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         try {
             calendars = connector.searchByDate(criteria);
             hasOverdue = connector.hasOverdueTasks();
-        } catch (CalDavException cde) {
-            LOGGER.error("Exception fetching calendars", cde);
+        } catch (Exception e) {
+            LOGGER.error("Exception fetching calendars", e);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             return;
         }
@@ -169,7 +168,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     protected CalendarWrapper getCalendarWrapper(SlingHttpServletRequest request, CalDavConnector connector)
-            throws URIException, CalDavException {
+            throws CalDavException, IOException {
         RequestParameter uriParam = request.getRequestParameter(POST_PARAMS.uri.toString());
         CalendarURI uri = new CalendarURI(new URI(uriParam.toString(), false), new DateTime());
         List<CalendarWrapper> wrappers = connector.getCalendars(Arrays.asList(uri));

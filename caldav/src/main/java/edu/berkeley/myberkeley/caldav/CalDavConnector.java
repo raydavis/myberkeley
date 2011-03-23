@@ -7,6 +7,7 @@ import edu.berkeley.myberkeley.caldav.report.Filter;
 import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import edu.berkeley.myberkeley.caldav.report.TimeRange;
 import net.fortuna.ical4j.data.CalendarBuilder;
+import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
@@ -169,7 +170,7 @@ public class CalDavConnector {
     /**
      * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
      */
-    public List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException {
+    public List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException, IOException {
         if (uris.isEmpty()) {
             return new ArrayList<CalendarWrapper>(0);
         }
@@ -181,7 +182,7 @@ public class CalDavConnector {
         return search(reportInfo);
     }
 
-    public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException {
+    public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
         Filter vcalComp = new Filter("VCALENDAR");
         Filter subcomponent = new Filter(criteria.getType().toString());
         subcomponent.setTimeRange(new TimeRange(criteria.getStart(), criteria.getEnd()));
@@ -192,7 +193,7 @@ public class CalDavConnector {
         return filterResults(rawResults, criteria);
     }
 
-    public boolean hasOverdueTasks() throws CalDavException {
+    public boolean hasOverdueTasks() throws CalDavException, IOException {
         ReportMethod report = null;
 
         Filter vcalComp = new Filter("VCALENDAR");
@@ -219,8 +220,8 @@ public class CalDavConnector {
                 }
             }
 
-        } catch (Exception e) {
-            throw new CalDavException("Got exception doing report", e);
+        } catch ( DavException de ) {
+            throw new CalDavException("Got a webdav exception", de);
         } finally {
             if (report != null) {
                 report.releaseConnection();
@@ -230,7 +231,7 @@ public class CalDavConnector {
         return false;
     }
 
-    private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException {
+    private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException, IOException {
         ReportMethod report = null;
         List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
 
@@ -260,9 +261,12 @@ public class CalDavConnector {
                             etag.getValue().toString()));
                 }
             }
-        } catch (Exception e) {
-            throw new CalDavException("Got exception doing report", e);
-        } finally {
+        } catch ( DavException de ) {
+            throw new CalDavException("Got a webdav exception", de);
+        } catch ( ParserException pe ) {
+            throw new CalDavException("Invalid calendar data", pe);
+        }
+        finally {
             if (report != null) {
                 report.releaseConnection();
             }
@@ -272,7 +276,7 @@ public class CalDavConnector {
 
     private <T extends DavMethod> T executeMethod(T method) throws CalDavException, IOException {
         try {
-            method.getParams().setSoTimeout(5000);
+            method.getParams().setSoTimeout(30000);
             this.client.executeMethod(method);
             logRequest(method);
             checkStatus(method);
