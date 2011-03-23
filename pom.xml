@@ -27,6 +27,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
+        <module>dynamiclist</module>
         <module>notices</module>
         <module>root</module>
         <module>caldav</module>
