@@ -28,6 +28,7 @@
             <Export-Package>edu.berkeley.myberkeley.caldav.*</Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
             <Embed-Dependency>ical4j,jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
+            <Include-Resource>{maven-resources}</Include-Resource>
 		</instructions>
         </configuration>
       </plugin>
