@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,34 +29,23 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-public class CalDavProxyServletTest extends CalDavTests {
+public class CalDavGetServletTest extends CalDavTests {
 
-    private CalDavProxyServlet servlet;
+    private CalDavGetServlet servlet;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavProxyServletTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavGetServletTest.class);
 
     @Before
     public void setUp() throws Exception {
-        this.servlet = new CalDavProxyServlet();
+        this.servlet = new CalDavGetServlet();
     }
 
     @Test
-    public void noAnonymousUsersInGet() throws ServletException, IOException {
+    public void noAnonymousUsers() throws ServletException, IOException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
         servlet.doGet(request, response);
-
-        verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
-                Mockito.anyString());
-    }
-
-    @Test
-    public void noAnonymousUsersInPost() throws ServletException, IOException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
-        when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
-        servlet.doPost(request, response);
 
         verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
                 Mockito.anyString());
@@ -107,13 +95,13 @@ public class CalDavProxyServletTest extends CalDavTests {
     @Test
     public void getCalendarSearchCriteria() throws ServletException, ParseException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.type.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.type.toString())).thenReturn(
                 new ContainerRequestParameter("VTODO", "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.mode.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.mode.toString())).thenReturn(
                 new ContainerRequestParameter(CalendarSearchCriteria.MODE.ALL_ARCHIVED.toString(), "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
                 new ContainerRequestParameter(RANDOM_ETAG, "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
                 new ContainerRequestParameter(MONTH_AFTER_RANDOM_ETAG, "utf-8"));
 
         CalendarSearchCriteria criteria = servlet.getCalendarSearchCriteria(request);
@@ -132,7 +120,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     @Test(expected = ServletException.class)
     public void bogusStartDate() throws ServletException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
                 new ContainerRequestParameter("not a date", "utf-8"));
 
         servlet.getCalendarSearchCriteria(request);
@@ -141,52 +129,10 @@ public class CalDavProxyServletTest extends CalDavTests {
     @Test(expected = ServletException.class)
     public void bogusEndDate() throws ServletException {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
+        when(request.getRequestParameter(CalDavGetServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
                 new ContainerRequestParameter("not a date either", "utf-8"));
 
         servlet.getCalendarSearchCriteria(request);
     }
 
-    @Test
-    public void getCalendarWrapper() throws JSONException, IOException, CalDavException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.uri.toString())).thenReturn(
-                new ContainerRequestParameter("/uri1", "utf-8"));
-
-
-        List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
-        calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
-
-        CalDavConnector connector = mock(CalDavConnector.class);
-        when(connector.getCalendars(anyList())).thenReturn(calendars);
-        CalendarWrapper wrapper = servlet.getCalendarWrapper(request, connector);
-
-        assertNotNull(wrapper);
-    }
-
-    @Test
-    public void applyChangesToCalendar() throws JSONException, IOException, CalDavException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.uri.toString())).thenReturn(
-                new ContainerRequestParameter("/uri1", "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.isArchived.toString())).thenReturn(
-                        new ContainerRequestParameter("true", "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.isCompleted.toString())).thenReturn(
-                        new ContainerRequestParameter("true", "utf-8"));
-
-        CalDavConnector connector = mock(CalDavConnector.class);
-
-        CalendarWrapper wrapper = new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG);
-        JSONObject beforeChange = wrapper.toJSON();
-        assertFalse(beforeChange.getBoolean("isCompleted"));
-        assertFalse(beforeChange.getBoolean("isRequired"));
-        assertFalse(beforeChange.getBoolean("isArchived"));
-
-        servlet.applyChangesToCalendar(request, connector, wrapper);
-        JSONObject afterChange = wrapper.toJSON();
-        assertTrue(afterChange.getBoolean("isCompleted"));
-        assertFalse(afterChange.getBoolean("isRequired"));
-        assertTrue(afterChange.getBoolean("isArchived"));
-
-    }
 }
