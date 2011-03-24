@@ -136,7 +136,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector,
                              CalendarSearchCriteria criteria) throws IOException {
         List<CalendarWrapper> calendars;
-        boolean hasOverdue;
+        boolean hasOverdue = false;
 
         try {
 
@@ -145,10 +145,12 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             long end = System.currentTimeMillis();
             LOGGER.info("Got " + calendars.size() + " calendar records from Bedework in " + (end - begin) + "ms");
 
-            begin = System.currentTimeMillis();
-            hasOverdue = connector.hasOverdueTasks();
-            end = System.currentTimeMillis();
-            LOGGER.info("Got overdue-task result from Bedework in " + (end - begin) + "ms");
+            if ( criteria.getType().equals(CalendarSearchCriteria.TYPE.VTODO)) {
+                begin = System.currentTimeMillis();
+                hasOverdue = connector.hasOverdueTasks();
+                end = System.currentTimeMillis();
+                LOGGER.info("Got overdue-task result from Bedework in " + (end - begin) + "ms");
+            }
 
         } catch (Exception e) {
             LOGGER.error("Exception fetching calendars", e);
@@ -166,7 +168,9 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
                 results.put(wrapper.toJSON());
             }
             json.put("results", results);
-            json.put("hasOverdueTasks", hasOverdue);
+            if ( criteria.getType().equals(CalendarSearchCriteria.TYPE.VTODO)) {
+                json.put("hasOverdueTasks", hasOverdue);
+            }
 
             response.getWriter().write(json.toString(2));
 
