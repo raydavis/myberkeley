@@ -179,8 +179,9 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             throws JSONException, CalDavException, IOException {
 
         List<CalendarURI> uris = new ArrayList<CalendarURI>();
-
         JSONArray calendars = getCalendars(request);
+        String componentType = request.getRequestParameter(REQUEST_PARAMS.type.toString()).toString();
+
         for (int i = 0; i < calendars.length(); i++) {
             String uriString = ((JSONObject) calendars.get(i)).getString("uri");
             CalendarURI uri = new CalendarURI(new URI(uriString, false), new DateTime());
@@ -199,13 +200,10 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             CalendarURI uri = new CalendarURI(new URI(uriString, false), new DateTime());
             CalendarWrapper wrapper = wrapperMap.get(uri);
 
-            Component component = wrapper.getCalendar().getComponent(Component.VEVENT);
-            if (component == null) {
-                component = wrapper.getCalendar().getComponent(Component.VTODO);
-            }
+            Component component = wrapper.getCalendar().getComponent(componentType);
 
             boolean isArchived = thisItem.getBoolean("isArchived");
-            boolean isCompleted = thisItem.getBoolean("isArchived");
+            boolean isCompleted = thisItem.getBoolean("isCompleted");
             if (isArchived) {
                 component.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
             } else {
@@ -215,7 +213,6 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
                 component.getProperties().remove(Property.STATUS);
                 component.getProperties().add(new Status(Status.COMPLETED));
             }
-
 
             // TODO set the correct owner of this calendar instead of hardcoding vbede
             connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar(), "vbede");
