@@ -59,6 +59,8 @@ public class CalDavProxyServletTest extends CalDavTests {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
         when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
+        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.type.toString())).thenReturn(
+                new ContainerRequestParameter(CalendarSearchCriteria.TYPE.VTODO.toString(), "utf-8"));
         ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
         when(response.getWriter()).thenReturn(new PrintWriter(responseStream));
 
