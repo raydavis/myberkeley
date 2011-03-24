@@ -31,7 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 @Service(value = Servlet.class)
-@SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET","POST"}, generateComponent = true, generateService = true)
+@SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET", "POST"}, generateComponent = true, generateService = true)
 
 public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
@@ -139,8 +139,17 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         boolean hasOverdue;
 
         try {
+
+            long begin = System.currentTimeMillis();
             calendars = connector.searchByDate(criteria);
+            long end = System.currentTimeMillis();
+            LOGGER.info("Got " + calendars.size() + " calendar records from Bedework in " + (end - begin) + "ms");
+
+            begin = System.currentTimeMillis();
             hasOverdue = connector.hasOverdueTasks();
+            end = System.currentTimeMillis();
+            LOGGER.info("Got overdue-task result from Bedework in " + (end - begin) + "ms");
+
         } catch (Exception e) {
             LOGGER.error("Exception fetching calendars", e);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -159,8 +168,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             json.put("results", results);
             json.put("hasOverdueTasks", hasOverdue);
 
-            LOGGER.info("CalDavProxyServlet's JSON response: " + json.toString(2));
             response.getWriter().write(json.toString(2));
+
         } catch (JSONException je) {
             LOGGER.error("Failed to convert calendar to JSON", je);
         }

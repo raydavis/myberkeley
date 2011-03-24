@@ -207,7 +207,7 @@ public class CalDavConnector {
 
             ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
             report.getRequestEntity().writeRequest(requestOut);
-            LOGGER.info("Request body: " + requestOut.toString("utf-8"));
+            LOGGER.info("Doing calendar search for overdue tasks; Request body: " + requestOut.toString("utf-8"));
 
             executeMethod(report);
 
@@ -241,7 +241,7 @@ public class CalDavConnector {
 
             ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
             report.getRequestEntity().writeRequest(requestOut);
-            LOGGER.info("Request body: " + requestOut.toString("utf-8"));
+            LOGGER.info("Doing calendar search; Request body: " + requestOut.toString("utf-8"));
 
             executeMethod(report);
 
@@ -301,14 +301,18 @@ public class CalDavConnector {
 
     private void logRequest(DavMethod request) {
         try {
-            LOGGER.info(request.getClass().getSimpleName() + " on uri " + request.getURI());
+            if ( LOGGER.isDebugEnabled() ) {
+                LOGGER.debug(request.getClass().getSimpleName() + " on uri " + request.getURI());
+            }
         } catch (URIException uie) {
             LOGGER.error("Got URIException when trying to log request", uie);
         }
-        LOGGER.info("Status: " + request.getStatusLine().toString());
-        LOGGER.debug("Response headers: ");
-        for (Header header : request.getResponseHeaders()) {
-            LOGGER.debug(header.getName() + ": " + header.getValue());
+        if ( LOGGER.isDebugEnabled() ) {
+            LOGGER.debug("Status: " + request.getStatusLine().toString());
+            LOGGER.debug("Response headers: ");
+            for (Header header : request.getResponseHeaders()) {
+                LOGGER.debug(header.getName() + ": " + header.getValue());
+            }
         }
     }
 
