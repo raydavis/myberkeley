@@ -1,7 +1,5 @@
 package edu.berkeley.myberkeley.caldav;
 
-import net.fortuna.ical4j.model.Component;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,25 +26,24 @@ public class CalendarResultProcessor {
     private void filter() {
         List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(this.results.size());
         for (CalendarWrapper wrapper : this.results) {
-            Component component = wrapper.getCalendar().getComponent(criteria.getType().toString());
             switch (criteria.getMode()) {
                 case REQUIRED:
-                    if (CalendarSearchCriteria.isRequired(component) && !CalendarSearchCriteria.isArchived(component)) {
+                    if (wrapper.isRequired() && !wrapper.isArchived()) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case UNREQUIRED:
-                    if (!CalendarSearchCriteria.isRequired(component) && !CalendarSearchCriteria.isArchived(component)) {
+                    if (!wrapper.isRequired() && !wrapper.isArchived()) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case ALL_UNARCHIVED:
-                    if (!CalendarSearchCriteria.isArchived(component)) {
+                    if (!wrapper.isArchived()) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case ALL_ARCHIVED:
-                    if (CalendarSearchCriteria.isArchived(component)) {
+                    if (wrapper.isArchived()) {
                         filteredResults.add(wrapper);
                     }
                     break;

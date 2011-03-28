@@ -158,8 +158,6 @@ public class CalDavProxyServletTest extends CalDavTests {
         String json = IOUtils.readFully(in, "utf-8");
         when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.calendars.toString())).thenReturn(
                 new ContainerRequestParameter(json, "utf-8"));
-        when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.type.toString())).thenReturn(
-                        new ContainerRequestParameter("VEVENT", "utf-8"));
 
         JSONArray batch = servlet.getCalendars(request);
         assertNotNull(batch);

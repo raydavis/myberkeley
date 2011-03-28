@@ -199,7 +199,6 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
         List<CalendarURI> uris = new ArrayList<CalendarURI>();
         JSONArray calendars = getCalendars(request);
-        String componentType = request.getRequestParameter(REQUEST_PARAMS.type.toString()).toString();
 
         for (int i = 0; i < calendars.length(); i++) {
             String uriString = ((JSONObject) calendars.get(i)).getString("uri");
@@ -219,7 +218,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             CalendarURI uri = new CalendarURI(new URI(uriString, false), new DateTime());
             CalendarWrapper wrapper = wrapperMap.get(uri);
 
-            Component component = wrapper.getCalendar().getComponent(componentType);
+            Component component = wrapper.getComponent();
 
             boolean isArchived = thisItem.getBoolean("isArchived");
             boolean isCompleted = thisItem.getBoolean("isCompleted");

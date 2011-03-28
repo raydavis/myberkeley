@@ -3,10 +3,8 @@ package edu.berkeley.myberkeley.caldav;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
-import net.fortuna.ical4j.model.property.Status;
 
 import java.util.Comparator;
 
@@ -112,26 +110,15 @@ public class CalendarSearchCriteria {
 
             public int compare(CalendarWrapper a, CalendarWrapper b) {
                 int result = 0;
-                Component compA = a.getCalendar().getComponent(Component.VTODO);
-                Component compB = b.getCalendar().getComponent(Component.VTODO);
-                if (compA == null) {
-                    compA = a.getCalendar().getComponent(Component.VEVENT);
-                }
-                if (compB == null) {
-                    compB = b.getCalendar().getComponent(Component.VEVENT);
-                }
-                if (compA != null && compB != null) {
-                    if (isRequired(compA)) {
-                        if (!isRequired(compB)) {
-                            result = 1;
-                        }
-                    } else {
-                        if (isRequired(compB)) {
-                            result = -1;
-                        }
+                if (a.isRequired()) {
+                    if (!b.isRequired()) {
+                        result = 1;
+                    }
+                } else {
+                    if (b.isRequired()) {
+                        result = -1;
                     }
                 }
-
                 if (this.ascending) {
                     return result;
                 }
@@ -148,21 +135,15 @@ public class CalendarSearchCriteria {
 
             public int compare(CalendarWrapper a, CalendarWrapper b) {
                 int result = 0;
-                Component compA = a.getCalendar().getComponent(Component.VTODO);
-                Component compB = b.getCalendar().getComponent(Component.VTODO);
-
-                if (compA != null && compB != null) {
-                    if (isCompleted(compA)) {
-                        if (!isCompleted(compB)) {
-                            result = 1;
-                        }
-                    } else {
-                        if (isCompleted(compB)) {
-                            result = -1;
-                        }
+                if (a.isCompleted()) {
+                    if (!b.isCompleted()) {
+                        result = 1;
+                    }
+                } else {
+                    if (b.isCompleted()) {
+                        result = -1;
                     }
                 }
-
                 if (this.ascending) {
                     return result;
                 }
@@ -227,21 +208,6 @@ public class CalendarSearchCriteria {
 
     public void setSort(SORT sort) {
         this.sort = sort;
-    }
-
-    public static boolean isCompleted(Component comp) {
-        PropertyList propList = comp.getProperties(Property.STATUS);
-        return propList != null && propList.contains(Status.COMPLETED);
-    }
-
-    public static boolean isRequired(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
-    }
-
-    public static boolean isArchived(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
     }
 
     @Override

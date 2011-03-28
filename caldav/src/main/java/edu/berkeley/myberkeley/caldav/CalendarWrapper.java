@@ -23,8 +23,17 @@ public class CalendarWrapper {
 
     private CalendarURI calendarUri;
 
+    private Component component;
+
     public CalendarWrapper(Calendar calendar, URI uri, String etag) throws CalDavException {
         this.calendar = calendar;
+        this.component = calendar.getComponent(Component.VEVENT);
+        if ( this.component == null ) {
+            this.component = calendar.getComponent(Component.VTODO);
+        }
+        if ( this.component == null ) {
+            throw new CalDavException("Unsupported ical data - passed calendar had no VTODO or VEVENT", null);
+        }
         try {
             this.calendarUri = new CalendarURI(uri, etag);
         } catch (ParseException pe) {
@@ -35,15 +44,34 @@ public class CalendarWrapper {
     }
 
     public Calendar getCalendar() {
-        return calendar;
+        return this.calendar;
+    }
+
+    public Component getComponent() {
+        return this.component;
     }
 
     public CalendarURI getUri() {
-        return calendarUri;
+        return this.calendarUri;
     }
 
     public Date getEtag() {
         return this.calendarUri.getEtag();
+    }
+
+    public boolean isCompleted() {
+        PropertyList propList = this.component.getProperties(Property.STATUS);
+        return propList != null && propList.contains(Status.COMPLETED);
+    }
+
+    public boolean isRequired() {
+        PropertyList propList = this.component.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
+    }
+
+    public boolean isArchived() {
+        PropertyList propList = this.component.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
     }
 
     @Override
@@ -66,11 +94,7 @@ public class CalendarWrapper {
         boolean isArchived = false;
         boolean isCompleted = false;
 
-        Component component = getCalendar().getComponent(Component.VEVENT);
-        if (component == null) {
-            component = getCalendar().getComponent(Component.VTODO);
-        }
-        PropertyList propertyList = component.getProperties();
+        PropertyList propertyList = this.component.getProperties();
         for (Object o : propertyList) {
             Property property = (Property) o;
             String value = property.getValue();
