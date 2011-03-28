@@ -5,7 +5,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -86,8 +89,17 @@ public class CalDavProxyServletTest extends CalDavTests {
         calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), new URI("/url3", false), RANDOM_ETAG));
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria();
+        Calendar completed = buildVTodo("Completed todo");
+        Component completedTodo = completed.getComponent(Component.VTODO);
+        completedTodo.getProperties().add(Status.VTODO_COMPLETED);
+        calendars.add(new CalendarWrapper(completed, new URI("/uri4", false), RANDOM_ETAG));
 
+        Calendar archived = buildVTodo("Archived todo");
+        Component archivedTodo = archived.getComponent(Component.VTODO);
+        archivedTodo.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
+        calendars.add(new CalendarWrapper(archived, new URI("/uri5", false), RANDOM_ETAG));
+
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria();
         when(connector.searchByDate(criteria)).thenReturn(calendars);
         servlet.handleGet(response, connector, criteria);
 
