@@ -41,7 +41,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         type,
         mode,
         start_date,
-        end_date
+        end_date,
+        sort
     }
 
     public enum POST_PARAMS {
@@ -128,6 +129,11 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
             } catch (ParseException pe) {
                 throw new ServletException("Invalid end date passed: " + endDate.getString(), pe);
             }
+        }
+
+        RequestParameter sort = request.getRequestParameter(REQUEST_PARAMS.sort.toString());
+        if ( sort != null ) {
+            criteria.setSort(CalendarSearchCriteria.SORT.valueOf(sort.getString()));
         }
 
         return criteria;

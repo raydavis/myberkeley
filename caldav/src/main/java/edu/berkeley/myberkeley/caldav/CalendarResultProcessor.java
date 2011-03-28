@@ -1,8 +1,6 @@
 package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Component;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,22 +31,22 @@ public class CalendarResultProcessor {
             Component component = wrapper.getCalendar().getComponent(criteria.getType().toString());
             switch (criteria.getMode()) {
                 case REQUIRED:
-                    if (isRequired(component) && !isArchived(component)) {
+                    if (CalendarSearchCriteria.isRequired(component) && !CalendarSearchCriteria.isArchived(component)) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case UNREQUIRED:
-                    if (!isRequired(component) && !isArchived(component)) {
+                    if (!CalendarSearchCriteria.isRequired(component) && !CalendarSearchCriteria.isArchived(component)) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case ALL_UNARCHIVED:
-                    if (!isArchived(component)) {
+                    if (!CalendarSearchCriteria.isArchived(component)) {
                         filteredResults.add(wrapper);
                     }
                     break;
                 case ALL_ARCHIVED:
-                    if (isArchived(component)) {
+                    if (CalendarSearchCriteria.isArchived(component)) {
                         filteredResults.add(wrapper);
                     }
                     break;
@@ -59,16 +57,6 @@ public class CalendarResultProcessor {
 
     private void sort() {
         Collections.sort(this.results, criteria.getSort().getComparator());
-    }
-
-    private boolean isRequired(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
-    }
-
-    private boolean isArchived(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
     }
 
 }

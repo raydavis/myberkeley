@@ -3,8 +3,10 @@ package edu.berkeley.myberkeley.caldav;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
+import net.fortuna.ical4j.model.property.Status;
 
 import java.util.Comparator;
 
@@ -27,7 +29,11 @@ public class CalendarSearchCriteria {
         DATE_ASC(new DateComparator(true)),
         DATE_DESC(new DateComparator(false)),
         SUMMARY_ASC(new SummaryComparator(true)),
-        SUMMARY_DESC(new SummaryComparator(false));
+        SUMMARY_DESC(new SummaryComparator(false)),
+        REQUIRED_ASC(new RequiredComparator(true)),
+        REQUIRED_DESC(new RequiredComparator(false)),
+        COMPLETED_ASC(new CompleteComparator(true)),
+        COMPLETED_DESC(new CompleteComparator(false));
 
         private final Comparator<CalendarWrapper> comparator;
 
@@ -115,24 +121,46 @@ public class CalendarSearchCriteria {
                     compB = b.getCalendar().getComponent(Component.VEVENT);
                 }
                 if (compA != null && compB != null) {
-                    Property catsA = compA.getProperty(Property.CATEGORIES);
-                    Property catsB = compB.getProperty(Property.CATEGORIES);
-                    if (catsA == null) {
-                        if (catsB != null && catsB.equals(CalDavConnector.MYBERKELEY_REQUIRED)) {
-                            result = -1;
-                        }
-                    } else {
-
-                    }
-                    if (catsB == null) {
-                        if (catsA != null && catsA.equals(CalDavConnector.MYBERKELEY_REQUIRED)) {
+                    if (isRequired(compA)) {
+                        if (!isRequired(compB)) {
                             result = 1;
                         }
+                    } else {
+                        if (isRequired(compB)) {
+                            result = -1;
+                        }
                     }
-                    if (catsA.equals(CalDavConnector.MYBERKELEY_REQUIRED)) {
+                }
 
+                if (this.ascending) {
+                    return result;
+                }
+                return -1 * result;
+            }
+        }
+
+        private static class CompleteComparator implements Comparator<CalendarWrapper> {
+            private final boolean ascending;
+
+            private CompleteComparator(boolean ascending) {
+                this.ascending = ascending;
+            }
+
+            public int compare(CalendarWrapper a, CalendarWrapper b) {
+                int result = 0;
+                Component compA = a.getCalendar().getComponent(Component.VTODO);
+                Component compB = b.getCalendar().getComponent(Component.VTODO);
+
+                if (compA != null && compB != null) {
+                    if (isCompleted(compA)) {
+                        if (!isCompleted(compB)) {
+                            result = 1;
+                        }
+                    } else {
+                        if (isCompleted(compB)) {
+                            result = -1;
+                        }
                     }
-
                 }
 
                 if (this.ascending) {
@@ -201,11 +229,27 @@ public class CalendarSearchCriteria {
         this.sort = sort;
     }
 
+    public static boolean isCompleted(Component comp) {
+        PropertyList propList = comp.getProperties(Property.STATUS);
+        return propList != null && propList.contains(Status.COMPLETED);
+    }
+
+    public static boolean isRequired(Component comp) {
+        PropertyList propList = comp.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
+    }
+
+    public static boolean isArchived(Component comp) {
+        PropertyList propList = comp.getProperties(Property.CATEGORIES);
+        return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
+    }
+
     @Override
     public String toString() {
         return "CalendarSearchCriteria{" +
                 "type=" + type +
                 ", mode=" + mode +
+                ", sort=" + sort +
                 ", start=" + start +
                 ", end=" + end +
                 '}';
