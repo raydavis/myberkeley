@@ -2,6 +2,8 @@ package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Date;
 
+import java.util.Comparator;
+
 public class CalendarSearchCriteria {
 
     public enum MODE {
@@ -16,9 +18,35 @@ public class CalendarSearchCriteria {
         VTODO
     }
 
+    public enum SORT {
+
+        DATE_ASC(new Comparator<CalendarWrapper>() {
+            public int compare(CalendarWrapper calendarWrapper, CalendarWrapper calendarWrapper1) {
+                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }),
+        DATE_DESC(new Comparator<CalendarWrapper>() {
+            public int compare(CalendarWrapper calendarWrapper, CalendarWrapper calendarWrapper1) {
+                return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+
+        private final Comparator<CalendarWrapper> comparator;
+
+        SORT(Comparator<CalendarWrapper> comparator) {
+            this.comparator = comparator;
+        }
+
+        public Comparator<CalendarWrapper> getComparator() {
+            return comparator;
+        }
+    }
+
     private TYPE type;
 
     private MODE mode;
+
+    private SORT sort = SORT.DATE_ASC;
 
     private Date start;
 
@@ -61,6 +89,14 @@ public class CalendarSearchCriteria {
 
     public void setMode(MODE mode) {
         this.mode = mode;
+    }
+
+    public SORT getSort() {
+        return sort;
+    }
+
+    public void setSort(SORT sort) {
+        this.sort = sort;
     }
 
     @Override

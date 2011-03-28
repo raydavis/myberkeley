@@ -5,6 +5,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CalendarResultProcessor {
@@ -19,12 +20,14 @@ public class CalendarResultProcessor {
     }
 
     public List<CalendarWrapper> processResults() {
-        return filterResults();
+        filter();
+        sort();
+        return this.results;
     }
 
     // filter in memory for now because Bedework has bugs searching on categories.
     // TODO do the searching on the Bedework side if bugs get fixed.
-    private List<CalendarWrapper> filterResults() {
+    private void filter() {
         List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(this.results.size());
         for (CalendarWrapper wrapper : this.results) {
             Component component = wrapper.getCalendar().getComponent(criteria.getType().toString());
@@ -51,7 +54,11 @@ public class CalendarResultProcessor {
                     break;
             }
         }
-        return filteredResults;
+        this.results = filteredResults;
+    }
+
+    private void sort() {
+        Collections.sort(this.results, criteria.getSort().getComparator());
     }
 
     private boolean isRequired(Component comp) {
