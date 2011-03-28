@@ -11,8 +11,6 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.property.Categories;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -46,6 +44,7 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -56,7 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
@@ -190,7 +188,8 @@ public class CalDavConnector {
 
         ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
         List<CalendarWrapper> rawResults = search(reportInfo);
-        return filterResults(rawResults, criteria);
+        CalendarResultProcessor processor = new CalendarResultProcessor(rawResults, criteria);
+        return processor.processResults();
     }
 
     public boolean hasOverdueTasks() throws CalDavException, IOException {
@@ -336,48 +335,6 @@ public class CalDavConnector {
         } catch (IOException ioe) {
             LOGGER.error("Got exception setting ACL", ioe);
         }
-    }
-
-    // filter in memory for now because Bedework has bugs searching on categories.
-    // TODO do the searching on the Bedework side if bugs get fixed.
-    private List<CalendarWrapper> filterResults(List<CalendarWrapper> rawResults, CalendarSearchCriteria criteria) {
-        List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(rawResults.size());
-        for (CalendarWrapper wrapper : rawResults) {
-            Component component = wrapper.getCalendar().getComponent(criteria.getType().toString());
-            switch (criteria.getMode()) {
-                case REQUIRED:
-                    if (isRequired(component) && !isArchived(component)) {
-                        filteredResults.add(wrapper);
-                    }
-                    break;
-                case UNREQUIRED:
-                    if (!isRequired(component) && !isArchived(component)) {
-                        filteredResults.add(wrapper);
-                    }
-                    break;
-                case ALL_UNARCHIVED:
-                    if (!isArchived(component)) {
-                        filteredResults.add(wrapper);
-                    }
-                    break;
-                case ALL_ARCHIVED:
-                    if (isArchived(component)) {
-                        filteredResults.add(wrapper);
-                    }
-                    break;
-            }
-        }
-        return filteredResults;
-    }
-
-    private boolean isRequired(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(MYBERKELEY_REQUIRED);
-    }
-
-    private boolean isArchived(Component comp) {
-        PropertyList propList = comp.getProperties(Property.CATEGORIES);
-        return propList != null && propList.contains(MYBERKELEY_ARCHIVED);
     }
 
 }
