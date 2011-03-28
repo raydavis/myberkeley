@@ -1,6 +1,9 @@
 package edu.berkeley.myberkeley.caldav;
 
+import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VToDo;
 
 import java.util.Comparator;
 
@@ -20,16 +23,8 @@ public class CalendarSearchCriteria {
 
     public enum SORT {
 
-        DATE_ASC(new Comparator<CalendarWrapper>() {
-            public int compare(CalendarWrapper calendarWrapper, CalendarWrapper calendarWrapper1) {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        }),
-        DATE_DESC(new Comparator<CalendarWrapper>() {
-            public int compare(CalendarWrapper calendarWrapper, CalendarWrapper calendarWrapper1) {
-                return 0;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        });
+        DATE_ASC(new DateComparator(true)),
+        DATE_DESC(new DateComparator(false));
 
         private final Comparator<CalendarWrapper> comparator;
 
@@ -39,6 +34,33 @@ public class CalendarSearchCriteria {
 
         public Comparator<CalendarWrapper> getComparator() {
             return comparator;
+        }
+
+        private static class DateComparator implements Comparator<CalendarWrapper> {
+
+            private final boolean ascending;
+
+            private DateComparator(boolean ascending) {
+                this.ascending = ascending;
+            }
+
+            public int compare(CalendarWrapper a, CalendarWrapper b) {
+                int result = 0;
+                Component compA = a.getCalendar().getComponent(Component.VTODO);
+                Component compB = b.getCalendar().getComponent(Component.VTODO);
+                if (compA != null && compB != null && compA instanceof VToDo && compB instanceof VToDo) {
+                    result = ((VToDo) compA).getDue().getDate().compareTo(((VToDo) compB).getDue().getDate());
+                }
+                compA = a.getCalendar().getComponent(Component.VEVENT);
+                compB = b.getCalendar().getComponent(Component.VEVENT);
+                if (compA != null && compB != null && compA instanceof VEvent && compB instanceof VEvent) {
+                    result = ((VEvent) compA).getStartDate().getDate().compareTo(((VEvent) compB).getStartDate().getDate());
+                }
+                if (this.ascending) {
+                    return result;
+                }
+                return -1 * result;
+            }
         }
     }
 
