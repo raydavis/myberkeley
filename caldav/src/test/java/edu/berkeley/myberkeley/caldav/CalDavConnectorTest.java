@@ -123,8 +123,10 @@ public class CalDavConnectorTest extends CalDavTests {
             DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
 
             // search for event just created, should find it
-            CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, fourWeeksHence, CalendarSearchCriteria.MODE.UNREQUIRED);
+            CalendarSearchCriteria criteria = new CalendarSearchCriteria();
+            criteria.setStart(monthAgo);
+            criteria.setEnd(fourWeeksHence);
+            criteria.setMode(CalendarSearchCriteria.MODE.UNREQUIRED);
             assertFalse(this.adminConnector.searchByDate(criteria).isEmpty());
 
             criteria.setMode(CalendarSearchCriteria.MODE.REQUIRED);
@@ -161,8 +163,7 @@ public class CalDavConnectorTest extends CalDavTests {
             DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
             DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
 
-            CalendarSearchCriteria criteria = new CalendarSearchCriteria(
-                    CalendarSearchCriteria.TYPE.VEVENT, monthAgo, fourWeeksHence, CalendarSearchCriteria.MODE.UNREQUIRED);
+            CalendarSearchCriteria criteria = new CalendarSearchCriteria();
             criteria.setStart(monthAgo);
             criteria.setEnd(fourWeeksHence);
             criteria.setType(CalendarSearchCriteria.TYPE.VTODO);

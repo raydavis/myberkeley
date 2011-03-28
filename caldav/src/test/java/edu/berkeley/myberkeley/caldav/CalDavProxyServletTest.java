@@ -5,7 +5,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -87,10 +86,7 @@ public class CalDavProxyServletTest extends CalDavTests {
         calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false), RANDOM_ETAG));
         calendars.add(new CalendarWrapper(buildVTodo("Todo Test 3"), new URI("/url3", false), RANDOM_ETAG));
-        Date defaultStart = new DateTime();
-        Date defaultEnd = new DateTime();
-        CalendarSearchCriteria criteria = new CalendarSearchCriteria(CalendarSearchCriteria.TYPE.VEVENT,
-                defaultStart, defaultEnd, CalendarSearchCriteria.MODE.ALL_UNARCHIVED);
+        CalendarSearchCriteria criteria = new CalendarSearchCriteria();
 
         when(connector.searchByDate(criteria)).thenReturn(calendars);
         servlet.handleGet(response, connector, criteria);

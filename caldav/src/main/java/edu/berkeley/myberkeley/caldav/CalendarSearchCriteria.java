@@ -2,6 +2,7 @@ package edu.berkeley.myberkeley.caldav;
 
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
@@ -144,22 +145,15 @@ public class CalendarSearchCriteria {
 
     }
 
-    private TYPE type;
+    private TYPE type = TYPE.VEVENT;
 
-    private MODE mode;
+    private MODE mode = MODE.ALL_UNARCHIVED;
 
     private SORT sort = SORT.DATE_ASC;
 
-    private Date start;
+    private Date start = new DateTime();
 
-    private Date end;
-
-    public CalendarSearchCriteria(TYPE type, Date start, Date end, MODE mode) {
-        this.type = type;
-        this.start = start;
-        this.end = end;
-        this.mode = mode;
-    }
+    private Date end = new DateTime();
 
     public TYPE getType() {
         return type;
