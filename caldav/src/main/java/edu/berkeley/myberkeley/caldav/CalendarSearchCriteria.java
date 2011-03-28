@@ -53,14 +53,11 @@ public class CalendarSearchCriteria {
 
             public int compare(CalendarWrapper a, CalendarWrapper b) {
                 int result = 0;
-                Component compA = a.getCalendar().getComponent(Component.VTODO);
-                Component compB = b.getCalendar().getComponent(Component.VTODO);
+                Component compA = a.getComponent();
+                Component compB = b.getComponent();
                 if (compA != null && compB != null && compA instanceof VToDo && compB instanceof VToDo) {
                     result = ((VToDo) compA).getDue().getDate().compareTo(((VToDo) compB).getDue().getDate());
-                }
-                compA = a.getCalendar().getComponent(Component.VEVENT);
-                compB = b.getCalendar().getComponent(Component.VEVENT);
-                if (compA != null && compB != null && compA instanceof VEvent && compB instanceof VEvent) {
+                } else if (compA != null && compB != null && compA instanceof VEvent && compB instanceof VEvent) {
                     result = ((VEvent) compA).getStartDate().getDate().compareTo(((VEvent) compB).getStartDate().getDate());
                 }
                 if (this.ascending) {
@@ -79,14 +76,8 @@ public class CalendarSearchCriteria {
 
             public int compare(CalendarWrapper a, CalendarWrapper b) {
                 int result = 0;
-                Component compA = a.getCalendar().getComponent(Component.VTODO);
-                Component compB = b.getCalendar().getComponent(Component.VTODO);
-                if (compA == null) {
-                    compA = a.getCalendar().getComponent(Component.VEVENT);
-                }
-                if (compB == null) {
-                    compB = b.getCalendar().getComponent(Component.VEVENT);
-                }
+                Component compA = a.getComponent();
+                Component compB = b.getComponent();
                 if (compA != null && compB != null) {
                     Property summaryA = compA.getProperty(Property.SUMMARY);
                     Property summaryB = compB.getProperty(Property.SUMMARY);
