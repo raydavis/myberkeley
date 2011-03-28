@@ -61,7 +61,7 @@ public class CalendarWrapper {
 
     public boolean isCompleted() {
         PropertyList propList = this.component.getProperties(Property.STATUS);
-        return propList != null && propList.contains(Status.COMPLETED);
+        return propList != null && propList.contains(Status.VTODO_COMPLETED);
     }
 
     public boolean isRequired() {
