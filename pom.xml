@@ -5,6 +5,9 @@
   <artifactId>edu.berkeley.myberkeley.base</artifactId>
   <packaging>pom</packaging>
   <version>0.10-SNAPSHOT</version>
+    <modules>
+        <module>notifications</module>
+    </modules>
     <name>MyBerkeley</name>
   <url>http://ets.berkeley.edu/</url>
   <issueManagement>
