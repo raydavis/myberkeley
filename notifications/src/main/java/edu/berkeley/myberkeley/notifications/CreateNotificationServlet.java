@@ -6,9 +6,11 @@ import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,5 +49,9 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "GOt a JSONException parsing input");
         }
+
+        Resource r = request.getResource();
+        Content home = r.adaptTo(Content.class);
+        LOGGER.info("Home = {}", home);
     }
 }
