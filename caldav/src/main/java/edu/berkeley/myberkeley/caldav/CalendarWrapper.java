@@ -202,4 +202,26 @@ public class CalendarWrapper {
             throw new CalDavException("Invalid URI passed", uie);
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CalendarWrapper that = (CalendarWrapper) o;
+
+        if (calendar != null ? !calendar.equals(that.calendar) : that.calendar != null) return false;
+        if (calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null) return false;
+        if (component != null ? !component.equals(that.component) : that.component != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = calendar != null ? calendar.hashCode() : 0;
+        result = 31 * result + (calendarUri != null ? calendarUri.hashCode() : 0);
+        result = 31 * result + (component != null ? component.hashCode() : 0);
+        return result;
+    }
 }

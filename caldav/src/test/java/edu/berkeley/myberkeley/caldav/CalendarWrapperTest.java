@@ -13,6 +13,7 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sakaiproject.nakamura.util.IOUtils;
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 public class CalendarWrapperTest extends CalDavTests {
@@ -69,7 +69,7 @@ public class CalendarWrapperTest extends CalDavTests {
     }
 
     @Test
-    public void fromJSON() throws CalDavException, UnsupportedEncodingException, IOException, JSONException {
+    public void fromJSON() throws CalDavException, IOException, JSONException {
         InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper.json");
         String json = IOUtils.readFully(in, "utf-8");
         JSONObject jsonObject = new JSONObject(json);
@@ -77,6 +77,19 @@ public class CalendarWrapperTest extends CalDavTests {
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
         assertNotNull(wrapper);
         LOGGER.info("Calendar wrapper after reading in from JSON: " + wrapper.toJSON().toString(2));
+
+        // check for nondestructive deserialization
+        assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
+    }
+
+    @Test
+    @Ignore
+    // TODO unignore when completed fromJSON method
+    public void verifyFromJSONIdempotency()throws CalDavException, IOException, JSONException, ParseException {
+        CalendarWrapper original = getWrapper();
+        JSONObject json = original.toJSON();
+        CalendarWrapper deserialized = CalendarWrapper.fromJSON(json);
+        assertEquals(original, deserialized);
     }
 
     private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
@@ -85,3 +98,4 @@ public class CalendarWrapperTest extends CalDavTests {
         return new CalendarWrapper(c, uri, RANDOM_ETAG);
     }
 }
+
