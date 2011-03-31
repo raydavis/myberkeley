@@ -183,5 +183,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- myberkeley dependencies -->
+        <dependency>
+            <groupId>edu.berkeley.myberkeley</groupId>
+            <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
+            <version>0.10-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 </project>

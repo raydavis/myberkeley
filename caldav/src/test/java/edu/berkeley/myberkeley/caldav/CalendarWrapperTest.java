@@ -11,11 +11,16 @@ import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.sling.commons.json.JSONException;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 
 public class CalendarWrapperTest extends CalDavTests {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalendarWrapperTest.class);
 
     @Test(expected = CalDavException.class)
     public void bogusCalendar() throws URIException, ParseException, CalDavException {
@@ -33,18 +38,27 @@ public class CalendarWrapperTest extends CalDavTests {
     }
 
     @Test
-    public void isCompletedArchivedAndRequired() throws URIException, ParseException, CalDavException{
-        Calendar calendar = buildVTodo("completed task");
-        Component todo = calendar.getComponent(Component.VTODO);
+    public void isCompletedArchivedAndRequired() throws URIException, ParseException, CalDavException {
+        CalendarWrapper wrapper = getWrapper();
+        Component todo = wrapper.getCalendar().getComponent(Component.VTODO);
         todo.getProperties().add(Status.VTODO_COMPLETED);
         todo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
         todo.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
 
-        URI uri = new URI("foo", false);
-        CalendarWrapper wrapper = new CalendarWrapper(calendar, uri, RANDOM_ETAG);
         assertTrue(wrapper.isCompleted());
         assertTrue(wrapper.isArchived());
         assertTrue(wrapper.isRequired());
     }
 
+    @Test
+    public void toJSON() throws URIException, ParseException, CalDavException, JSONException {
+        CalendarWrapper wrapper = getWrapper();
+        LOGGER.info("JSON = " + wrapper.toJSON());
+    }
+
+    private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
+        Calendar c = buildVTodo("a todo");
+        URI uri = new URI("foo", false);
+        return new CalendarWrapper(c, uri, RANDOM_ETAG);
+    }
 }

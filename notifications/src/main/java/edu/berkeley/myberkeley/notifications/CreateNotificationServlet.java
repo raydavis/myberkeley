@@ -116,10 +116,6 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             contentManager.update(notification);
             LOGGER.info("Saved a Notification;  data = {}", notification);
 
-            //store.setProperty(notificationID, notification);
-            //contentManager.update(store);
-            //LOGGER.info("Saved notification store; data = {}", store);
-
         } catch (StorageClientException e) {
             throw new ServletException(e.getMessage(), e);
         } catch (AccessDeniedException ade) {
