@@ -12,10 +12,15 @@ import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.junit.Test;
+import org.sakaiproject.nakamura.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
 public class CalendarWrapperTest extends CalDavTests {
@@ -54,6 +59,24 @@ public class CalendarWrapperTest extends CalDavTests {
     public void toJSON() throws URIException, ParseException, CalDavException, JSONException {
         CalendarWrapper wrapper = getWrapper();
         LOGGER.info("JSON = " + wrapper.toJSON());
+    }
+
+    @Test(expected = CalDavException.class)
+    public void badCallToFromJSON() throws CalDavException, JSONException {
+        JSONObject bogus = new JSONObject();
+        bogus.put("foo", "bar");
+        CalendarWrapper.fromJSON(bogus);
+    }
+
+    @Test
+    public void fromJSON() throws CalDavException, UnsupportedEncodingException, IOException, JSONException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper.json");
+        String json = IOUtils.readFully(in, "utf-8");
+        JSONObject jsonObject = new JSONObject(json);
+
+        CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
+        assertNotNull(wrapper);
+        LOGGER.info("Calendar wrapper after reading in from JSON: " + wrapper.toJSON().toString(2));
     }
 
     private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
