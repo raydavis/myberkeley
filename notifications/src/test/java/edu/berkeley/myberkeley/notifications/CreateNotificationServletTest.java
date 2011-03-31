@@ -8,13 +8,14 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.commons.testing.sling.MockResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.SessionAdaptable;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
@@ -23,6 +24,7 @@ import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,18 +62,28 @@ public class CreateNotificationServletTest {
         ContentManager contentManager = mock(ContentManager.class);
         when(session.getContentManager()).thenReturn(contentManager);
         ResourceResolver resolver = mock(ResourceResolver.class);
-        Resource resource = new MockResource(resolver, "/_user/message", "sakai/messagestore");
+        when(request.getResourceResolver()).thenReturn(resolver);
+
+        // user's home dir
+        Resource resource = mock(Resource.class);
+        when(request.getResource()).thenReturn(resource);
+        when(resource.adaptTo(Content.class)).thenReturn(new Content("/_user/home", new HashMap<String, Object>()));
 
         javax.jcr.Session jcrSession = mock(javax.jcr.Session.class, Mockito.withSettings().extraInterfaces(SessionAdaptable.class));
         when(((SessionAdaptable) jcrSession).getSession()).thenReturn(session);
         when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(jcrSession);
 
-        when(request.getResource()).thenReturn(resource);
+        AccessControlManager accessControlManager = mock(AccessControlManager.class);
+        when(session.getAccessControlManager()).thenReturn(accessControlManager);
+
+        String storePath = StorageClientUtils.newPath("/_user/home", CreateNotificationServlet.NOTIFICATION_STORE_NAME);
+        when(contentManager.get(storePath)).thenReturn(
+            new Content(storePath, new HashMap<String, Object>()));
+        /*
         when(request.getResourceResolver()).thenReturn(resolver);
         Content msgNode = new Content("/_user/message/bla/bla/admin/bla/bla/msg", null);
         when(contentManager.get("/_user/message/bla/bla/admin/bla/bla/msg")).thenReturn(msgNode);
-
-        when(request.getResource()).thenReturn(resource);
+          */
         this.servlet.doPost(request, response);
 
     }
