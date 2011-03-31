@@ -152,7 +152,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
                 LOGGER.info("Got overdue-task result from Bedework in " + (end - begin) + "ms");
             }
 
-        } catch (Exception e) {
+        } catch (CalDavException e) {
             LOGGER.error("Exception fetching calendars", e);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             return;

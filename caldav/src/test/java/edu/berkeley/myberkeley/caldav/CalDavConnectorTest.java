@@ -295,8 +295,12 @@ public class CalDavConnectorTest extends CalDavTests {
     }
 
     @Test
-    public void hasNoOverdueTasks() throws CalDavException, IOException {
-        assertFalse(this.adminConnector.hasOverdueTasks());
+    public void hasNoOverdueTasks() throws CalDavException {
+        try {
+            assertFalse(this.adminConnector.hasOverdueTasks());
+        }catch (IOException ioe) {
+            LOGGER.error("Trouble contacting server", ioe);
+        }
     }
 
     @Test
