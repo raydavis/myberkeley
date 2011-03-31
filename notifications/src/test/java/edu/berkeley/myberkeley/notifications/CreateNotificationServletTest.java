@@ -78,12 +78,12 @@ public class CreateNotificationServletTest {
 
         String storePath = StorageClientUtils.newPath("/_user/home", CreateNotificationServlet.NOTIFICATION_STORE_NAME);
         when(contentManager.get(storePath)).thenReturn(
-            new Content(storePath, new HashMap<String, Object>()));
-        /*
-        when(request.getResourceResolver()).thenReturn(resolver);
-        Content msgNode = new Content("/_user/message/bla/bla/admin/bla/bla/msg", null);
-        when(contentManager.get("/_user/message/bla/bla/admin/bla/bla/msg")).thenReturn(msgNode);
-          */
+                new Content(storePath, new HashMap<String, Object>()));
+
+        String notificationPath = StorageClientUtils.newPath(storePath, "12345");
+        when(contentManager.get(notificationPath)).thenReturn(
+                new Content(notificationPath, new HashMap<String, Object>()));
+
         this.servlet.doPost(request, response);
 
     }

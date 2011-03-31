@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,6 +39,8 @@ import javax.servlet.http.HttpServletResponse;
         @Property(name = "service.vendor", value = "MyBerkeley"),
         @Property(name = "service.description", value = "Endpoint to create a notification")})
 public class CreateNotificationServlet extends SlingAllMethodsServlet {
+
+    public static final String NOTIFICATION_RESOURCETYPE = "myberkeley/notification";
 
     public static final String NOTIFICATION_STORE_NAME = "_myberkeley_notificationstore";
 
@@ -52,6 +55,8 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
     @Override
     protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
         RequestParameter notificationParam = request.getRequestParameter(POST_PARAMS.notification.toString());
+        JSONObject notificationJSON;
+
         if (notificationParam == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "The " + POST_PARAMS.notification + " parameter must not be null");
@@ -59,13 +64,14 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
         }
 
         try {
-            JSONObject notification = new JSONObject(notificationParam.toString());
-            LOGGER.info("Notification = " + notification.toString(2));
+            notificationJSON = new JSONObject(notificationParam.toString());
+            LOGGER.info("Notification = " + notificationJSON.toString(2));
 
         } catch (JSONException je) {
             LOGGER.error("Failed to convert notification to JSON", je);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "GOt a JSONException parsing input");
+            return;
         }
 
         Resource r = request.getResource();
@@ -89,14 +95,37 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
                 accessControlManager.setAcl(Security.ZONE_CONTENT, storePath, modifications.toArray(new AclModification[modifications.size()]));
             }
 
-            Content content = contentManager.get(storePath);
-            LOGGER.info("Content = {}", content);
+            Content store = contentManager.get(storePath);
+            LOGGER.info("Content = {}", store);
+
+            String notificationID = UUID.randomUUID().toString();
+            try {
+                notificationID = notificationJSON.getString("id");
+            } catch (JSONException ignored) {
+                // that's ok, we'll use the random UUID
+            }
+            String notificationPath = StorageClientUtils.newPath(storePath, notificationID);
+            if (!contentManager.exists(notificationPath)) {
+                LOGGER.info("Creating new notification at path " + notificationPath);
+                contentManager.update(new Content(notificationPath, ImmutableMap.of(
+                        JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+                        (Object) NOTIFICATION_RESOURCETYPE)));
+            }
+            Content notification = contentManager.get(notificationPath);
+            notification.setProperty("uri", notificationJSON.getString("uri"));
+            contentManager.update(notification);
+            LOGGER.info("Saved a Notification;  data = {}", notification);
+
+            //store.setProperty(notificationID, notification);
+            //contentManager.update(store);
+            //LOGGER.info("Saved notification store; data = {}", store);
 
         } catch (StorageClientException e) {
             throw new ServletException(e.getMessage(), e);
         } catch (AccessDeniedException ade) {
             throw new ServletException(ade.getMessage(), ade);
+        } catch (JSONException je) {
+            throw new ServletException(je.getMessage(), je);
         }
-
     }
 }
