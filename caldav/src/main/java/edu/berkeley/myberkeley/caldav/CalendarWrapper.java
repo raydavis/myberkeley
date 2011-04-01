@@ -27,9 +27,12 @@ import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.util.DateUtils;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 
+import java.io.Serializable;
 import java.text.ParseException;
 
-public class CalendarWrapper {
+public class CalendarWrapper implements Serializable {
+
+    private static final long serialVersionUID = -5997627557793464309L;
 
     public enum JSON_PROPERTY_NAMES {
         uri,
