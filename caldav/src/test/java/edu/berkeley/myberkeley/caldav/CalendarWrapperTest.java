@@ -13,7 +13,6 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.sakaiproject.nakamura.util.IOUtils;
 import org.slf4j.Logger;
@@ -99,13 +98,12 @@ public class CalendarWrapperTest extends CalDavTests {
     }
 
     @Test
-    @Ignore
-    // TODO unignore when completed fromJSON method
-    public void verifyFromJSONIdempotency() throws CalDavException, IOException, JSONException, ParseException {
+    public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException {
         CalendarWrapper original = getWrapper();
         JSONObject json = original.toJSON();
         CalendarWrapper deserialized = CalendarWrapper.fromJSON(json);
         assertEquals(original, deserialized);
+        assertEquals(original.hashCode(), deserialized.hashCode());
     }
 
     private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {

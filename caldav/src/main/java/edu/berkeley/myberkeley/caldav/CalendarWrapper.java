@@ -14,9 +14,10 @@ import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
-import net.fortuna.ical4j.model.property.DtStamp;
+import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Status;
+import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
@@ -44,7 +45,11 @@ public class CalendarWrapper {
         DTSTAMP,
         DTSTART,
         DUE,
-        SUMMARY
+        SUMMARY,
+        DESCRIPTION,
+        CATEGORIES,
+        STATUS,
+        UID
     }
 
     private Calendar calendar;
@@ -175,7 +180,6 @@ public class CalendarWrapper {
             if (icalData == null) {
                 throw new CalDavException("No valid icalData found in JSON", null);
             }
-
             String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
             DateTime startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
 
@@ -189,8 +193,27 @@ public class CalendarWrapper {
                 throw new CalDavException("Unsupported component type " + componentName, null);
             }
 
-            String dtStamp = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTAMP.toString());
-            component.getProperties().add(new DtStamp(new DateTime(new ISO8601Date(dtStamp).getTime())));
+
+            String uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
+            component.getProperties().add(new Uid(uid));
+
+            // handle optional props
+            try {
+                JSONArray categories = icalData.getJSONArray(ICAL_DATA_PROPERTY_NAMES.CATEGORIES.toString());
+                for (int i = 0; i < categories.length(); i++) {
+                    String cat = categories.getString(i);
+                    component.getProperties().add(new Categories(cat));
+                }
+
+                String description = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DESCRIPTION.toString());
+                component.getProperties().add(new Description(description));
+
+                String status = icalData.getString(ICAL_DATA_PROPERTY_NAMES.STATUS.toString());
+                component.getProperties().add(new Status(status));
+
+            } catch (JSONException ignored) {
+
+            }
 
             calendar.getComponents().add(component);
 
