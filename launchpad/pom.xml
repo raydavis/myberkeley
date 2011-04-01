@@ -57,6 +57,12 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
+              <version>${nakamura.version}</version>
+              <startLevel>15</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
               <version>0.6.0-SNAPSHOT</version>
               <startLevel>30</startLevel>
@@ -73,6 +79,12 @@
               <version>0.10-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
+            <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
+              <version>0.10-SNAPSHOT</version>
+              <startLevel>30</startLevel>
+            </bundle>
           </additionalBundles>
           <bundleExclusions>
             <bundle>
@@ -82,6 +94,10 @@
             <bundle>
               <groupId>org.apache.sling</groupId>
               <artifactId>org.apache.sling.launchpad.content</artifactId>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.solr</artifactId>
             </bundle>
           </bundleExclusions>
           <!-- Needs to be copied from nakamura.app -->

@@ -4,6 +4,7 @@ import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.sakaiproject.nakamura.util.ISO8601Date;
 
 import java.text.ParseException;
 
@@ -18,7 +19,13 @@ public class CalendarURI extends URI {
 
     public CalendarURI(URI uri, String etag) throws URIException, ParseException {
         super(uri.toString(), false);
-        this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
+
+        try {
+            this.etag = new DateTime(new ISO8601Date(etag).getTime());
+        } catch ( IllegalArgumentException ignored ) {
+            this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
+        }
+
     }
 
     public Date getEtag() {
