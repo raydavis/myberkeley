@@ -3,6 +3,8 @@
 JSON='
 {
     "id":"12345",
+    "sendDate":"2011-11-16T12:16:59-01:00",
+    "dynamicListID":"/a/path/to/a/dynamic/list",
     "calendarWrapper":{
         "uri":"/a/path/to/bedework/url",
         "etag":"2011-03-16T12:16:59-07:00",
