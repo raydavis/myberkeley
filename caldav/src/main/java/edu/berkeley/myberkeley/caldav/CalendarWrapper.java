@@ -42,7 +42,6 @@ public class CalendarWrapper {
     }
 
     public enum ICAL_DATA_PROPERTY_NAMES {
-        DTSTAMP,
         DTSTART,
         DUE,
         SUMMARY,
@@ -230,14 +229,10 @@ public class CalendarWrapper {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         CalendarWrapper that = (CalendarWrapper) o;
-
-        if (calendar != null ? !calendar.equals(that.calendar) : that.calendar != null) return false;
-        if (calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null) return false;
-        if (component != null ? !component.equals(that.component) : that.component != null) return false;
-
-        return true;
+        return !(calendar != null ? !calendar.equals(that.calendar) : that.calendar != null)
+                && !(calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null)
+                && !(component != null ? !component.equals(that.component) : that.component != null);
     }
 
     @Override
