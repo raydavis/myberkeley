@@ -69,13 +69,29 @@ public class CalendarWrapperTest extends CalDavTests {
     }
 
     @Test
-    public void fromJSON() throws CalDavException, IOException, JSONException {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper.json");
+    public void vtodoFromJSON() throws CalDavException, IOException, JSONException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vtodo.json");
         String json = IOUtils.readFully(in, "utf-8");
         JSONObject jsonObject = new JSONObject(json);
 
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
         assertNotNull(wrapper);
+        assertEquals(wrapper.getComponent().getName(), Component.VTODO);
+        LOGGER.info("Calendar wrapper after reading in from JSON: " + wrapper.toJSON().toString(2));
+
+        // check for nondestructive deserialization
+        assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
+    }
+
+    @Test
+    public void veventFromJSON() throws CalDavException, IOException, JSONException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vevent.json");
+        String json = IOUtils.readFully(in, "utf-8");
+        JSONObject jsonObject = new JSONObject(json);
+
+        CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
+        assertNotNull(wrapper);
+        assertEquals(wrapper.getComponent().getName(), Component.VEVENT);
         LOGGER.info("Calendar wrapper after reading in from JSON: " + wrapper.toJSON().toString(2));
 
         // check for nondestructive deserialization
@@ -85,7 +101,7 @@ public class CalendarWrapperTest extends CalDavTests {
     @Test
     @Ignore
     // TODO unignore when completed fromJSON method
-    public void verifyFromJSONIdempotency()throws CalDavException, IOException, JSONException, ParseException {
+    public void verifyFromJSONIdempotency() throws CalDavException, IOException, JSONException, ParseException {
         CalendarWrapper original = getWrapper();
         JSONObject json = original.toJSON();
         CalendarWrapper deserialized = CalendarWrapper.fromJSON(json);
