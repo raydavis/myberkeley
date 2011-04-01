@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -51,11 +50,6 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
     public enum POST_PARAMS {
         notification
-    }
-
-    public enum JSON_PROPERTIES {
-        id,
-        calendarWrapper
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreateNotificationServlet.class);
@@ -95,11 +89,12 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             Content store = createStoreIfNecessary(session, contentManager, storePath);
             LOGGER.info("Content = {}", store);
 
-            String notificationPath = StorageClientUtils.newPath(storePath, getNotificationID(notificationJSON));
-            Content notification = createNotificationIfNecessary(contentManager, notificationPath);
-            setNotificationProperties(notificationJSON, notification);
-            contentManager.update(notification);
-            LOGGER.info("Saved a Notification;  data = {}", notification);
+            Notification notification = Notification.fromJSON(notificationJSON);
+            String notificationPath = StorageClientUtils.newPath(storePath, notification.getId());
+            Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
+            notification.toContent(notificationContent);
+            contentManager.update(notificationContent);
+            LOGGER.info("Saved a Notification;  data = {}", notificationContent);
 
         } catch (StorageClientException e) {
             throw new ServletException(e.getMessage(), e);
@@ -110,12 +105,6 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
         } catch (CalDavException cde) {
             throw new ServletException(cde.getMessage(), cde);
         }
-    }
-
-    private void setNotificationProperties(JSONObject json, Content notification) throws JSONException, CalDavException {
-        JSONObject calendarWrapperJSON = json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString());
-        // TODO see if we can store the wrapper as a CalendarWrapper object, not a String encoded JSON object.
-        notification.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), calendarWrapperJSON.toString());
     }
 
     private Content createNotificationIfNecessary(ContentManager contentManager, String notificationPath) throws AccessDeniedException, StorageClientException {
@@ -142,12 +131,4 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
         return contentManager.get(storePath);
     }
 
-    private String getNotificationID(JSONObject notificationJSON) {
-        try {
-            return notificationJSON.getString(JSON_PROPERTIES.id.toString());
-        } catch (JSONException ignored) {
-            // that's ok, we'll use the random UUID
-            return UUID.randomUUID().toString();
-        }
-    }
 }
