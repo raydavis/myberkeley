@@ -2,7 +2,6 @@ package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -114,8 +113,9 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
     }
 
     private void setNotificationProperties(JSONObject json, Content notification) throws JSONException, CalDavException {
-        CalendarWrapper wrapper = CalendarWrapper.fromJSON(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
-        notification.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), wrapper);
+        JSONObject calendarWrapperJSON = json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString());
+        // TODO see if we can store the wrapper as a CalendarWrapper object, not a String encoded JSON object.
+        notification.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), calendarWrapperJSON.toString());
     }
 
     private Content createNotificationIfNecessary(ContentManager contentManager, String notificationPath) throws AccessDeniedException, StorageClientException {
