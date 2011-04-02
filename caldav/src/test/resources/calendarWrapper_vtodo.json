@@ -1,6 +1,7 @@
 {
     "uri":"/a/path/to/bedework/url",
     "etag":"2011-03-16T12:16:59-07:00",
+    "component":"VTODO",
     "isRequired":true,
     "isArchived":false,
     "isCompleted":false,

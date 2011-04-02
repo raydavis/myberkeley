@@ -8,14 +8,16 @@ import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
-import net.fortuna.ical4j.model.property.DtStamp;
+import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Status;
+import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
@@ -25,13 +27,17 @@ import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.util.DateUtils;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 
+import java.io.Serializable;
 import java.text.ParseException;
 
-public class CalendarWrapper {
+public class CalendarWrapper implements Serializable {
+
+    private static final long serialVersionUID = -5997627557793464309L;
 
     public enum JSON_PROPERTY_NAMES {
         uri,
         etag,
+        component,
         isRequired,
         isCompleted,
         isArchived,
@@ -39,10 +45,13 @@ public class CalendarWrapper {
     }
 
     public enum ICAL_DATA_PROPERTY_NAMES {
-        DTSTAMP,
         DTSTART,
         DUE,
-        SUMMARY
+        SUMMARY,
+        DESCRIPTION,
+        CATEGORIES,
+        STATUS,
+        UID
     }
 
     private Calendar calendar;
@@ -110,10 +119,6 @@ public class CalendarWrapper {
     }
 
     public JSONObject toJSON() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put(JSON_PROPERTY_NAMES.uri.toString(), getUri().toString());
-        json.put(JSON_PROPERTY_NAMES.etag.toString(), DateUtils.iso8601(getEtag()));
-
         JSONObject icalData = new JSONObject();
         JSONArray categoriesArray = new JSONArray();
         boolean isRequired = false;
@@ -146,6 +151,10 @@ public class CalendarWrapper {
 
         icalData.put(Property.CATEGORIES, categoriesArray);
 
+        JSONObject json = new JSONObject();
+        json.put(JSON_PROPERTY_NAMES.uri.toString(), getUri().toString());
+        json.put(JSON_PROPERTY_NAMES.etag.toString(), DateUtils.iso8601(getEtag()));
+        json.put(JSON_PROPERTY_NAMES.component.toString(), getComponent().getName());
         json.put(JSON_PROPERTY_NAMES.isRequired.toString(), isRequired);
         json.put(JSON_PROPERTY_NAMES.isArchived.toString(), isArchived);
         json.put(JSON_PROPERTY_NAMES.isCompleted.toString(), isCompleted);
@@ -157,6 +166,7 @@ public class CalendarWrapper {
         try {
             String uri = json.getString(JSON_PROPERTY_NAMES.uri.toString());
             String etag = json.getString(JSON_PROPERTY_NAMES.etag.toString());
+            String componentName = json.getString(JSON_PROPERTY_NAMES.component.toString());
 
             // build the ical Calendar object itself
             CalendarBuilder builder = new CalendarBuilder();
@@ -172,27 +182,42 @@ public class CalendarWrapper {
             if (icalData == null) {
                 throw new CalDavException("No valid icalData found in JSON", null);
             }
-
-            // build the vtodo
-            // TODO handle vevents as well
-
-            DateTime startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
-            DateTime due = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString())).getTime());
-
             String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
-            VToDo vtodo = new VToDo(startDate, due, summary);
+            DateTime startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
 
-            try {
-                String stampString = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTAMP.toString());
-                if (stampString != null) {
-                    DateTime stamp = new DateTime(new ISO8601Date(stampString).getTime());
-                    vtodo.getProperties().add(new DtStamp(stamp));
-                }
-            } catch (JSONException ignored) {
-                // no DTSTAMP, that's ok, the default will work
+            Component component;
+            if (Component.VEVENT.equals(componentName)) {
+                component = new VEvent(startDate, summary);
+            } else if (Component.VTODO.equals(componentName)) {
+                DateTime due = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString())).getTime());
+                component = new VToDo(startDate, due, summary);
+            } else {
+                throw new CalDavException("Unsupported component type " + componentName, null);
             }
 
-            calendar.getComponents().add(vtodo);
+
+            String uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
+            component.getProperties().add(new Uid(uid));
+
+            // handle optional props
+            try {
+                JSONArray categories = icalData.getJSONArray(ICAL_DATA_PROPERTY_NAMES.CATEGORIES.toString());
+                for (int i = 0; i < categories.length(); i++) {
+                    String cat = categories.getString(i);
+                    component.getProperties().add(new Categories(cat));
+                }
+
+                String description = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DESCRIPTION.toString());
+                component.getProperties().add(new Description(description));
+
+                String status = icalData.getString(ICAL_DATA_PROPERTY_NAMES.STATUS.toString());
+                component.getProperties().add(new Status(status));
+
+            } catch (JSONException ignored) {
+
+            }
+
+            calendar.getComponents().add(component);
 
             return new CalendarWrapper(calendar, new URI(uri, false), etag);
 
@@ -207,14 +232,10 @@ public class CalendarWrapper {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         CalendarWrapper that = (CalendarWrapper) o;
-
-        if (calendar != null ? !calendar.equals(that.calendar) : that.calendar != null) return false;
-        if (calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null) return false;
-        if (component != null ? !component.equals(that.component) : that.component != null) return false;
-
-        return true;
+        return !(calendar != null ? !calendar.equals(that.calendar) : that.calendar != null)
+                && !(calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null)
+                && !(component != null ? !component.equals(that.component) : that.component != null);
     }
 
     @Override

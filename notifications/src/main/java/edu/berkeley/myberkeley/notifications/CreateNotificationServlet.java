@@ -1,6 +1,7 @@
 package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
+import edu.berkeley.myberkeley.caldav.CalDavException;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -29,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletResponse;
         @Property(name = "service.vendor", value = "MyBerkeley"),
         @Property(name = "service.description", value = "Endpoint to create a notification")})
 public class CreateNotificationServlet extends SlingAllMethodsServlet {
+
+    private static final long serialVersionUID = -1868784233373889299L;
 
     public static final String NOTIFICATION_RESOURCETYPE = "myberkeley/notification";
 
@@ -84,37 +86,15 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
         try {
             ContentManager contentManager = session.getContentManager();
             String storePath = StorageClientUtils.newPath(home.getPath(), NOTIFICATION_STORE_NAME);
-            if (!contentManager.exists(storePath)) {
-                LOGGER.info("Will create a new notification store for user at path " + storePath);
-                contentManager.update(new Content(storePath, ImmutableMap.of(
-                        JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                        (Object) NOTIFICATION_STORE_RESOURCETYPE)));
-                List<AclModification> modifications = new ArrayList<AclModification>();
-                AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
-                AccessControlManager accessControlManager = session.getAccessControlManager();
-                accessControlManager.setAcl(Security.ZONE_CONTENT, storePath, modifications.toArray(new AclModification[modifications.size()]));
-            }
-
-            Content store = contentManager.get(storePath);
+            Content store = createStoreIfNecessary(session, contentManager, storePath);
             LOGGER.info("Content = {}", store);
 
-            String notificationID = UUID.randomUUID().toString();
-            try {
-                notificationID = notificationJSON.getString("id");
-            } catch (JSONException ignored) {
-                // that's ok, we'll use the random UUID
-            }
-            String notificationPath = StorageClientUtils.newPath(storePath, notificationID);
-            if (!contentManager.exists(notificationPath)) {
-                LOGGER.info("Creating new notification at path " + notificationPath);
-                contentManager.update(new Content(notificationPath, ImmutableMap.of(
-                        JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                        (Object) NOTIFICATION_RESOURCETYPE)));
-            }
-            Content notification = contentManager.get(notificationPath);
-            notification.setProperty("uri", notificationJSON.getString("uri"));
-            contentManager.update(notification);
-            LOGGER.info("Saved a Notification;  data = {}", notification);
+            Notification notification = Notification.fromJSON(notificationJSON);
+            String notificationPath = StorageClientUtils.newPath(storePath, notification.getId());
+            Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
+            notification.toContent(notificationContent);
+            contentManager.update(notificationContent);
+            LOGGER.info("Saved a Notification;  data = {}", notificationContent);
 
         } catch (StorageClientException e) {
             throw new ServletException(e.getMessage(), e);
@@ -122,6 +102,33 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             throw new ServletException(ade.getMessage(), ade);
         } catch (JSONException je) {
             throw new ServletException(je.getMessage(), je);
+        } catch (CalDavException cde) {
+            throw new ServletException(cde.getMessage(), cde);
         }
     }
+
+    private Content createNotificationIfNecessary(ContentManager contentManager, String notificationPath) throws AccessDeniedException, StorageClientException {
+        if (!contentManager.exists(notificationPath)) {
+            LOGGER.info("Creating new notification at path " + notificationPath);
+            contentManager.update(new Content(notificationPath, ImmutableMap.of(
+                    JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+                    (Object) NOTIFICATION_RESOURCETYPE)));
+        }
+        return contentManager.get(notificationPath);
+    }
+
+    private Content createStoreIfNecessary(Session session, ContentManager contentManager, String storePath) throws AccessDeniedException, StorageClientException {
+        if (!contentManager.exists(storePath)) {
+            LOGGER.info("Will create a new notification store for user at path " + storePath);
+            contentManager.update(new Content(storePath, ImmutableMap.of(
+                    JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+                    (Object) NOTIFICATION_STORE_RESOURCETYPE)));
+            List<AclModification> modifications = new ArrayList<AclModification>();
+            AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
+            AccessControlManager accessControlManager = session.getAccessControlManager();
+            accessControlManager.setAcl(Security.ZONE_CONTENT, storePath, modifications.toArray(new AclModification[modifications.size()]));
+        }
+        return contentManager.get(storePath);
+    }
+
 }

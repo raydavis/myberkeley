@@ -6,9 +6,12 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 
+import java.io.Serializable;
 import java.text.ParseException;
 
-public class CalendarURI extends URI {
+public class CalendarURI extends URI implements Serializable {
+
+    private static final long serialVersionUID = -20218593069459027L;
 
     private Date etag;
 

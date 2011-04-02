@@ -13,19 +13,14 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.sakaiproject.nakamura.util.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 
 public class CalendarWrapperTest extends CalDavTests {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CalendarWrapperTest.class);
 
     @Test(expected = CalDavException.class)
     public void bogusCalendar() throws URIException, ParseException, CalDavException {
@@ -58,7 +53,7 @@ public class CalendarWrapperTest extends CalDavTests {
     @Test
     public void toJSON() throws URIException, ParseException, CalDavException, JSONException {
         CalendarWrapper wrapper = getWrapper();
-        LOGGER.info("JSON = " + wrapper.toJSON());
+        assertNotNull(wrapper.toJSON());
     }
 
     @Test(expected = CalDavException.class)
@@ -69,27 +64,40 @@ public class CalendarWrapperTest extends CalDavTests {
     }
 
     @Test
-    public void fromJSON() throws CalDavException, IOException, JSONException {
-        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper.json");
+    public void vtodoFromJSON() throws CalDavException, IOException, JSONException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vtodo.json");
         String json = IOUtils.readFully(in, "utf-8");
         JSONObject jsonObject = new JSONObject(json);
 
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
         assertNotNull(wrapper);
-        LOGGER.info("Calendar wrapper after reading in from JSON: " + wrapper.toJSON().toString(2));
+        assertEquals(wrapper.getComponent().getName(), Component.VTODO);
 
         // check for nondestructive deserialization
         assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
     }
 
     @Test
-    @Ignore
-    // TODO unignore when completed fromJSON method
-    public void verifyFromJSONIdempotency()throws CalDavException, IOException, JSONException, ParseException {
+    public void veventFromJSON() throws CalDavException, IOException, JSONException {
+        InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vevent.json");
+        String json = IOUtils.readFully(in, "utf-8");
+        JSONObject jsonObject = new JSONObject(json);
+
+        CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
+        assertNotNull(wrapper);
+        assertEquals(wrapper.getComponent().getName(), Component.VEVENT);
+
+        // check for nondestructive deserialization
+        assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
+    }
+
+    @Test
+    public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException {
         CalendarWrapper original = getWrapper();
         JSONObject json = original.toJSON();
         CalendarWrapper deserialized = CalendarWrapper.fromJSON(json);
         assertEquals(original, deserialized);
+        assertEquals(original.hashCode(), deserialized.hashCode());
     }
 
     private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
