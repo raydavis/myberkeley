@@ -11,6 +11,10 @@ import java.util.UUID;
 
 public class Notification {
 
+    public static final String RESOURCETYPE = "myberkeley/notification";
+    public static final String STORE_NAME = "_myberkeley_notificationstore";
+    public static final String STORE_RESOURCETYPE = "myberkeley/notificationstore";
+
     public enum JSON_PROPERTIES {
         id,
         sendDate,

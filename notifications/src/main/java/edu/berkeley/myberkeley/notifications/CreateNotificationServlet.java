@@ -27,11 +27,11 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 @SlingServlet(selectors = {"myb-notificationstore"}, methods = {"POST"}, resourceTypes = {"sakai/user-home"},
         generateService = true, generateComponent = true)
@@ -41,12 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
     private static final long serialVersionUID = -1868784233373889299L;
-
-    public static final String NOTIFICATION_RESOURCETYPE = "myberkeley/notification";
-
-    public static final String NOTIFICATION_STORE_NAME = "_myberkeley_notificationstore";
-
-    public static final String NOTIFICATION_STORE_RESOURCETYPE = "myberkeley/notificationstore";
 
     public enum POST_PARAMS {
         notification
@@ -85,7 +79,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
         try {
             ContentManager contentManager = session.getContentManager();
-            String storePath = StorageClientUtils.newPath(home.getPath(), NOTIFICATION_STORE_NAME);
+            String storePath = StorageClientUtils.newPath(home.getPath(), Notification.STORE_NAME);
             Content store = createStoreIfNecessary(session, contentManager, storePath);
             LOGGER.info("Content = {}", store);
 
@@ -112,7 +106,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             LOGGER.info("Creating new notification at path " + notificationPath);
             contentManager.update(new Content(notificationPath, ImmutableMap.of(
                     JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                    (Object) NOTIFICATION_RESOURCETYPE)));
+                    (Object) Notification.RESOURCETYPE)));
         }
         return contentManager.get(notificationPath);
     }
@@ -122,7 +116,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             LOGGER.info("Will create a new notification store for user at path " + storePath);
             contentManager.update(new Content(storePath, ImmutableMap.of(
                     JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                    (Object) NOTIFICATION_STORE_RESOURCETYPE)));
+                    (Object) Notification.STORE_RESOURCETYPE)));
             List<AclModification> modifications = new ArrayList<AclModification>();
             AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
             AccessControlManager accessControlManager = session.getAccessControlManager();

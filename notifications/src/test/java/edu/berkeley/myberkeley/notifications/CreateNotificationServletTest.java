@@ -76,7 +76,7 @@ public class CreateNotificationServletTest {
         AccessControlManager accessControlManager = mock(AccessControlManager.class);
         when(session.getAccessControlManager()).thenReturn(accessControlManager);
 
-        String storePath = StorageClientUtils.newPath("/_user/home", CreateNotificationServlet.NOTIFICATION_STORE_NAME);
+        String storePath = StorageClientUtils.newPath("/_user/home", Notification.STORE_NAME);
         when(contentManager.get(storePath)).thenReturn(
                 new Content(storePath, new HashMap<String, Object>()));
 
