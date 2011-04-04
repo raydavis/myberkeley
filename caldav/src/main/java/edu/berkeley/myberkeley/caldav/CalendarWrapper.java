@@ -186,7 +186,11 @@ public class CalendarWrapper implements Serializable {
                 throw new CalDavException("No valid icalData found in JSON", null);
             }
             String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
-            DateTime startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
+            DateTime startDate = new DateTime();
+            try {
+                startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
+            } catch (JSONException ignored) {
+            }
 
             Component component;
             if (Component.VEVENT.equals(componentName)) {

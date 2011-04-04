@@ -26,7 +26,7 @@ public class NotificationTest extends Assert {
         String json = IOUtils.readFully(in, "utf-8");
         Notification notification = Notification.fromJSON(new JSONObject(json));
         assertEquals(Notification.SEND_STATE.sent, notification.getSendState());
-        assertEquals(Notification.MESSAGEBOX.drafts, notification.getMessageBox());
+        assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     }
 
     @Test
@@ -40,7 +40,9 @@ public class NotificationTest extends Assert {
         notification.toContent(content);
         LOGGER.info("Content after notification.toContent() call: {}", content.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.sent.toString());
-        assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.drafts.toString());
+        assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
+        assertNotNull(notification.getEventTimeUXState());
+        assertNotNull(notification.getEventTimeUXState().get("eventHour"));
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(new JSONObject((String)content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
         assertNotNull(wrapper);
         assertTrue(wrapper.isRequired());
