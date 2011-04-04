@@ -15,9 +15,28 @@ public class Notification {
     public static final String STORE_NAME = "_myberkeley_notificationstore";
     public static final String STORE_RESOURCETYPE = "myberkeley/notificationstore";
 
+    public enum SEND_STATE {
+        pending,
+        sent
+    }
+
+    public enum MESSAGEBOX {
+        drafts,
+        queue,
+        archive,
+        trash
+    }
+
     public enum JSON_PROPERTIES {
         id,
         sendDate,
+        sendState,
+        messageBox {
+            @Override
+            public String toString() {
+                return "sakai:messagebox";
+            }
+        },
         dynamicListID,
         calendarWrapper
     }
@@ -26,13 +45,20 @@ public class Notification {
 
     private ISO8601Date sendDate;
 
+    private SEND_STATE sendState;
+
+    private MESSAGEBOX messageBox;
+
     private String dynamicListID;
 
     private CalendarWrapper wrapper;
 
-    public Notification(String id, ISO8601Date sendDate, String dynamicListID, CalendarWrapper wrapper) {
+    public Notification(String id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
+                        String dynamicListID, CalendarWrapper wrapper) {
         this.id = id;
         this.sendDate = sendDate;
+        this.sendState = sendState;
+        this.messageBox = messageBox;
         this.dynamicListID = dynamicListID;
         this.wrapper = wrapper;
     }
@@ -43,6 +69,14 @@ public class Notification {
 
     public ISO8601Date getSendDate() {
         return sendDate;
+    }
+
+    public SEND_STATE getSendState() {
+        return sendState;
+    }
+
+    public MESSAGEBOX getMessageBox() {
+        return messageBox;
     }
 
     public String getDynamicListID() {
@@ -57,6 +91,8 @@ public class Notification {
         // TODO see if we can store the wrapper as a CalendarWrapper object, not a String encoded JSON object.
         content.setProperty(JSON_PROPERTIES.id.toString(), this.getId());
         content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());
+        content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());
+        content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
         content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
         content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
     }
@@ -66,7 +102,15 @@ public class Notification {
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(calendarWrapperJSON);
         ISO8601Date sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
         String dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
-        return new Notification(getNotificationID(json), sendDate, dynamicListID, wrapper);
+        SEND_STATE sendState = SEND_STATE.pending;
+        MESSAGEBOX messagebox = MESSAGEBOX.drafts;
+        try {
+            sendState = SEND_STATE.valueOf(json.getString(JSON_PROPERTIES.sendState.toString()));
+            messagebox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
+        } catch (JSONException ignored) {
+            // those props are optional, it's ok if they're missing
+        }
+        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper);
     }
 
     private static String getNotificationID(JSONObject notificationJSON) {

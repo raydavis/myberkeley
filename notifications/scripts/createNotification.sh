@@ -27,5 +27,5 @@ JSON='
 # strip newlines
 JSON=`echo "${JSON}" | tr -d '\n'`
 
-curl -u admin:admin "http://localhost:8080/~904715.myb-notificationstore.html" -F notification="$JSON"
+curl -u 904715:testuser "http://localhost:8080/~904715.myb-notificationstore.html" -F notification="$JSON"
 
