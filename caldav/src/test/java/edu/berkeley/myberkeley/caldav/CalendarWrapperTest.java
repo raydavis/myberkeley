@@ -3,6 +3,7 @@ package edu.berkeley.myberkeley.caldav;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.CalScale;
@@ -86,7 +87,7 @@ public class CalendarWrapperTest extends CalDavTests {
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
         assertNotNull(wrapper);
         assertEquals(wrapper.getComponent().getName(), Component.VEVENT);
-
+        assertNotNull(wrapper.getComponent().getProperty(Property.LOCATION));
         // check for nondestructive deserialization
         assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
     }

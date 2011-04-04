@@ -15,6 +15,7 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
@@ -29,6 +30,7 @@ import org.sakaiproject.nakamura.util.ISO8601Date;
 
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.UUID;
 
 public class CalendarWrapper implements Serializable {
 
@@ -51,7 +53,8 @@ public class CalendarWrapper implements Serializable {
         DESCRIPTION,
         CATEGORIES,
         STATUS,
-        UID
+        UID,
+        LOCATION
     }
 
     private Calendar calendar;
@@ -196,7 +199,12 @@ public class CalendarWrapper implements Serializable {
             }
 
 
-            String uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
+            String uid = UUID.randomUUID().toString();
+            try {
+                uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
+            } catch (JSONException ignored) {
+            }
+
             component.getProperties().add(new Uid(uid));
 
             // handle optional props
@@ -206,13 +214,27 @@ public class CalendarWrapper implements Serializable {
                     String cat = categories.getString(i);
                     component.getProperties().add(new Categories(cat));
                 }
+            } catch (JSONException ignored) {
 
+            }
+
+            try {
                 String description = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DESCRIPTION.toString());
                 component.getProperties().add(new Description(description));
+            } catch (JSONException ignored) {
 
+            }
+
+            try {
                 String status = icalData.getString(ICAL_DATA_PROPERTY_NAMES.STATUS.toString());
                 component.getProperties().add(new Status(status));
+            } catch (JSONException ignored) {
 
+            }
+
+            try {
+                String loc = icalData.getString(ICAL_DATA_PROPERTY_NAMES.LOCATION.toString());
+                component.getProperties().add(new Location(loc));
             } catch (JSONException ignored) {
 
             }

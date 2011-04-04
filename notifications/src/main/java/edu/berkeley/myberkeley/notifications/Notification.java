@@ -38,7 +38,8 @@ public class Notification {
             }
         },
         dynamicListID,
-        calendarWrapper
+        calendarWrapper,
+        category
     }
 
     private String id;
@@ -53,14 +54,17 @@ public class Notification {
 
     private CalendarWrapper wrapper;
 
+    private String category;
+
     public Notification(String id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
-                        String dynamicListID, CalendarWrapper wrapper) {
+                        String dynamicListID, CalendarWrapper wrapper, String category) {
         this.id = id;
         this.sendDate = sendDate;
         this.sendState = sendState;
         this.messageBox = messageBox;
         this.dynamicListID = dynamicListID;
         this.wrapper = wrapper;
+        this.category = category;
     }
 
     public String getId() {
@@ -87,6 +91,10 @@ public class Notification {
         return wrapper;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     public void toContent(Content content) throws JSONException {
         // TODO see if we can store the wrapper as a CalendarWrapper object, not a String encoded JSON object.
         content.setProperty(JSON_PROPERTIES.id.toString(), this.getId());
@@ -95,6 +103,7 @@ public class Notification {
         content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
         content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
         content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
+        content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory());
     }
 
     public static Notification fromJSON(JSONObject json) throws JSONException, CalDavException {
@@ -102,6 +111,7 @@ public class Notification {
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(calendarWrapperJSON);
         ISO8601Date sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
         String dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
+        String category = json.getString(JSON_PROPERTIES.category.toString());
         SEND_STATE sendState = SEND_STATE.pending;
         MESSAGEBOX messagebox = MESSAGEBOX.drafts;
         try {
@@ -110,7 +120,7 @@ public class Notification {
         } catch (JSONException ignored) {
             // those props are optional, it's ok if they're missing
         }
-        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper);
+        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper, category);
     }
 
     private static String getNotificationID(JSONObject notificationJSON) {

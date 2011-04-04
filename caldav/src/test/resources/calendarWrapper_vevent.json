@@ -11,6 +11,7 @@
         "SUMMARY":"a test event",
         "UID":"e86bd618-bdc4-4881-8407-158e4bba7570",
         "CATEGORIES":["MyBerkeley-Required","MyBerkeley-Archived"],
-        "DESCRIPTION":"this is the description, it is long enough to wrap at the ical specified standard 75th column"
+        "DESCRIPTION":"this is the description, it is long enough to wrap at the ical specified standard 75th column",
+        "LOCATION":"My desk"
     }
 }
