@@ -27,11 +27,11 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 @SlingServlet(selectors = {"myb-notificationstore"}, methods = {"POST"}, resourceTypes = {"sakai/user-home"},
         generateService = true, generateComponent = true)
@@ -84,7 +84,8 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             LOGGER.info("Content = {}", store);
 
             Notification notification = Notification.fromJSON(notificationJSON);
-            String notificationPath = StorageClientUtils.newPath(storePath, notification.getId());
+            String boxPath = StorageClientUtils.newPath(storePath, notification.getMessageBox().toString());
+            String notificationPath = StorageClientUtils.newPath(boxPath, notification.getId());
             Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
             notification.toContent(notificationContent);
             contentManager.update(notificationContent);
