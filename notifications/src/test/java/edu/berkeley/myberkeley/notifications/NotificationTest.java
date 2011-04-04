@@ -2,6 +2,7 @@ package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
@@ -40,5 +41,8 @@ public class NotificationTest extends Assert {
         LOGGER.info("Content after notification.toContent() call: {}", content.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.sent.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.drafts.toString());
+        CalendarWrapper wrapper = CalendarWrapper.fromJSON(new JSONObject((String)content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
+        assertNotNull(wrapper);
+        assertTrue(wrapper.isRequired());
     }
 }
