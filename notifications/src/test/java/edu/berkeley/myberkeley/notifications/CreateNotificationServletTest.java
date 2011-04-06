@@ -19,16 +19,14 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
-import org.sakaiproject.nakamura.util.IOUtils;
 import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-public class CreateNotificationServletTest {
+public class CreateNotificationServletTest extends NotificationTests {
 
     private CreateNotificationServlet servlet;
 
@@ -52,8 +50,7 @@ public class CreateNotificationServletTest {
         SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
         SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
 
-        InputStream in = getClass().getClassLoader().getResourceAsStream("notification.json");
-        String json = IOUtils.readFully(in, "utf-8");
+        String json = readNotificationFromFile();
         when(request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
                 new ContainerRequestParameter(json, "utf-8"));
 

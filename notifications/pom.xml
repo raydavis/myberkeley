@@ -83,6 +83,18 @@
             <version>0.10-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.search</artifactId>
+            <version>0.10-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.solr</artifactId>
+            <version>0.10-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- OSGi -->
         <dependency>

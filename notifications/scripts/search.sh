@@ -2,10 +2,11 @@
 
 JSON='
 {
-  "sakai:query-template" : "sling\\:resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
+  "sakai:query-template" : "path:a\\:${userid} AND resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
   "sakai:query-template-options": {
       "sort": "${sortOn} ${sortOrder}"
   },
+  "sakai:resultprocessor":"Notification",
   "sortOn": "created",
   "sortOrder": "desc",
   "sling:resourceType": "sakai/sparse-search",
