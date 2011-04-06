@@ -32,7 +32,7 @@ public class NotificationTest extends NotificationTests {
         Content content = new Content("/some/path", ImmutableMap.of(
                 JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
                 (Object) Notification.RESOURCETYPE));
-        notification.toContent(content);
+        notification.toContent("/some", content);
         LOGGER.info("Content after notification.toContent() call: {}", content.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.sent.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());

@@ -14,6 +14,8 @@ public class Notification {
     public static final String RESOURCETYPE = "myberkeley/notification";
     public static final String STORE_NAME = "_myberkeley_notificationstore";
     public static final String STORE_RESOURCETYPE = "myberkeley/notificationstore";
+    public static final String SEARCH_PROP_NOTIFICATIONSTORE = "_userNotificationPath";
+
 
     public enum SEND_STATE {
         pending,
@@ -103,8 +105,8 @@ public class Notification {
         return uxState;
     }
 
-    public void toContent(Content content) throws JSONException {
-        // TODO see if we can store the wrapper as a CalendarWrapper object, not a String encoded JSON object.
+    public void toContent(String storePath, Content content) throws JSONException {
+        content.setProperty("sakai:messagestore", storePath);
         content.setProperty(JSON_PROPERTIES.id.toString(), this.getId());
         content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());
         content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());

@@ -65,7 +65,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
 
         Content contentA = new Content("/note/a", null);
         Notification notificationA = Notification.fromJSON(new JSONObject(readNotificationFromFile()));
-        notificationA.toContent(contentA);
+        notificationA.toContent("/note", contentA);
 
         when(cm.get("/note/a")).thenReturn(contentA);
 

@@ -2,10 +2,11 @@
 
 JSON='
 {
-  "sakai:query-template" : "path:a\\:${userid} AND resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
+  "sakai:query-template" : "sakai\\:messagestore:${_userNotificationPath} AND resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
   "sakai:query-template-options": {
       "sort": "${sortOn} ${sortOrder}"
   },
+  "sakai:propertyprovider" : "Notification",
   "sakai:resultprocessor":"Notification",
   "sortOn": "created",
   "sortOrder": "desc",
