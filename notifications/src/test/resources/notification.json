@@ -5,7 +5,7 @@
     "sendDate":"2011-11-16T12:16:59-01:00",
     "sendState":"sent",
     "dynamicListID":"/a/path/to/a/dynamic/list",
-    "eventTimeUXState" : {
+    "uxState" : {
         "eventHour" : 1,
         "eventMin" : 2,
         "eventAMPM" : 3

@@ -40,7 +40,7 @@ public class Notification {
         dynamicListID,
         calendarWrapper,
         category,
-        eventTimeUXState
+        uxState
     }
 
     private String id;
@@ -57,10 +57,10 @@ public class Notification {
 
     private String category;
 
-    private JSONObject eventTimeUXState;
+    private JSONObject uxState;
 
     public Notification(String id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
-                        String dynamicListID, CalendarWrapper wrapper, String category, JSONObject eventTimeState) {
+                        String dynamicListID, CalendarWrapper wrapper, String category, JSONObject uxState) {
         this.id = id;
         this.sendDate = sendDate;
         this.sendState = sendState;
@@ -68,7 +68,7 @@ public class Notification {
         this.dynamicListID = dynamicListID;
         this.wrapper = wrapper;
         this.category = category;
-        this.eventTimeUXState = eventTimeState;
+        this.uxState = uxState;
     }
 
     public String getId() {
@@ -99,8 +99,8 @@ public class Notification {
         return category;
     }
 
-    public JSONObject getEventTimeUXState() {
-        return eventTimeUXState;
+    public JSONObject getUXState() {
+        return uxState;
     }
 
     public void toContent(Content content) throws JSONException {
@@ -112,7 +112,7 @@ public class Notification {
         content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
         content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
         content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory());
-        content.setProperty(JSON_PROPERTIES.eventTimeUXState.toString(), this.getEventTimeUXState().toString());
+        content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
     }
 
     public static Notification fromJSON(JSONObject json) throws JSONException, CalDavException {
@@ -123,9 +123,9 @@ public class Notification {
         String category = json.getString(JSON_PROPERTIES.category.toString());
         SEND_STATE sendState = SEND_STATE.pending;
         MESSAGEBOX messagebox = MESSAGEBOX.drafts;
-        JSONObject eventTimeState = new JSONObject();
+        JSONObject uxState = new JSONObject();
         try {
-            eventTimeState = json.getJSONObject(JSON_PROPERTIES.eventTimeUXState.toString());
+            uxState = json.getJSONObject(JSON_PROPERTIES.uxState.toString());
         } catch (JSONException ignored) {
         }
         try {
@@ -134,7 +134,7 @@ public class Notification {
         } catch (JSONException ignored) {
             // those props are optional, it's ok if they're missing
         }
-        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper, category, eventTimeState);
+        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper, category, uxState);
     }
 
     private static String getNotificationID(JSONObject notificationJSON) {
