@@ -6,8 +6,13 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
+import org.sakaiproject.nakamura.api.lite.ClientPoolException;
+import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,8 +20,6 @@ import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 @Component(label = "MyBerkeley :: QueuedNotificationSender",
         description = "Scheduled job that sends queued notifications when their send date has arrived",
@@ -27,7 +30,7 @@ public class QueuedNotificationSender {
     private final Logger LOGGER = LoggerFactory.getLogger(QueuedNotificationSender.class);
 
     @Reference
-    protected SlingRepository repository;
+    protected Repository repository;
 
     @Reference
     protected Scheduler scheduler;
@@ -68,12 +71,18 @@ public class QueuedNotificationSender {
 
             try {
                 adminSession = repository.loginAdministrative(null);
-
-            } catch (RepositoryException e) {
+                ContentManager cm = adminSession.getContentManager();
+            } catch (AccessDeniedException e) {
+                LOGGER.error("SendNotificationsJob failed", e);
+            } catch (StorageClientException e) {
                 LOGGER.error("SendNotificationsJob failed", e);
             } finally {
                 if (adminSession != null) {
-                    adminSession.logout();
+                    try {
+                        adminSession.logout();
+                    } catch (ClientPoolException e) {
+                        LOGGER.error("SendNotificationsJob failed to log out of admin session", e);
+                    }
                 }
                 long endMillis = System.currentTimeMillis();
                 LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));

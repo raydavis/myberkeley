@@ -5,11 +5,14 @@ import static org.mockito.Mockito.when;
 
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.service.component.ComponentContext;
+import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -23,7 +26,7 @@ public class QueuedNotificationSenderTest extends Assert {
     @Before
     public void setup() {
         this.sender = new QueuedNotificationSender();
-        this.sender.repository = mock(SlingRepository.class);
+        this.sender.repository = mock(Repository.class);
         this.sender.scheduler = mock(Scheduler.class);
         this.job = this.sender.getJob();
     }
@@ -44,8 +47,12 @@ public class QueuedNotificationSenderTest extends Assert {
     }
 
     @Test
-    public void execute() {
+    public void execute() throws StorageClientException, AccessDeniedException {
         JobContext context = mock(JobContext.class);
+
+        Session adminSession = mock(Session.class);
+        when(this.sender.repository.loginAdministrative(null)).thenReturn(adminSession);
+
         this.job.execute(context);
     }
 }
