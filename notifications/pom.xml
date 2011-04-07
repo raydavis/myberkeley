@@ -29,6 +29,9 @@
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>ical4j,backport-util-concurrent</Embed-Dependency>
                         <Include-Resource>{maven-resources}</Include-Resource>
+                        <Sling-Initial-Content>
+                            SLING-INF/content/var/notifications;path:=/var/notifications;overwrite:=true;uninstall:=true
+                        </Sling-Initial-Content>
                     </instructions>
                 </configuration>
             </plugin>
