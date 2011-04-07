@@ -84,7 +84,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
             LOGGER.info("Content = {}", store);
 
             Notification notification = Notification.fromJSON(notificationJSON);
-            String notificationPath = StorageClientUtils.newPath(storePath, notification.getId());
+            String notificationPath = StorageClientUtils.newPath(storePath, notification.getId().toString());
             Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
             notification.toContent(storePath, notificationContent);
             contentManager.update(notificationContent);

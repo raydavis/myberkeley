@@ -29,6 +29,11 @@ public class Notification {
         trash
     }
 
+    public enum CATEGORY {
+        calendar,
+        message
+    }
+
     public enum JSON_PROPERTIES {
         id,
         sendDate,
@@ -45,7 +50,7 @@ public class Notification {
         uxState
     }
 
-    private String id;
+    private UUID id;
 
     private ISO8601Date sendDate;
 
@@ -57,12 +62,12 @@ public class Notification {
 
     private CalendarWrapper wrapper;
 
-    private String category;
+    private CATEGORY category;
 
     private JSONObject uxState;
 
-    public Notification(String id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
-                        String dynamicListID, CalendarWrapper wrapper, String category, JSONObject uxState) {
+    public Notification(UUID id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
+                        String dynamicListID, CalendarWrapper wrapper, CATEGORY category, JSONObject uxState) {
         this.id = id;
         this.sendDate = sendDate;
         this.sendState = sendState;
@@ -73,7 +78,7 @@ public class Notification {
         this.uxState = uxState;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -97,7 +102,7 @@ public class Notification {
         return wrapper;
     }
 
-    public String getCategory() {
+    public CATEGORY getCategory() {
         return category;
     }
 
@@ -113,7 +118,7 @@ public class Notification {
         content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
         content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
         content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
-        content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory());
+        content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
         content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
     }
 
@@ -122,29 +127,35 @@ public class Notification {
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(calendarWrapperJSON);
         ISO8601Date sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
         String dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
-        String category = json.getString(JSON_PROPERTIES.category.toString());
+        CATEGORY category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
+
+        // set defaults for optional properties
         SEND_STATE sendState = SEND_STATE.pending;
         MESSAGEBOX messagebox = MESSAGEBOX.drafts;
         JSONObject uxState = new JSONObject();
+
+        // set optional properties
         try {
             uxState = json.getJSONObject(JSON_PROPERTIES.uxState.toString());
         } catch (JSONException ignored) {
         }
         try {
             sendState = SEND_STATE.valueOf(json.getString(JSON_PROPERTIES.sendState.toString()));
+        } catch (JSONException ignored) {
+        }
+        try {
             messagebox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
         } catch (JSONException ignored) {
-            // those props are optional, it's ok if they're missing
         }
         return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper, category, uxState);
     }
 
-    private static String getNotificationID(JSONObject notificationJSON) {
+    private static UUID getNotificationID(JSONObject notificationJSON) {
         try {
-            return notificationJSON.getString(Notification.JSON_PROPERTIES.id.toString());
+            return UUID.fromString(notificationJSON.getString(Notification.JSON_PROPERTIES.id.toString()));
         } catch (JSONException ignored) {
             // that's ok, we'll use the random UUID
-            return UUID.randomUUID().toString();
+            return UUID.randomUUID();
         }
     }
 

@@ -77,7 +77,7 @@ public class CreateNotificationServletTest extends NotificationTests {
         when(contentManager.get(storePath)).thenReturn(
                 new Content(storePath, new HashMap<String, Object>()));
 
-        String notificationPath = StorageClientUtils.newPath(storePath, "12345");
+        String notificationPath = StorageClientUtils.newPath(storePath, "b6455aa7-1cf4-4839-8a90-62dc352648f4");
         when(contentManager.get(notificationPath)).thenReturn(
                 new Content(notificationPath, new HashMap<String, Object>()));
 

@@ -23,6 +23,7 @@ public class NotificationTest extends NotificationTests {
         Notification notification = Notification.fromJSON(new JSONObject(json));
         assertEquals(Notification.SEND_STATE.sent, notification.getSendState());
         assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
+        assertEquals(Notification.CATEGORY.calendar, notification.getCategory());
     }
 
     @Test
@@ -36,6 +37,7 @@ public class NotificationTest extends NotificationTests {
         LOGGER.info("Content after notification.toContent() call: {}", content.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.sent.toString());
         assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
+        assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.calendar.toString());
         assertNotNull(notification.getUXState());
         assertNotNull(notification.getUXState().get("eventHour"));
         CalendarWrapper wrapper = CalendarWrapper.fromJSON(new JSONObject((String)content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
