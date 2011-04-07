@@ -30,8 +30,8 @@ public class Notification {
     }
 
     public enum CATEGORY {
-        calendar,
-        message
+        reminder,           // a task or event stored in Bedework
+        message             // a Sakai message (possibly also emailed out)
     }
 
     public enum JSON_PROPERTIES {
@@ -112,7 +112,7 @@ public class Notification {
 
     public void toContent(String storePath, Content content) throws JSONException {
         content.setProperty("sakai:messagestore", storePath);
-        content.setProperty(JSON_PROPERTIES.id.toString(), this.getId());
+        content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
         content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());
         content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());
         content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
