@@ -36,13 +36,15 @@ public class QueuedNotificationSender {
         Map<String, Serializable> config = new HashMap<String, Serializable>();
         final Job sendQueuedNoticeJob = new SendNotificationsJob();
         try {
+            LOGGER.debug("Activating SendNotificationsJob...");
             this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
         } catch (Exception e) {
             LOGGER.error("Failed to add periodic job for QueuedNotificationSender", e);
         }
     }
 
-    protected void dectivate(ComponentContext componentContext) throws Exception {
+    protected void deactivate(ComponentContext componentContext) throws Exception {
+        LOGGER.debug("Removing SendNotificationsJob...");
         this.scheduler.removeJob(JOB_NAME);
     }
 
