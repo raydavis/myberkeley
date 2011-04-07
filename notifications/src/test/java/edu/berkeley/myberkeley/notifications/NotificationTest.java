@@ -20,7 +20,7 @@ public class NotificationTest extends NotificationTests {
     @Test
     public void fromJSON() throws IOException, JSONException, CalDavException {
         String json = readNotificationFromFile();
-        Notification notification = Notification.fromJSON(new JSONObject(json));
+        Notification notification = new Notification(new JSONObject(json));
         assertEquals(Notification.SEND_STATE.sent, notification.getSendState());
         assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
         assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
@@ -29,7 +29,7 @@ public class NotificationTest extends NotificationTests {
     @Test
     public void toContent() throws IOException, JSONException, CalDavException {
         String json = readNotificationFromFile();
-        Notification notification = Notification.fromJSON(new JSONObject(json));
+        Notification notification = new Notification(new JSONObject(json));
         Content content = new Content("/some/path", ImmutableMap.of(
                 JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
                 (Object) Notification.RESOURCETYPE));

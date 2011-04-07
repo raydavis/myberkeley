@@ -66,15 +66,34 @@ public class Notification {
 
     private JSONObject uxState;
 
-    public Notification(UUID id, ISO8601Date sendDate, SEND_STATE sendState, MESSAGEBOX messageBox,
-                        String dynamicListID, CalendarWrapper wrapper, CATEGORY category, JSONObject uxState) {
-        this.id = id;
-        this.sendDate = sendDate;
+    public Notification(JSONObject json) throws JSONException, CalDavException {
+        this.id = getNotificationID(json);
+        this.wrapper = CalendarWrapper.fromJSON(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
+        this.sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
+        this.dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
+        this.category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
+
+        // set defaults for optional properties
+        SEND_STATE sendState = SEND_STATE.pending;
+        MESSAGEBOX messageBox = MESSAGEBOX.drafts;
+        JSONObject uxState = new JSONObject();
+
+        // set optional properties
+        try {
+            uxState = json.getJSONObject(JSON_PROPERTIES.uxState.toString());
+        } catch (JSONException ignored) {
+        }
+        try {
+            sendState = SEND_STATE.valueOf(json.getString(JSON_PROPERTIES.sendState.toString()));
+        } catch (JSONException ignored) {
+        }
+        try {
+            messageBox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
+        } catch (JSONException ignored) {
+        }
+
         this.sendState = sendState;
         this.messageBox = messageBox;
-        this.dynamicListID = dynamicListID;
-        this.wrapper = wrapper;
-        this.category = category;
         this.uxState = uxState;
     }
 
@@ -120,34 +139,6 @@ public class Notification {
         content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
         content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
         content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
-    }
-
-    public static Notification fromJSON(JSONObject json) throws JSONException, CalDavException {
-        JSONObject calendarWrapperJSON = json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString());
-        CalendarWrapper wrapper = CalendarWrapper.fromJSON(calendarWrapperJSON);
-        ISO8601Date sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
-        String dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
-        CATEGORY category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
-
-        // set defaults for optional properties
-        SEND_STATE sendState = SEND_STATE.pending;
-        MESSAGEBOX messagebox = MESSAGEBOX.drafts;
-        JSONObject uxState = new JSONObject();
-
-        // set optional properties
-        try {
-            uxState = json.getJSONObject(JSON_PROPERTIES.uxState.toString());
-        } catch (JSONException ignored) {
-        }
-        try {
-            sendState = SEND_STATE.valueOf(json.getString(JSON_PROPERTIES.sendState.toString()));
-        } catch (JSONException ignored) {
-        }
-        try {
-            messagebox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
-        } catch (JSONException ignored) {
-        }
-        return new Notification(getNotificationID(json), sendDate, sendState, messagebox, dynamicListID, wrapper, category, uxState);
     }
 
     private static UUID getNotificationID(JSONObject notificationJSON) {
