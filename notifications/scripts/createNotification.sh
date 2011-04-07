@@ -2,9 +2,18 @@
 
 JSON='
 {
-    "id":"12345",
+    "id":"b6455aa7-1cf4-4839-8a90-62dc352648f4",
+    "sakai:messagebox":"drafts",
+    "category":"reminder",
     "sendDate":"2011-11-16T12:16:59-01:00",
+    "sendState":"pending",
     "dynamicListID":"/a/path/to/a/dynamic/list",
+    "uxState" : {
+        "validated" : true,
+        "eventHour" : 1,
+        "eventMin" : 2,
+        "eventAMPM" : 3
+    },
     "calendarWrapper":{
         "uri":"/a/path/to/bedework/url",
         "etag":"2011-03-16T12:16:59-07:00",
