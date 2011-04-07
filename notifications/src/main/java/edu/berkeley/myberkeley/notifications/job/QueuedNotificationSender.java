@@ -70,7 +70,7 @@ public class QueuedNotificationSender {
             Session adminSession = null;
 
             try {
-                adminSession = repository.loginAdministrative(null);
+                adminSession = repository.loginAdministrative();
                 ContentManager cm = adminSession.getContentManager();
             } catch (AccessDeniedException e) {
                 LOGGER.error("SendNotificationsJob failed", e);

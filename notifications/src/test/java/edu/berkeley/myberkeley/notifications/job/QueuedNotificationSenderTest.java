@@ -51,7 +51,7 @@ public class QueuedNotificationSenderTest extends Assert {
         JobContext context = mock(JobContext.class);
 
         Session adminSession = mock(Session.class);
-        when(this.sender.repository.loginAdministrative(null)).thenReturn(adminSession);
+        when(this.sender.repository.loginAdministrative()).thenReturn(adminSession);
 
         this.job.execute(context);
     }
