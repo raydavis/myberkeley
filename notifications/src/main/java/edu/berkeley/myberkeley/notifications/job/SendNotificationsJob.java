@@ -34,11 +34,11 @@ public class SendNotificationsJob implements Job {
 
     final Repository repository;
 
-    CalDavConnectorProvider calDavConnectorProvider;
+    final CalDavConnectorProvider calDavConnectorProvider;
 
-    public SendNotificationsJob(Repository repository) {
+    public SendNotificationsJob(Repository repository, CalDavConnectorProvider calDavConnectorProvider) {
         this.repository = repository;
-        this.calDavConnectorProvider = new CalDavConnectorProvider();
+        this.calDavConnectorProvider = calDavConnectorProvider;
     }
 
     public void execute(JobContext jobContext) {

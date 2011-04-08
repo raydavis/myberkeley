@@ -38,8 +38,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     public void setup() {
         Repository repo = mock(Repository.class);
         CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
-        this.job = new SendNotificationsJob(repo);
-        this.job.calDavConnectorProvider = provider;
+        this.job = new SendNotificationsJob(repo, provider);
     }
 
     @Test
