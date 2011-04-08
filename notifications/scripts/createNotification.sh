@@ -2,10 +2,9 @@
 
 JSON='
 {
-    "id":"b6455aa7-1cf4-4839-8a90-62dc352648f4",
-    "sakai:messagebox":"drafts",
+    "sakai:messagebox":"queue",
     "category":"reminder",
-    "sendDate":"2011-11-16T12:16:59-01:00",
+    "sendDate":"2011-02-02T12:16:59-01:00",
     "sendState":"pending",
     "dynamicListID":"/a/path/to/a/dynamic/list",
     "uxState" : {

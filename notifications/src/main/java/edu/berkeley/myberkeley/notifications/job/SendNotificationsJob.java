@@ -15,6 +15,7 @@ import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,18 +36,8 @@ public class SendNotificationsJob implements Job {
 
         try {
             adminSession = repository.loginAdministrative();
-            ContentManager cm = adminSession.getContentManager();
-            Map<String, Object> props = new HashMap<String, Object>();
-            props.put("sakai:messagebox", Notification.MESSAGEBOX.queue.toString());
-            props.put("sling:resourceType", Notification.RESOURCETYPE);
-            Iterable<Content> results = cm.find(props);
-            for (Content result : results) {
-                Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
-                ISO8601Date sendDate = new ISO8601Date(sendDateValue.toString());
-                String advisorID = PathUtils.getAuthorizableId(result.getPath());
-                LOGGER.info("Found a queued notification at path " + result.getPath()
-                        + ", send date " + sendDate + ", advisor ID " + advisorID);
-            }
+            Iterable<Content> results = getQueuedNotifications(adminSession);
+            processResults(results);
         } catch (AccessDeniedException e) {
             LOGGER.error("SendNotificationsJob failed", e);
         } catch (StorageClientException e) {
@@ -61,6 +52,28 @@ public class SendNotificationsJob implements Job {
             }
             long endMillis = System.currentTimeMillis();
             LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
+        }
+    }
+
+    private Iterable<Content> getQueuedNotifications(Session adminSession) throws StorageClientException, AccessDeniedException {
+        ContentManager cm = adminSession.getContentManager();
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put("sakai:messagebox", Notification.MESSAGEBOX.queue.toString());
+        props.put("sling:resourceType", Notification.RESOURCETYPE);
+        return cm.find(props);
+    }
+
+    private void processResults(Iterable<Content> results) {
+        Date now = new Date();
+        for (Content result : results) {
+            Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
+            Date sendDate = new ISO8601Date(sendDateValue.toString()).getTime();
+            String advisorID = PathUtils.getAuthorizableId(result.getPath());
+            LOGGER.info("Found a queued notification at path " + result.getPath()
+                    + ", send date " + sendDate + ", advisor ID " + advisorID);
+            if (now.compareTo(sendDate) >= 0) {
+                LOGGER.info("The time has come to send notification at path " + result.getPath());
+            }
         }
     }
 
