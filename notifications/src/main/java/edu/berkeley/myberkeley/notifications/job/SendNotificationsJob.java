@@ -2,6 +2,7 @@ package edu.berkeley.myberkeley.notifications.job;
 
 import edu.berkeley.myberkeley.caldav.BadRequestException;
 import edu.berkeley.myberkeley.caldav.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.caldav.CalendarWrapper;

@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;

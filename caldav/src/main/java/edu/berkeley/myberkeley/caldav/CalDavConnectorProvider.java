@@ -1,6 +1,5 @@
-package edu.berkeley.myberkeley.notifications.job;
+package edu.berkeley.myberkeley.caldav;
 
-import edu.berkeley.myberkeley.caldav.CalDavConnector;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.felix.scr.annotations.Component;
