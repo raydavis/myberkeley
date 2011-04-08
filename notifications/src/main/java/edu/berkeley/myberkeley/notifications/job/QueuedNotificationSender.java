@@ -15,6 +15,8 @@ import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.util.ISO8601Date;
+import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +81,11 @@ public class QueuedNotificationSender {
                 props.put("sling:resourceType", Notification.RESOURCETYPE);
                 Iterable<Content> results = cm.find(props);
                 for (Content result : results) {
-                    LOGGER.info("Found a queued notification at path {}", result.getPath());
+                    Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
+                    ISO8601Date sendDate = new ISO8601Date(sendDateValue.toString());
+                    String advisorID = PathUtils.getAuthorizableId(result.getPath());
+                    LOGGER.info("Found a queued notification at path " + result.getPath()
+                            + ", send date " + sendDate + ", advisor ID " + advisorID);
                 }
             } catch (AccessDeniedException e) {
                 LOGGER.error("SendNotificationsJob failed", e);
@@ -96,11 +102,6 @@ public class QueuedNotificationSender {
                 long endMillis = System.currentTimeMillis();
                 LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
             }
-
-            /* props for a ContentMgr.find() :
-           {sakai:messagebox=queue, resourceType=myberkeley/notification}
-
-            */
         }
 
     }

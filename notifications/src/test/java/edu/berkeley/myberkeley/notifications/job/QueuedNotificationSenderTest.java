@@ -4,11 +4,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.notifications.Notification;
+import edu.berkeley.myberkeley.notifications.NotificationTests;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -20,12 +23,13 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-public class QueuedNotificationSenderTest extends Assert {
+public class QueuedNotificationSenderTest extends NotificationTests {
 
     private QueuedNotificationSender sender;
 
@@ -55,7 +59,7 @@ public class QueuedNotificationSenderTest extends Assert {
     }
 
     @Test
-    public void execute() throws StorageClientException, AccessDeniedException {
+    public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
         JobContext context = mock(JobContext.class);
 
         Session adminSession = mock(Session.class);
@@ -64,9 +68,11 @@ public class QueuedNotificationSenderTest extends Assert {
         ContentManager cm = mock(ContentManager.class);
         when(adminSession.getContentManager()).thenReturn(cm);
 
-        Content content = new Content("/notice1", ImmutableMap.of(
+        Notification notification = new Notification(new JSONObject(readNotificationFromFile()));
+        Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
                 JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
                 (Object) Notification.RESOURCETYPE));
+        notification.toContent("/notice1", content);
         List<Content> results = new ArrayList<Content>();
         results.add(content);
 
