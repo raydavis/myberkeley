@@ -101,6 +101,15 @@ public class CalendarWrapperTest extends CalDavTests {
         assertEquals(original.hashCode(), deserialized.hashCode());
     }
 
+    @Test
+    public void generateNewUID() throws CalDavException, IOException, JSONException, ParseException{
+        CalendarWrapper wrapper = getWrapper();
+        String originalUID = wrapper.getComponent().getProperties().getProperty(Property.UID).getValue();
+        wrapper.generateNewUID();
+        String newUID = wrapper.getComponent().getProperties().getProperty(Property.UID).getValue();
+        assertFalse(originalUID.equals(newUID));
+    }
+
     private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
         Calendar c = buildVTodo("a todo");
         URI uri = new URI("foo", false);

@@ -4,6 +4,9 @@ import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
+import org.sakaiproject.nakamura.util.DateUtils;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 
 import java.io.Serializable;
@@ -14,6 +17,11 @@ public class CalendarURI extends URI implements Serializable {
     private static final long serialVersionUID = -20218593069459027L;
 
     private Date etag;
+
+    private enum JSON_PROPERTIES {
+        uri,
+        etag
+    }
 
     public CalendarURI(URI uri, Date etag) throws URIException {
         super(uri.toString(), false);
@@ -29,6 +37,18 @@ public class CalendarURI extends URI implements Serializable {
             this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
         }
 
+    }
+
+    public CalendarURI(JSONObject json) throws JSONException, URIException {
+        super(json.getString(JSON_PROPERTIES.uri.toString()), false);
+        this.etag = new DateTime(new ISO8601Date(json.getString(JSON_PROPERTIES.etag.toString())).getTime());
+    }
+
+    public JSONObject toJSON() throws JSONException, URIException {
+        JSONObject json = new JSONObject();
+        json.put(JSON_PROPERTIES.uri.toString(), getURI());
+        json.put(JSON_PROPERTIES.etag.toString(), DateUtils.iso8601(getEtag()));
+        return json;
     }
 
     public Date getEtag() {

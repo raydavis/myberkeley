@@ -47,7 +47,8 @@ public class Notification {
         dynamicListID,
         calendarWrapper,
         category,
-        uxState
+        uxState,
+        calendarURIs
     }
 
     private UUID id;

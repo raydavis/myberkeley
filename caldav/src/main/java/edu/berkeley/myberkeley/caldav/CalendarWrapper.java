@@ -254,6 +254,11 @@ public class CalendarWrapper implements Serializable {
         }
     }
 
+    public void generateNewUID() {
+        // give component a new UID so it will be unique in Bedework
+        ((Uid) this.getComponent().getProperties().getProperty(Property.UID)).setValue(UUID.randomUUID().toString());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

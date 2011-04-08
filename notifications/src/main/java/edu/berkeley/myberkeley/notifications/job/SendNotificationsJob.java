@@ -6,6 +6,7 @@ import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
@@ -90,21 +91,26 @@ public class SendNotificationsJob implements Job {
     }
 
     private void sendNotification(Content result, ContentManager contentManager) {
-        // TODO get list of users based on dynamicListID
+
         try {
 
             JSONObject json = new JSONObject((String) result.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString()));
             CalendarWrapper wrapper = CalendarWrapper.fromJSON(json);
 
+            JSONArray urisJson = new JSONArray();
+
             // save notification in bedework server
+            // TODO get list of users based on dynamicListID and loop over them -- one connector per user
             CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
+            wrapper.generateNewUID();
             CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), "vbede");
-            // TODO save uri on the Content obj
+            urisJson.put(uri.toJSON());
 
             // mark the notification as archived in our repo
             Content content = contentManager.get(result.getPath());
             content.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
             content.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
+            content.setProperty(Notification.JSON_PROPERTIES.calendarURIs.toString(), urisJson.toString());
             contentManager.update(content);
 
             LOGGER.info("Successfully sent notification; local path " + content.getPath() + "; bedework uri = " + uri);

@@ -6,8 +6,12 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.Date;
+import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
@@ -61,7 +65,8 @@ public class SendNotificationsJobTest extends NotificationTests {
 
         CalDavConnector connector = mock(CalDavConnector.class);
         when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
-
+        CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
+        when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
         this.job.execute(context);
     }
 }
