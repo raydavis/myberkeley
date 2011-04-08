@@ -79,6 +79,7 @@
            <plugin>
             <groupId>org.apache.sling</groupId>
             <artifactId>maven-sling-plugin</artifactId>
+            <version>2.0.4-incubator</version>
             <executions>
               <execution>
                 <id>install-file</id>
@@ -216,7 +217,7 @@
             <instructions>
               <Bundle-Category>myberkeley</Bundle-Category>
               <Bundle-Vendor>University of California, Berkeley</Bundle-Vendor>
-              <Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+              <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             </instructions>
           </configuration>
         </plugin>
