@@ -1,5 +1,6 @@
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.notifications.Notification;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
@@ -12,6 +13,7 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +74,13 @@ public class QueuedNotificationSender {
             try {
                 adminSession = repository.loginAdministrative();
                 ContentManager cm = adminSession.getContentManager();
+                Map<String, Object> props = new HashMap<String, Object>();
+                props.put("sakai:messagebox", Notification.MESSAGEBOX.queue.toString());
+                props.put("sling:resourceType", Notification.RESOURCETYPE);
+                Iterable<Content> results = cm.find(props);
+                for (Content result : results) {
+                    LOGGER.info("Found a queued notification at path {}", result.getPath());
+                }
             } catch (AccessDeniedException e) {
                 LOGGER.error("SendNotificationsJob failed", e);
             } catch (StorageClientException e) {
