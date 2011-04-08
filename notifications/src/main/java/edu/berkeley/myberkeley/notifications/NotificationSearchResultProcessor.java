@@ -6,6 +6,7 @@ import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.json.io.JSONWriter;
@@ -107,7 +108,14 @@ public class NotificationSearchResultProcessor implements SolrSearchResultProces
                             write.value(jsonObject);
                             continue;
                         } catch (JSONException ignored) {
-                            // it's not JSON, so skip
+                            // it might be a JSON array
+                            try {
+                                JSONArray jsonArray = new JSONArray((String) propValue);
+                                write.value(jsonArray);
+                                continue;
+                            } catch ( JSONException alsoignored ) {
+                                // it's neither JSON obj nor JSON array, so just write as a regular value
+                            }
                         }
                     }
                     write.value(propValue);
