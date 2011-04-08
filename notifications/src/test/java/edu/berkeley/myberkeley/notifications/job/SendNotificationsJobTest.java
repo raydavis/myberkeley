@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import edu.berkeley.myberkeley.caldav.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
@@ -32,7 +33,9 @@ public class SendNotificationsJobTest extends NotificationTests {
     @Before
     public void setup() {
         Repository repo = mock(Repository.class);
+        CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
         this.job = new SendNotificationsJob(repo);
+        this.job.calDavConnectorProvider = provider;
     }
 
     @Test
@@ -52,8 +55,13 @@ public class SendNotificationsJobTest extends NotificationTests {
         notification.toContent("/notice1", content);
         List<Content> results = new ArrayList<Content>();
         results.add(content);
-
         when(cm.find(Matchers.anyMap())).thenReturn(results);
+
+        when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+
+        CalDavConnector connector = mock(CalDavConnector.class);
+        when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+
         this.job.execute(context);
     }
 }

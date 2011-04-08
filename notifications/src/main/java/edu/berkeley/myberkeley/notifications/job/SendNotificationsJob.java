@@ -1,6 +1,13 @@
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.caldav.BadRequestException;
+import edu.berkeley.myberkeley.caldav.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.CalendarURI;
+import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
@@ -15,6 +22,7 @@ import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,8 +33,11 @@ public class SendNotificationsJob implements Job {
 
     final Repository repository;
 
+    CalDavConnectorProvider calDavConnectorProvider;
+
     public SendNotificationsJob(Repository repository) {
         this.repository = repository;
+        this.calDavConnectorProvider = new CalDavConnectorProvider();
     }
 
     public void execute(JobContext jobContext) {
@@ -37,7 +48,7 @@ public class SendNotificationsJob implements Job {
         try {
             adminSession = repository.loginAdministrative();
             Iterable<Content> results = getQueuedNotifications(adminSession);
-            processResults(results);
+            processResults(results, adminSession.getContentManager());
         } catch (AccessDeniedException e) {
             LOGGER.error("SendNotificationsJob failed", e);
         } catch (StorageClientException e) {
@@ -63,17 +74,53 @@ public class SendNotificationsJob implements Job {
         return cm.find(props);
     }
 
-    private void processResults(Iterable<Content> results) {
+    private void processResults(Iterable<Content> results, ContentManager contentManager) {
         Date now = new Date();
         for (Content result : results) {
             Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
             Date sendDate = new ISO8601Date(sendDateValue.toString()).getTime();
             String advisorID = PathUtils.getAuthorizableId(result.getPath());
-            LOGGER.info("Found a queued notification at path " + result.getPath()
+            LOGGER.debug("Found a queued notification at path " + result.getPath()
                     + ", send date " + sendDate + ", advisor ID " + advisorID);
             if (now.compareTo(sendDate) >= 0) {
-                LOGGER.info("The time has come to send notification at path " + result.getPath());
+                LOGGER.debug("The time has come to send notification at path " + result.getPath());
+                sendNotification(result, contentManager);
             }
+        }
+    }
+
+    private void sendNotification(Content result, ContentManager contentManager) {
+        // TODO get list of users based on dynamicListID
+        try {
+
+            JSONObject json = new JSONObject((String) result.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString()));
+            CalendarWrapper wrapper = CalendarWrapper.fromJSON(json);
+
+            // save notification in bedework server
+            CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
+            CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), "vbede");
+            // TODO save uri on the Content obj
+
+            // mark the notification as archived in our repo
+            Content content = contentManager.get(result.getPath());
+            content.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
+            content.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
+            contentManager.update(content);
+
+            LOGGER.info("Successfully sent notification; local path " + content.getPath() + "; bedework uri = " + uri);
+
+        } catch (JSONException e) {
+            LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
+        } catch (BadRequestException e) {
+            LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
+        } catch (IOException e) {
+            LOGGER.error("Got exception trying to contact CalDav server to post notification at path " + result.getPath(), e);
+        } catch (CalDavException e) {
+            LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+        } catch (AccessDeniedException e) {
+            LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
+        } catch (StorageClientException e) {
+            LOGGER.error("Got storage client exception saving notification at path " + result.getPath(), e);
         }
     }
 
