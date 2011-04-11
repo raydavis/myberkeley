@@ -34,5 +34,5 @@ JSON='
 # strip newlines
 JSON=`echo "${JSON}" | tr -d '\n'`
 
-curl -u 904715:testuser "http://localhost:8080/~904715.myb-notificationstore.html" -F notification="$JSON"
+curl -e "/dev/test" -u admin:admin "http://localhost:8080/~admin.myb-notificationstore.html" -F notification="$JSON"
 

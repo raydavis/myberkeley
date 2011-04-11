@@ -1,0 +1,8 @@
+{
+  "sakai:query-template" : "sling\\:resourceType:myberkeley/notification AND sakai\\:messagebox:queue",
+  "sakai:resultprocessor":"Notification",
+  "sortOn": "created",
+  "sortOrder": "desc",
+  "sling:resourceType": "sakai/sparse-search",
+  "sakai:title": "Notifications"
+}

@@ -1,10 +1,8 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import edu.berkeley.myberkeley.caldav.BadRequestException;
-import edu.berkeley.myberkeley.caldav.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
 import org.apache.sling.commons.json.JSONArray;
@@ -20,11 +18,9 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.util.ISO8601Date;
-import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,17 +74,25 @@ public class SendNotificationsJob implements Job {
 
     private void processResults(Iterable<Content> results, ContentManager contentManager) {
         Date now = new Date();
+        int resultCount = 0;
+        int eligibleCount = 0;
         for (Content result : results) {
-            Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
-            Date sendDate = new ISO8601Date(sendDateValue.toString()).getTime();
-            String advisorID = PathUtils.getAuthorizableId(result.getPath());
-            LOGGER.debug("Found a queued notification at path " + result.getPath()
-                    + ", send date " + sendDate + ", advisor ID " + advisorID);
-            if (now.compareTo(sendDate) >= 0) {
+            resultCount++;
+            if (eligibleForSending(result, now)) {
+                eligibleCount++;
                 LOGGER.debug("The time has come to send notification at path " + result.getPath());
                 sendNotification(result, contentManager);
             }
         }
+        LOGGER.info("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
+    }
+
+    private boolean eligibleForSending(Content result, Date now) {
+        Object sendDateValue = result.getProperty(Notification.JSON_PROPERTIES.sendDate.toString());
+        Date sendDate = new ISO8601Date(sendDateValue.toString()).getTime();
+        Notification.MESSAGEBOX box = Notification.MESSAGEBOX.valueOf((String) result.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()));
+        Notification.SEND_STATE sendState = Notification.SEND_STATE.valueOf((String) result.getProperty(Notification.JSON_PROPERTIES.sendState.toString()));
+        return Notification.MESSAGEBOX.queue.equals(box) && Notification.SEND_STATE.pending.equals(sendState) && now.compareTo(sendDate) >= 0;
     }
 
     private void sendNotification(Content result, ContentManager contentManager) {
@@ -102,12 +106,15 @@ public class SendNotificationsJob implements Job {
 
             // save notification in bedework server
             // TODO get list of users based on dynamicListID and loop over them -- one connector per user
-            CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
+            /*CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
             wrapper.generateNewUID();
             CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), "vbede");
             urisJson.put(uri.toJSON());
+            */
+            String uri = null;
 
             // mark the notification as archived in our repo
+            // unclear why, but updating only works if we .get() the result again
             Content content = contentManager.get(result.getPath());
             content.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
             content.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
@@ -120,8 +127,6 @@ public class SendNotificationsJob implements Job {
             LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
         } catch (BadRequestException e) {
             LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
-        } catch (IOException e) {
-            LOGGER.error("Got exception trying to contact CalDav server to post notification at path " + result.getPath(), e);
         } catch (CalDavException e) {
             LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
         } catch (AccessDeniedException e) {
