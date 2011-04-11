@@ -19,10 +19,6 @@ mvn -Dsling.clean clean || { echo "Sling clean failed." ; stopAndExit ; }
 # reinstall
 mvn clean install || { echo "mvn clean install failed." ; stopAndExit ; }
 
-# copy config file to allow POSTs without referers
-mkdir -p working/load
-cp configs/dev/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.cfg working/load
-
 # start up 
 mvn -P runner -Dsling.start -Dsling.port=$PORT verify || { echo "Failed to start sling." ; stopAndExit ; }
 
