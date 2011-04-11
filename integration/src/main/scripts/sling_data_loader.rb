@@ -50,6 +50,7 @@ module MyBerkeleyData
       @sling.do_login
       @user_manager = UserManager.new(@sling)
       @authz = SlingAuthz::Authz.new(@sling)
+      @server = server
     end
       
     def get_or_create_groups
@@ -145,8 +146,10 @@ module MyBerkeleyData
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
         loaded_calnet_test_user = load_user uid, user_props
-        add_student_to_group loaded_calnet_test_user
-        apply_student_aces loaded_calnet_test_user
+        # TODO chris uncomment next two lines when done with demographic load
+        #add_student_to_group loaded_calnet_test_user
+        #apply_student_aces loaded_calnet_test_user
+        apply_student_demographic loaded_calnet_test_user
         i = i + 1
       end
     end
@@ -279,7 +282,10 @@ module MyBerkeleyData
       @authz.grant(home_path,"g-ced-students","jcr:read" => "granted") #needed so message search results can include sender's profile info
       @authz.grant(home_path,"g-ced-advisors","jcr:all" => "granted")
     end
-    
+
+    def apply_student_demographic(student)
+      @sling.execute_post("#{@server}/~#{student.name}.myb-demographic.html", "myb-demographics" => "/colleges/CED/standings/grad")
+    end
   end
 end
 
@@ -288,6 +294,6 @@ if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will attempt to create or update #{ARGV[2]} users"
   sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
   sdl.get_or_create_groups
-  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  #sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   sdl.load_calnet_test_users
 end
