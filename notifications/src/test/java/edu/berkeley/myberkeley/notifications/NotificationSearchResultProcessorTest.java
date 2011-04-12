@@ -4,6 +4,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.commons.json.JSONObject;
@@ -18,8 +19,6 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.search.solr.Result;
 import org.sakaiproject.nakamura.api.search.solr.SolrSearchServiceFactory;
 import org.sakaiproject.nakamura.util.ExtendedJSONWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
@@ -28,8 +27,6 @@ import java.io.Writer;
 public class NotificationSearchResultProcessorTest extends NotificationTests {
 
     private NotificationSearchResultProcessor processor;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationSearchResultProcessorTest.class);
 
     @Before
     public void setup() {
@@ -74,8 +71,12 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
 
         String s = baos.toString("UTF-8");
 
+        // make sure some key parts of the notification made it into json
         JSONObject json = new JSONObject(s);
-        LOGGER.info("JSON = " + json.toString(2));
+        assertEquals("reminder", json.getString("category"));
+        CalendarWrapper wrapper = CalendarWrapper.fromJSON(json.getJSONObject("calendarWrapper"));
+        assertNotNull(wrapper);
+        assertTrue(json.getJSONObject("uxState").getBoolean("validated"));
     }
 
     private Result mockResult(Content content) {
