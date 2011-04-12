@@ -18,6 +18,8 @@ import java.text.ParseException;
  * Test used just to populate user vbede's calendar with data. This test doesn't clean up after itself!
  */
 
+
+@Ignore
 public class EventGeneratorTest extends CalDavTests {
 
     private static final String OWNER = "vbede";
