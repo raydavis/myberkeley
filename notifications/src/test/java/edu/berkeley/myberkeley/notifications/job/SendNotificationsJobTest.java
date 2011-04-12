@@ -22,6 +22,7 @@ package edu.berkeley.myberkeley.notifications.job;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavConnector;
@@ -50,6 +51,7 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SendNotificationsJobTest extends NotificationTests {
 
@@ -79,7 +81,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     notification.toContent("/notice1", content);
     List<Content> results = new ArrayList<Content>();
     results.add(content);
-    when(cm.find(Matchers.anyMap())).thenReturn(results);
+    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
 
     when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
@@ -87,6 +89,10 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+
     this.job.execute(context);
+
+    verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(cm).update(Matchers.<Content>any());
   }
 }

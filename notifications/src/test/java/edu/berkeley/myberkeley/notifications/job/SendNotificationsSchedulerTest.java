@@ -21,17 +21,21 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import org.apache.sling.commons.scheduler.Scheduler;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
 
+import java.io.Serializable;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 public class SendNotificationsSchedulerTest extends NotificationTests {
 
@@ -51,12 +55,15 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
     dictionary.put(SendNotificationsScheduler.PROP_POLL_INTERVAL_SECONDS, 60L);
     when(context.getProperties()).thenReturn(dictionary);
     this.sender.activate(context);
+    verify(this.sender.scheduler).addPeriodicJob(Matchers.<String>any(), Matchers.<SendNotificationsJob>any(),
+            Matchers.<Map<String, Serializable>>any(), Matchers.anyLong(), Matchers.anyBoolean());
   }
 
   @Test
   public void deactivate() throws Exception {
     ComponentContext context = mock(ComponentContext.class);
     this.sender.deactivate(context);
+    verify(this.sender.scheduler).removeJob(SendNotificationsScheduler.JOB_NAME);
   }
 
 }

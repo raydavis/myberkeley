@@ -37,7 +37,7 @@ public class NotificationTest extends NotificationTests {
   public void fromJSON() throws IOException, JSONException, CalDavException {
     String json = readNotificationFromFile();
     Notification notification = new Notification(new JSONObject(json));
-    assertEquals(Notification.SEND_STATE.sent, notification.getSendState());
+    assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
   }
@@ -50,7 +50,7 @@ public class NotificationTest extends NotificationTests {
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
-    assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.sent.toString());
+    assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.pending.toString());
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.reminder.toString());
     assertNotNull(notification.getUXState());
