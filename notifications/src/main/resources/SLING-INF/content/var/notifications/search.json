@@ -1,12 +1,7 @@
 {
-  "sakai:query-template" : "sakai\\:messagestore:${_userNotificationPath} AND resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
-  "sakai:query-template-options": {
-      "sort": "${sortOn} ${sortOrder}"
-  },
+  "sakai:query-template" : "sakai\\:messagestore:${_userNotificationPath} AND sling\\:resourceType:myberkeley/notification AND sakai\\:messagebox:${box}",
   "sakai:propertyprovider" : "Notification",
   "sakai:resultprocessor":"Notification",
-  "sortOn": "created",
-  "sortOrder": "desc",
   "sling:resourceType": "sakai/sparse-search",
   "sakai:title": "Notifications"
 }
