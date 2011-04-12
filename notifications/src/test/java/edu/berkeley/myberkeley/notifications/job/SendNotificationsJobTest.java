@@ -94,5 +94,6 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
     verify(cm).update(Matchers.<Content>any());
+    verify(adminSession).logout();
   }
 }
