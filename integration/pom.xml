@@ -138,7 +138,8 @@
                   <jvmarg value="-XX:MaxPermSize=256m"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="sling.home" value="sling"/>
-				  <sysproperty key="org.mortbay.jetty.ajp.port" value="8010"/>
+				          <sysproperty key="org.mortbay.jetty.ajp.port" value="8010"/>
+                  <sysproperty key="java.io.tmpdir" value="${sling.tmpdir}"/>
                   <sysproperty key="myberkeley.home" value="${project.parent.basedir}"/>
                   <sysproperty key="sling.include.nakamura" value="${sling.include.nakamura}"/>
                   <arg value="-p"/>
