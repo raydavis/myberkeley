@@ -33,40 +33,40 @@ import java.util.List;
 
 public class SendNotificationsJobTest extends NotificationTests {
 
-    private SendNotificationsJob job;
+  private SendNotificationsJob job;
 
-    @Before
-    public void setup() {
-        Repository repo = mock(Repository.class);
-        CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
-        this.job = new SendNotificationsJob(repo, provider);
-    }
+  @Before
+  public void setup() {
+    Repository repo = mock(Repository.class);
+    CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
+    this.job = new SendNotificationsJob(repo, provider);
+  }
 
-    @Test
-    public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
-        JobContext context = mock(JobContext.class);
+  @Test
+  public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
+    JobContext context = mock(JobContext.class);
 
-        Session adminSession = mock(Session.class);
-        when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
+    Session adminSession = mock(Session.class);
+    when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
 
-        ContentManager cm = mock(ContentManager.class);
-        when(adminSession.getContentManager()).thenReturn(cm);
+    ContentManager cm = mock(ContentManager.class);
+    when(adminSession.getContentManager()).thenReturn(cm);
 
-        Notification notification = new Notification(new JSONObject(readNotificationFromFile()));
-        Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
-                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                (Object) Notification.RESOURCETYPE));
-        notification.toContent("/notice1", content);
-        List<Content> results = new ArrayList<Content>();
-        results.add(content);
-        when(cm.find(Matchers.anyMap())).thenReturn(results);
+    Notification notification = new Notification(new JSONObject(readNotificationFromFile()));
+    Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) Notification.RESOURCETYPE));
+    notification.toContent("/notice1", content);
+    List<Content> results = new ArrayList<Content>();
+    results.add(content);
+    when(cm.find(Matchers.anyMap())).thenReturn(results);
 
-        when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-        CalDavConnector connector = mock(CalDavConnector.class);
-        when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
-        CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
-        when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
-        this.job.execute(context);
-    }
+    CalDavConnector connector = mock(CalDavConnector.class);
+    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
+    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+    this.job.execute(context);
+  }
 }

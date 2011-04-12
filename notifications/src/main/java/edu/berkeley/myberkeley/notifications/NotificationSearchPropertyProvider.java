@@ -34,9 +34,9 @@ import java.util.Map;
 @Component(immediate = true, label = "NotificationSearchPropertyProvider", description = "Provides notification search properties.")
 @Service
 @Properties(value = {
-    @Property(name = "service.vendor", value = "The Sakai Foundation"),
-    @Property(name = "service.description", value = "Provides notification search properties."),
-    @Property(name = "sakai.search.provider", value = "Notification") })
+        @Property(name = "service.vendor", value = "The Sakai Foundation"),
+        @Property(name = "service.description", value = "Provides notification search properties."),
+        @Property(name = "sakai.search.provider", value = "Notification")})
 public class NotificationSearchPropertyProvider implements SolrSearchPropertyProvider {
 
   /**
@@ -46,10 +46,10 @@ public class NotificationSearchPropertyProvider implements SolrSearchPropertyPro
    *      java.util.Map)
    */
   public void loadUserProperties(SlingHttpServletRequest request,
-      Map<String, String> propertiesMap) {
+                                 Map<String, String> propertiesMap) {
     String user = request.getRemoteUser();
     propertiesMap.put(Notification.SEARCH_PROP_NOTIFICATIONSTORE, ClientUtils
-        .escapeQueryChars(LitePersonalUtils.PATH_AUTHORIZABLE + user + "/" + Notification.STORE_NAME));
+            .escapeQueryChars(LitePersonalUtils.PATH_AUTHORIZABLE + user + "/" + Notification.STORE_NAME));
   }
 
 }

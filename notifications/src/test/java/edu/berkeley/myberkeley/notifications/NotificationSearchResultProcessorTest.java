@@ -26,63 +26,63 @@ import java.io.Writer;
 
 public class NotificationSearchResultProcessorTest extends NotificationTests {
 
-    private NotificationSearchResultProcessor processor;
+  private NotificationSearchResultProcessor processor;
 
-    @Before
-    public void setup() {
-        this.processor = new NotificationSearchResultProcessor();
-        processor.searchServiceFactory = mock(SolrSearchServiceFactory.class);
-    }
+  @Before
+  public void setup() {
+    this.processor = new NotificationSearchResultProcessor();
+    processor.searchServiceFactory = mock(SolrSearchServiceFactory.class);
+  }
 
-    @Test
-    public void testWriteResults() throws Exception {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        Session session = mock(Session.class);
+  @Test
+  public void testWriteResults() throws Exception {
+    SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+    Session session = mock(Session.class);
 
-        AccessControlManager accessControlManager = mock(AccessControlManager.class);
-        when(session.getAccessControlManager()).thenReturn(accessControlManager);
+    AccessControlManager accessControlManager = mock(AccessControlManager.class);
+    when(session.getAccessControlManager()).thenReturn(accessControlManager);
 
-        AuthorizableManager authMgr = mock(AuthorizableManager.class);
-        when(session.getAuthorizableManager()).thenReturn(authMgr);
+    AuthorizableManager authMgr = mock(AuthorizableManager.class);
+    when(session.getAuthorizableManager()).thenReturn(authMgr);
 
-        ResourceResolver resolver = mock(ResourceResolver.class);
-        when(request.getResourceResolver()).thenReturn(resolver);
-        Object hybridSession = mock(javax.jcr.Session.class,
-                withSettings().extraInterfaces(SessionAdaptable.class));
-        when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(
-                (javax.jcr.Session) hybridSession);
-        when(((SessionAdaptable) hybridSession).getSession()).thenReturn(session);
+    ResourceResolver resolver = mock(ResourceResolver.class);
+    when(request.getResourceResolver()).thenReturn(resolver);
+    Object hybridSession = mock(javax.jcr.Session.class,
+            withSettings().extraInterfaces(SessionAdaptable.class));
+    when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(
+            (javax.jcr.Session) hybridSession);
+    when(((SessionAdaptable) hybridSession).getSession()).thenReturn(session);
 
-        ContentManager cm = mock(ContentManager.class);
-        when(session.getContentManager()).thenReturn(cm);
+    ContentManager cm = mock(ContentManager.class);
+    when(session.getContentManager()).thenReturn(cm);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Writer w = new PrintWriter(baos);
-        ExtendedJSONWriter writer = new ExtendedJSONWriter(w);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Writer w = new PrintWriter(baos);
+    ExtendedJSONWriter writer = new ExtendedJSONWriter(w);
 
-        Content contentA = new Content("/note/a", null);
-        Notification notificationA = new Notification(new JSONObject(readNotificationFromFile()));
-        notificationA.toContent("/note", contentA);
+    Content contentA = new Content("/note/a", null);
+    Notification notificationA = new Notification(new JSONObject(readNotificationFromFile()));
+    notificationA.toContent("/note", contentA);
 
-        when(cm.get("/note/a")).thenReturn(contentA);
+    when(cm.get("/note/a")).thenReturn(contentA);
 
-        processor.writeResult(request, writer, mockResult(contentA));
-        w.flush();
+    processor.writeResult(request, writer, mockResult(contentA));
+    w.flush();
 
-        String s = baos.toString("UTF-8");
+    String s = baos.toString("UTF-8");
 
-        // make sure some key parts of the notification made it into json
-        JSONObject json = new JSONObject(s);
-        assertEquals("reminder", json.getString("category"));
-        CalendarWrapper wrapper = CalendarWrapper.fromJSON(json.getJSONObject("calendarWrapper"));
-        assertNotNull(wrapper);
-        assertTrue(json.getJSONObject("uxState").getBoolean("validated"));
-    }
+    // make sure some key parts of the notification made it into json
+    JSONObject json = new JSONObject(s);
+    assertEquals("reminder", json.getString("category"));
+    CalendarWrapper wrapper = CalendarWrapper.fromJSON(json.getJSONObject("calendarWrapper"));
+    assertNotNull(wrapper);
+    assertTrue(json.getJSONObject("uxState").getBoolean("validated"));
+  }
 
-    private Result mockResult(Content content) {
-        Result r = mock(Result.class);
-        when(r.getPath()).thenReturn(content.getPath());
-        return r;
-    }
+  private Result mockResult(Content content) {
+    Result r = mock(Result.class);
+    when(r.getPath()).thenReturn(content.getPath());
+    return r;
+  }
 
 }

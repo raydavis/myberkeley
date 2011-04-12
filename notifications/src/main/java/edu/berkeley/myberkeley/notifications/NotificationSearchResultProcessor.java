@@ -36,106 +36,106 @@ import java.util.Map;
 @Service
 public class NotificationSearchResultProcessor implements SolrSearchResultProcessor {
 
-    @Reference
-    SolrSearchServiceFactory searchServiceFactory;
+  @Reference
+  SolrSearchServiceFactory searchServiceFactory;
 
-    public void writeResult(SlingHttpServletRequest request, JSONWriter write, Result result) throws JSONException {
-        try {
-            Session session = StorageClientUtils.adaptToSession(request.getResourceResolver()
-                    .adaptTo(javax.jcr.Session.class));
-            ContentManager cm = session.getContentManager();
+  public void writeResult(SlingHttpServletRequest request, JSONWriter write, Result result) throws JSONException {
+    try {
+      Session session = StorageClientUtils.adaptToSession(request.getResourceResolver()
+              .adaptTo(javax.jcr.Session.class));
+      ContentManager cm = session.getContentManager();
 
-            Content content = cm.get(result.getPath());
-            if (content == null) {
-                return;
-            }
-            write.object();
-            writeNodeContentsToWriterWithJSONUnpacking(write, content);
-            write.endObject();
+      Content content = cm.get(result.getPath());
+      if (content == null) {
+        return;
+      }
+      write.object();
+      writeNodeContentsToWriterWithJSONUnpacking(write, content);
+      write.endObject();
 
-        } catch (StorageClientException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (AccessDeniedException e) {
-            throw new RuntimeException(e.getMessage(), e);
+    } catch (StorageClientException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    } catch (AccessDeniedException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  public SolrSearchResultSet getSearchResultSet(SlingHttpServletRequest request, Query query) throws SolrSearchException {
+    return searchServiceFactory.getSearchResultSet(request, query);
+  }
+
+  /**
+   * Copy of ExtendedJSONWriter.writeNodeContentsToWriter, except that this method will take strings that represent
+   * JSON content and expand them into real JSON objects.
+   */
+  private void writeNodeContentsToWriterWithJSONUnpacking(JSONWriter write, Content content)
+          throws JSONException {
+    // Since removal of bigstore we add in jcr:path and jcr:name
+    write.key("jcr:path");
+    write.value(PathUtils.translateAuthorizablePath(content.getPath()));
+    write.key("jcr:name");
+    write.value(StorageClientUtils.getObjectName(content.getPath()));
+
+    Map<String, Object> props = content.getProperties();
+    for (Map.Entry<String, Object> prop : props.entrySet()) {
+      String propName = prop.getKey();
+      Object propValue = prop.getValue();
+
+      if ("_path".equals(propName)) {
+        continue;
+      }
+
+      write.key(propName);
+      if (propValue instanceof Object[]) {
+        write.array();
+        for (Object value : (Object[]) propValue) {
+          if (isUserPath(propName, value)) {
+            write.value(PathUtils.translateAuthorizablePath(value));
+          } else {
+            write.value(value);
+          }
         }
-    }
-
-    public SolrSearchResultSet getSearchResultSet(SlingHttpServletRequest request, Query query) throws SolrSearchException {
-        return searchServiceFactory.getSearchResultSet(request, query);
-    }
-
-    /**
-     * Copy of ExtendedJSONWriter.writeNodeContentsToWriter, except that this method will take strings that represent
-     * JSON content and expand them into real JSON objects.
-     */
-    private void writeNodeContentsToWriterWithJSONUnpacking(JSONWriter write, Content content)
-            throws JSONException {
-        // Since removal of bigstore we add in jcr:path and jcr:name
-        write.key("jcr:path");
-        write.value(PathUtils.translateAuthorizablePath(content.getPath()));
-        write.key("jcr:name");
-        write.value(StorageClientUtils.getObjectName(content.getPath()));
-
-        Map<String, Object> props = content.getProperties();
-        for (Map.Entry<String, Object> prop : props.entrySet()) {
-            String propName = prop.getKey();
-            Object propValue = prop.getValue();
-
-            if ("_path".equals(propName)) {
+        write.endArray();
+      } else if (propValue instanceof java.util.Calendar) {
+        write.value(DateUtils.iso8601((java.util.Calendar) propValue));
+      } else {
+        if (isUserPath(propName, propValue)) {
+          write.value(PathUtils.translateAuthorizablePath(propValue));
+        } else {
+          if (propValue instanceof String) {
+            try {
+              JSONObject jsonObject = new JSONObject((String) propValue);
+              write.value(jsonObject);
+              continue;
+            } catch (JSONException ignored) {
+              // it might be a JSON array
+              try {
+                JSONArray jsonArray = new JSONArray((String) propValue);
+                write.value(jsonArray);
                 continue;
+              } catch (JSONException alsoignored) {
+                // it's neither JSON obj nor JSON array, so just write as a regular value
+              }
             }
-
-            write.key(propName);
-            if (propValue instanceof Object[]) {
-                write.array();
-                for (Object value : (Object[]) propValue) {
-                    if (isUserPath(propName, value)) {
-                        write.value(PathUtils.translateAuthorizablePath(value));
-                    } else {
-                        write.value(value);
-                    }
-                }
-                write.endArray();
-            } else if (propValue instanceof java.util.Calendar) {
-                write.value(DateUtils.iso8601((java.util.Calendar) propValue));
-            } else {
-                if (isUserPath(propName, propValue)) {
-                    write.value(PathUtils.translateAuthorizablePath(propValue));
-                } else {
-                    if (propValue instanceof String) {
-                        try {
-                            JSONObject jsonObject = new JSONObject((String) propValue);
-                            write.value(jsonObject);
-                            continue;
-                        } catch (JSONException ignored) {
-                            // it might be a JSON array
-                            try {
-                                JSONArray jsonArray = new JSONArray((String) propValue);
-                                write.value(jsonArray);
-                                continue;
-                            } catch ( JSONException alsoignored ) {
-                                // it's neither JSON obj nor JSON array, so just write as a regular value
-                            }
-                        }
-                    }
-                    write.value(propValue);
-                }
-            }
+          }
+          write.value(propValue);
         }
+      }
     }
+  }
 
-    private static boolean isUserPath(String name, Object value) {
-        if ("jcr:path".equals(name) || "path".equals(name) || "userProfilePath".equals(name)) {
-            String s = String.valueOf(value);
-            if (s != null && s.length() > 4) {
-                if (s.charAt(0) == '/' && s.charAt(1) == '_') {
-                    if (s.startsWith("/_user/") || s.startsWith("/_group/") || s.startsWith("a:")) {
-                        return true;
-                    }
-                }
-            }
+  private static boolean isUserPath(String name, Object value) {
+    if ("jcr:path".equals(name) || "path".equals(name) || "userProfilePath".equals(name)) {
+      String s = String.valueOf(value);
+      if (s != null && s.length() > 4) {
+        if (s.charAt(0) == '/' && s.charAt(1) == '_') {
+          if (s.startsWith("/_user/") || s.startsWith("/_group/") || s.startsWith("a:")) {
+            return true;
+          }
         }
-        return false;
+      }
     }
+    return false;
+  }
 
 }

@@ -14,45 +14,45 @@ import java.text.ParseException;
 
 public class CalendarURI extends URI implements Serializable {
 
-    private static final long serialVersionUID = -20218593069459027L;
+  private static final long serialVersionUID = -20218593069459027L;
 
-    private Date etag;
+  private Date etag;
 
-    private enum JSON_PROPERTIES {
-        uri,
-        etag
+  private enum JSON_PROPERTIES {
+    uri,
+    etag
+  }
+
+  public CalendarURI(URI uri, Date etag) throws URIException {
+    super(uri.toString(), false);
+    this.etag = etag;
+  }
+
+  public CalendarURI(URI uri, String etag) throws URIException, ParseException {
+    super(uri.toString(), false);
+
+    try {
+      this.etag = new DateTime(new ISO8601Date(etag).getTime());
+    } catch (IllegalArgumentException ignored) {
+      this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
     }
 
-    public CalendarURI(URI uri, Date etag) throws URIException {
-        super(uri.toString(), false);
-        this.etag = etag;
-    }
+  }
 
-    public CalendarURI(URI uri, String etag) throws URIException, ParseException {
-        super(uri.toString(), false);
+  public CalendarURI(JSONObject json) throws JSONException, URIException {
+    super(json.getString(JSON_PROPERTIES.uri.toString()), false);
+    this.etag = new DateTime(new ISO8601Date(json.getString(JSON_PROPERTIES.etag.toString())).getTime());
+  }
 
-        try {
-            this.etag = new DateTime(new ISO8601Date(etag).getTime());
-        } catch ( IllegalArgumentException ignored ) {
-            this.etag = new DateTime(etag.replaceAll("\"", ""), "yyyyMMdd'T'HHmmss", true);
-        }
+  public JSONObject toJSON() throws JSONException, URIException {
+    JSONObject json = new JSONObject();
+    json.put(JSON_PROPERTIES.uri.toString(), getURI());
+    json.put(JSON_PROPERTIES.etag.toString(), DateUtils.iso8601(getEtag()));
+    return json;
+  }
 
-    }
-
-    public CalendarURI(JSONObject json) throws JSONException, URIException {
-        super(json.getString(JSON_PROPERTIES.uri.toString()), false);
-        this.etag = new DateTime(new ISO8601Date(json.getString(JSON_PROPERTIES.etag.toString())).getTime());
-    }
-
-    public JSONObject toJSON() throws JSONException, URIException {
-        JSONObject json = new JSONObject();
-        json.put(JSON_PROPERTIES.uri.toString(), getURI());
-        json.put(JSON_PROPERTIES.etag.toString(), DateUtils.iso8601(getEtag()));
-        return json;
-    }
-
-    public Date getEtag() {
-        return etag;
-    }
+  public Date getEtag() {
+    return etag;
+  }
 
 }

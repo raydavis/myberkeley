@@ -1,29 +1,29 @@
 {
-    "id":"b6455aa7-1cf4-4839-8a90-62dc352648f4",
-    "sakai:messagebox":"queue",
-    "category":"reminder",
-    "sendDate":"2011-01-16T12:16:59-01:00",
-    "sendState":"sent",
-    "dynamicListID":"/a/path/to/a/dynamic/list",
-    "uxState" : {
-        "validated" : true,
-        "eventHour" : 1,
-        "eventMin" : 2,
-        "eventAMPM" : 3
-    },
-    "calendarWrapper":{
-        "uri":"",
-        "etag":"2011-03-16T12:16:59-07:00",
-        "component":"VEVENT",
-        "isRequired":true,
-        "isArchived":false,
-        "isCompleted":false,
-        "icalData":{
-            "DTSTAMP":"2011-03-31T15:15:06-07:00",
-            "DTSTART":"2011-04-11T15:15:06-07:00",
-            "SUMMARY":"a test event",
-            "CATEGORIES":["MyBerkeley-Required","MyBerkeley-Archived"],
-            "DESCRIPTION":"this is the description, it is long enough to wrap at the ical specified standard 75th column"
-        }
+  "id":"b6455aa7-1cf4-4839-8a90-62dc352648f4",
+  "sakai:messagebox":"queue",
+  "category":"reminder",
+  "sendDate":"2011-01-16T12:16:59-01:00",
+  "sendState":"sent",
+  "dynamicListID":"/a/path/to/a/dynamic/list",
+  "uxState" : {
+    "validated" : true,
+    "eventHour" : 1,
+    "eventMin" : 2,
+    "eventAMPM" : 3
+  },
+  "calendarWrapper":{
+    "uri":"",
+    "etag":"2011-03-16T12:16:59-07:00",
+    "component":"VEVENT",
+    "isRequired":true,
+    "isArchived":false,
+    "isCompleted":false,
+    "icalData":{
+      "DTSTAMP":"2011-03-31T15:15:06-07:00",
+      "DTSTART":"2011-04-11T15:15:06-07:00",
+      "SUMMARY":"a test event",
+      "CATEGORIES":["MyBerkeley-Required","MyBerkeley-Archived"],
+      "DESCRIPTION":"this is the description, it is long enough to wrap at the ical specified standard 75th column"
     }
+  }
 }

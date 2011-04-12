@@ -28,60 +28,60 @@ import javax.servlet.http.HttpServletResponse;
 
 public class CreateNotificationServletTest extends NotificationTests {
 
-    private CreateNotificationServlet servlet;
+  private CreateNotificationServlet servlet;
 
-    @Before
-    public void setup() {
-        this.servlet = new CreateNotificationServlet();
-    }
+  @Before
+  public void setup() {
+    this.servlet = new CreateNotificationServlet();
+  }
 
-    @Test
-    public void badParam() throws ServletException, IOException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
+  @Test
+  public void badParam() throws ServletException, IOException {
+    SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+    SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
 
-        this.servlet.doPost(request, response);
-        verify(response).sendError(Mockito.eq(HttpServletResponse.SC_BAD_REQUEST),
-                Mockito.anyString());
-    }
+    this.servlet.doPost(request, response);
+    verify(response).sendError(Mockito.eq(HttpServletResponse.SC_BAD_REQUEST),
+            Mockito.anyString());
+  }
 
-    @Test
-    public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
-        SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-        SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
+  @Test
+  public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
+    SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
+    SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
 
-        String json = readNotificationFromFile();
-        when(request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
-                new ContainerRequestParameter(json, "utf-8"));
+    String json = readNotificationFromFile();
+    when(request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
+            new ContainerRequestParameter(json, "utf-8"));
 
-        // sparse store
-        Session session = mock(Session.class);
-        ContentManager contentManager = mock(ContentManager.class);
-        when(session.getContentManager()).thenReturn(contentManager);
-        ResourceResolver resolver = mock(ResourceResolver.class);
-        when(request.getResourceResolver()).thenReturn(resolver);
+    // sparse store
+    Session session = mock(Session.class);
+    ContentManager contentManager = mock(ContentManager.class);
+    when(session.getContentManager()).thenReturn(contentManager);
+    ResourceResolver resolver = mock(ResourceResolver.class);
+    when(request.getResourceResolver()).thenReturn(resolver);
 
-        // user's home dir
-        Resource resource = mock(Resource.class);
-        when(request.getResource()).thenReturn(resource);
-        when(resource.adaptTo(Content.class)).thenReturn(new Content("/_user/home", new HashMap<String, Object>()));
+    // user's home dir
+    Resource resource = mock(Resource.class);
+    when(request.getResource()).thenReturn(resource);
+    when(resource.adaptTo(Content.class)).thenReturn(new Content("/_user/home", new HashMap<String, Object>()));
 
-        javax.jcr.Session jcrSession = mock(javax.jcr.Session.class, Mockito.withSettings().extraInterfaces(SessionAdaptable.class));
-        when(((SessionAdaptable) jcrSession).getSession()).thenReturn(session);
-        when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(jcrSession);
+    javax.jcr.Session jcrSession = mock(javax.jcr.Session.class, Mockito.withSettings().extraInterfaces(SessionAdaptable.class));
+    when(((SessionAdaptable) jcrSession).getSession()).thenReturn(session);
+    when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(jcrSession);
 
-        AccessControlManager accessControlManager = mock(AccessControlManager.class);
-        when(session.getAccessControlManager()).thenReturn(accessControlManager);
+    AccessControlManager accessControlManager = mock(AccessControlManager.class);
+    when(session.getAccessControlManager()).thenReturn(accessControlManager);
 
-        String storePath = StorageClientUtils.newPath("/_user/home", Notification.STORE_NAME);
-        when(contentManager.get(storePath)).thenReturn(
-                new Content(storePath, new HashMap<String, Object>()));
+    String storePath = StorageClientUtils.newPath("/_user/home", Notification.STORE_NAME);
+    when(contentManager.get(storePath)).thenReturn(
+            new Content(storePath, new HashMap<String, Object>()));
 
-        String notificationPath = StorageClientUtils.newPath(storePath, "b6455aa7-1cf4-4839-8a90-62dc352648f4");
-        when(contentManager.get(notificationPath)).thenReturn(
-                new Content(notificationPath, new HashMap<String, Object>()));
+    String notificationPath = StorageClientUtils.newPath(storePath, "b6455aa7-1cf4-4839-8a90-62dc352648f4");
+    when(contentManager.get(notificationPath)).thenReturn(
+            new Content(notificationPath, new HashMap<String, Object>()));
 
-        this.servlet.doPost(request, response);
+    this.servlet.doPost(request, response);
 
-    }
+  }
 }

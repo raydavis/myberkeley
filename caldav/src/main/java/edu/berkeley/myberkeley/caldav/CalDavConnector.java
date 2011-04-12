@@ -44,7 +44,6 @@ import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
@@ -55,286 +54,286 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnector {
 
-    public static final Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
+  public static final Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
 
-    public static final Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
+  public static final Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
 
-    private static final Set<Integer> ALLOWABLE_HTTP_STATUS_CODES = new HashSet<Integer>(Arrays.asList(
-            HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_MULTI_STATUS));
+  private static final Set<Integer> ALLOWABLE_HTTP_STATUS_CODES = new HashSet<Integer>(Arrays.asList(
+          HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_MULTI_STATUS));
 
-    private final HttpClient client = new HttpClient();
+  private final HttpClient client = new HttpClient();
 
-    private final URI serverRoot;
+  private final URI serverRoot;
 
-    private final URI userHome;
+  private final URI userHome;
 
-    private final String username;
+  private final String username;
 
-    public CalDavConnector(String username, String password, URI serverRoot, URI userHome) {
-        HttpState httpState = new HttpState();
-        Credentials credentials = new UsernamePasswordCredentials(username, password);
-        httpState.setCredentials(AuthScope.ANY, credentials);
-        this.client.setState(httpState);
-        this.serverRoot = serverRoot;
-        this.userHome = userHome;
-        this.username = username;
-    }
+  public CalDavConnector(String username, String password, URI serverRoot, URI userHome) {
+    HttpState httpState = new HttpState();
+    Credentials credentials = new UsernamePasswordCredentials(username, password);
+    httpState.setCredentials(AuthScope.ANY, credentials);
+    this.client.setState(httpState);
+    this.serverRoot = serverRoot;
+    this.userHome = userHome;
+    this.username = username;
+  }
 
-    /**
-     * Returns the user's calendar entries (all of them) as a set of URIs
-     * by doing a PROPFIND on a user calendar home, eg:
-     * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
-     */
-    public List<CalendarURI> getCalendarUris() throws CalDavException, IOException {
-        List<CalendarURI> uris = new ArrayList<CalendarURI>();
-        try {
-            PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
-            MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
-            for (MultiStatusResponse response : responses) {
-                if (response.getHref().endsWith(".ics")) {
-                    Status[] status = response.getStatus();
-                    if (status.length == 1 && status[0].getStatusCode() == HttpServletResponse.SC_OK) {
-                        DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
-                        DavProperty etag = propSet.get(DavPropertyName.GETETAG);
-                        try {
-                            CalendarURI calUri = new CalendarURI(
-                                    new URI(this.serverRoot, response.getHref(), false),
-                                    etag.getValue().toString());
-                            uris.add(calUri);
-                        } catch (ParseException pe) {
-                            throw new CalDavException("Invalid etag date", pe);
-                        }
-                    }
-                }
-            }
-        } catch (DavException de) {
-            throw new CalDavException("DavException getting calendar URIs", de);
-        }
-        return uris;
-    }
-
-    /**
-     * Write the specified calendar and grant appropriate permissions on it to ownerID.
-     *
-     * @return The URI of the newly created calendar entry.
-     */
-    public CalendarURI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
-        return modifyCalendar(null, calendar, ownerID);
-    }
-
-    /**
-     * Write the specified calendar at the specified URI, deleting the previous entry if one already exists at the URI.
-     *
-     * @return The URI of the calendar entry.
-     */
-    public CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
-        if (uri == null) {
+  /**
+   * Returns the user's calendar entries (all of them) as a set of URIs
+   * by doing a PROPFIND on a user calendar home, eg:
+   * http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/
+   */
+  public List<CalendarURI> getCalendarUris() throws CalDavException, IOException {
+    List<CalendarURI> uris = new ArrayList<CalendarURI>();
+    try {
+      PropFindMethod propFind = executeMethod(new PropFindMethod(this.userHome.toString()));
+      MultiStatusResponse[] responses = propFind.getResponseBodyAsMultiStatus().getResponses();
+      for (MultiStatusResponse response : responses) {
+        if (response.getHref().endsWith(".ics")) {
+          Status[] status = response.getStatus();
+          if (status.length == 1 && status[0].getStatusCode() == HttpServletResponse.SC_OK) {
+            DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+            DavProperty etag = propSet.get(DavPropertyName.GETETAG);
             try {
-                uri = new CalendarURI(
-                        new URI(this.userHome, UUID.randomUUID() + ".ics", false), new DateTime());
-            } catch (URIException uie) {
-                throw new CalDavException("Unexpected URIException", uie);
+              CalendarURI calUri = new CalendarURI(
+                      new URI(this.serverRoot, response.getHref(), false),
+                      etag.getValue().toString());
+              uris.add(calUri);
+            } catch (ParseException pe) {
+              throw new CalDavException("Invalid etag date", pe);
             }
-        } else {
-            deleteCalendar(uri);
+          }
         }
-        PutMethod put = new PutMethod(uri.toString());
-        try {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Saving calendar data: " + calendar.toString());
-            }
-            put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
-        } catch (UnsupportedEncodingException uee) {
-            LOGGER.error("Got unsupported encoding exception", uee);
+      }
+    } catch (DavException de) {
+      throw new CalDavException("DavException getting calendar URIs", de);
+    }
+    return uris;
+  }
+
+  /**
+   * Write the specified calendar and grant appropriate permissions on it to ownerID.
+   *
+   * @return The URI of the newly created calendar entry.
+   */
+  public CalendarURI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
+    return modifyCalendar(null, calendar, ownerID);
+  }
+
+  /**
+   * Write the specified calendar at the specified URI, deleting the previous entry if one already exists at the URI.
+   *
+   * @return The URI of the calendar entry.
+   */
+  public CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
+    if (uri == null) {
+      try {
+        uri = new CalendarURI(
+                new URI(this.userHome, UUID.randomUUID() + ".ics", false), new DateTime());
+      } catch (URIException uie) {
+        throw new CalDavException("Unexpected URIException", uie);
+      }
+    } else {
+      deleteCalendar(uri);
+    }
+    PutMethod put = new PutMethod(uri.toString());
+    try {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Saving calendar data: " + calendar.toString());
+      }
+      put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
+    } catch (UnsupportedEncodingException uee) {
+      LOGGER.error("Got unsupported encoding exception", uee);
+    }
+    executeMethod(put);
+    restrictPermissions(uri, ownerID);
+    return uri;
+  }
+
+  /**
+   * Deletes a calendar entry at specified uri.
+   */
+  public void deleteCalendar(CalendarURI uri) throws CalDavException, IOException {
+    DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
+    executeMethod(deleteMethod);
+  }
+
+  /**
+   * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
+   */
+  public List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException, IOException {
+    if (uris.isEmpty()) {
+      return new ArrayList<CalendarWrapper>(0);
+    }
+    List<String> uriStrings = new ArrayList<String>(uris.size());
+    for (CalendarURI uri : uris) {
+      uriStrings.add(uri.toString());
+    }
+    ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);
+    return search(reportInfo);
+  }
+
+  public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
+    Filter vcalComp = new Filter("VCALENDAR");
+    Filter subcomponent = new Filter(criteria.getType().toString());
+    subcomponent.setTimeRange(new TimeRange(criteria.getStart(), criteria.getEnd()));
+    vcalComp.setCompFilter(Arrays.asList(subcomponent));
+
+    ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
+    List<CalendarWrapper> rawResults = search(reportInfo);
+    CalendarResultProcessor processor = new CalendarResultProcessor(rawResults, criteria);
+    return processor.processResults();
+  }
+
+  public boolean hasOverdueTasks() throws CalDavException, IOException {
+    ReportMethod report = null;
+
+    Filter vcalComp = new Filter("VCALENDAR");
+    Filter subcomponent = new Filter(Component.VTODO);
+    subcomponent.setTimeRange(new TimeRange(new DateTime(0), new DateTime()));
+    vcalComp.setCompFilter(Arrays.asList(subcomponent));
+    ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
+
+    try {
+      report = new ReportMethod(this.userHome.toString(), reportInfo);
+
+      ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
+      report.getRequestEntity().writeRequest(requestOut);
+      LOGGER.info("Doing calendar search for overdue tasks; Request body: " + requestOut.toString("utf-8"));
+
+      executeMethod(report);
+
+      MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
+      for (MultiStatusResponse response : multiStatus.getResponses()) {
+        DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+        DavProperty etag = propSet.get(DavPropertyName.GETETAG);
+        if (etag != null) {
+          return true;
         }
-        executeMethod(put);
-        restrictPermissions(uri, ownerID);
-        return uri;
+      }
+
+    } catch (DavException de) {
+      throw new CalDavException("Got a webdav exception", de);
+    } finally {
+      if (report != null) {
+        report.releaseConnection();
+      }
     }
 
-    /**
-     * Deletes a calendar entry at specified uri.
-     */
-    public void deleteCalendar(CalendarURI uri) throws CalDavException, IOException {
-        DeleteMethod deleteMethod = new DeleteMethod(uri.toString());
-        executeMethod(deleteMethod);
+    return false;
+  }
+
+  private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException, IOException {
+    ReportMethod report = null;
+    List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
+
+    try {
+      String reportURL = this.userHome.toString();
+      report = new ReportMethod(reportURL, reportInfo);
+
+      ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
+      report.getRequestEntity().writeRequest(requestOut);
+      LOGGER.info("Doing calendar search; Request body: " + requestOut.toString("utf-8"));
+
+      executeMethod(report);
+
+      MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
+      for (MultiStatusResponse response : multiStatus.getResponses()) {
+        DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
+        DavProperty etag = propSet.get(DavPropertyName.GETETAG);
+        DavProperty prop = propSet.get(
+                CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
+        if (prop != null) {
+          CalendarBuilder builder = new CalendarBuilder();
+          net.fortuna.ical4j.model.Calendar calendar = builder.build(
+                  new StringReader(prop.getValue().toString()));
+          calendars.add(new CalendarWrapper(
+                  calendar,
+                  new URI(this.serverRoot, response.getHref(), false),
+                  etag.getValue().toString()));
+        }
+      }
+    } catch (DavException de) {
+      throw new CalDavException("Got a webdav exception", de);
+    } catch (ParserException pe) {
+      throw new CalDavException("Invalid calendar data", pe);
+    } finally {
+      if (report != null) {
+        report.releaseConnection();
+      }
     }
+    return calendars;
+  }
 
-    /**
-     * Get calendar entries by their URIs. Use the output of #getCalendarUris as the input to this method.
-     */
-    public List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException, IOException {
-        if (uris.isEmpty()) {
-            return new ArrayList<CalendarWrapper>(0);
-        }
-        List<String> uriStrings = new ArrayList<String>(uris.size());
-        for (CalendarURI uri : uris) {
-            uriStrings.add(uri.toString());
-        }
-        ReportInfo reportInfo = new CalendarMultiGetReportInfo(new RequestCalendarData(), uriStrings);
-        return search(reportInfo);
+  private <T extends DavMethod> T executeMethod(T method) throws CalDavException, IOException {
+    try {
+      method.getParams().setSoTimeout(30000);
+      this.client.executeMethod(method);
+      logRequest(method);
+      checkStatus(method);
+    } catch (HttpClientError hce) {
+      throw new CalDavException("Error running " + method.getName(), hce);
+    } finally {
+      if (method != null) {
+        method.releaseConnection();
+      }
     }
+    return method;
+  }
 
-    public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
-        Filter vcalComp = new Filter("VCALENDAR");
-        Filter subcomponent = new Filter(criteria.getType().toString());
-        subcomponent.setTimeRange(new TimeRange(criteria.getStart(), criteria.getEnd()));
-        vcalComp.setCompFilter(Arrays.asList(subcomponent));
-
-        ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
-        List<CalendarWrapper> rawResults = search(reportInfo);
-        CalendarResultProcessor processor = new CalendarResultProcessor(rawResults, criteria);
-        return processor.processResults();
+  private void checkStatus(DavMethod request) throws BadRequestException, URIException {
+    if (!ALLOWABLE_HTTP_STATUS_CODES.contains(request.getStatusCode())) {
+      LOGGER.error(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
+              request.getStatusLine().toString());
+      throw new BadRequestException("Bad request on uri " + request.getURI() + "; statusLine=" +
+              request.getStatusLine().toString());
     }
+  }
 
-    public boolean hasOverdueTasks() throws CalDavException, IOException {
-        ReportMethod report = null;
-
-        Filter vcalComp = new Filter("VCALENDAR");
-        Filter subcomponent = new Filter(Component.VTODO);
-        subcomponent.setTimeRange(new TimeRange(new DateTime(0), new DateTime()));
-        vcalComp.setCompFilter(Arrays.asList(subcomponent));
-        ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
-
-        try {
-            report = new ReportMethod(this.userHome.toString(), reportInfo);
-
-            ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
-            report.getRequestEntity().writeRequest(requestOut);
-            LOGGER.info("Doing calendar search for overdue tasks; Request body: " + requestOut.toString("utf-8"));
-
-            executeMethod(report);
-
-            MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
-            for (MultiStatusResponse response : multiStatus.getResponses()) {
-                DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
-                DavProperty etag = propSet.get(DavPropertyName.GETETAG);
-                if (etag != null) {
-                    return true;
-                }
-            }
-
-        } catch ( DavException de ) {
-            throw new CalDavException("Got a webdav exception", de);
-        } finally {
-            if (report != null) {
-                report.releaseConnection();
-            }
-        }
-
-        return false;
+  private void logRequest(DavMethod request) {
+    try {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(request.getClass().getSimpleName() + " on uri " + request.getURI());
+      }
+    } catch (URIException uie) {
+      LOGGER.error("Got URIException when trying to log request", uie);
     }
-
-    private List<CalendarWrapper> search(ReportInfo reportInfo) throws CalDavException, IOException {
-        ReportMethod report = null;
-        List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
-
-        try {
-            String reportURL = this.userHome.toString();
-            report = new ReportMethod(reportURL, reportInfo);
-
-            ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
-            report.getRequestEntity().writeRequest(requestOut);
-            LOGGER.info("Doing calendar search; Request body: " + requestOut.toString("utf-8"));
-
-            executeMethod(report);
-
-            MultiStatus multiStatus = report.getResponseBodyAsMultiStatus();
-            for (MultiStatusResponse response : multiStatus.getResponses()) {
-                DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
-                DavProperty etag = propSet.get(DavPropertyName.GETETAG);
-                DavProperty prop = propSet.get(
-                        CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
-                if (prop != null) {
-                    CalendarBuilder builder = new CalendarBuilder();
-                    net.fortuna.ical4j.model.Calendar calendar = builder.build(
-                            new StringReader(prop.getValue().toString()));
-                    calendars.add(new CalendarWrapper(
-                            calendar,
-                            new URI(this.serverRoot, response.getHref(), false),
-                            etag.getValue().toString()));
-                }
-            }
-        } catch ( DavException de ) {
-            throw new CalDavException("Got a webdav exception", de);
-        } catch ( ParserException pe ) {
-            throw new CalDavException("Invalid calendar data", pe);
-        }
-        finally {
-            if (report != null) {
-                report.releaseConnection();
-            }
-        }
-        return calendars;
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Status: " + request.getStatusLine().toString());
+      LOGGER.debug("Response headers: ");
+      for (Header header : request.getResponseHeaders()) {
+        LOGGER.debug(header.getName() + ": " + header.getValue());
+      }
     }
+  }
 
-    private <T extends DavMethod> T executeMethod(T method) throws CalDavException, IOException {
-        try {
-            method.getParams().setSoTimeout(30000);
-            this.client.executeMethod(method);
-            logRequest(method);
-            checkStatus(method);
-        } catch (HttpClientError hce) {
-            throw new CalDavException("Error running " + method.getName(), hce);
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
-            }
-        }
-        return method;
+  private void restrictPermissions(CalendarURI uri, String ownerID) throws CalDavException {
+    // owner can only read and write, admin can do anything
+    Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
+    Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
+    Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
+    Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,
+            Privilege.PRIVILEGE_WRITE_CONTENT, Privilege.PRIVILEGE_WRITE_PROPERTIES};
+    AclProperty.Ace[] aces = new AclProperty.Ace[]{
+            AclProperty.createDenyAce(owner, new Privilege[]{Privilege.PRIVILEGE_ALL}, false, false, null),
+            AclProperty.createGrantAce(owner, ownerPrivs, false, false, null),
+            AclProperty.createGrantAce(admin, adminPrivs, false, false, null)
+    };
+    AclProperty acl = new AclProperty(aces);
+    AclMethod aclMethod;
+    try {
+      aclMethod = new AclMethod(uri.toString(), acl);
+      executeMethod(aclMethod);
+    } catch (IOException ioe) {
+      LOGGER.error("Got exception setting ACL", ioe);
     }
-
-    private void checkStatus(DavMethod request) throws BadRequestException, URIException {
-        if (!ALLOWABLE_HTTP_STATUS_CODES.contains(request.getStatusCode())) {
-            LOGGER.error(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
-                    request.getStatusLine().toString());
-            throw new BadRequestException("Bad request on uri " + request.getURI() + "; statusLine=" +
-                    request.getStatusLine().toString());
-        }
-    }
-
-    private void logRequest(DavMethod request) {
-        try {
-            if ( LOGGER.isDebugEnabled() ) {
-                LOGGER.debug(request.getClass().getSimpleName() + " on uri " + request.getURI());
-            }
-        } catch (URIException uie) {
-            LOGGER.error("Got URIException when trying to log request", uie);
-        }
-        if ( LOGGER.isDebugEnabled() ) {
-            LOGGER.debug("Status: " + request.getStatusLine().toString());
-            LOGGER.debug("Response headers: ");
-            for (Header header : request.getResponseHeaders()) {
-                LOGGER.debug(header.getName() + ": " + header.getValue());
-            }
-        }
-    }
-
-    private void restrictPermissions(CalendarURI uri, String ownerID) throws CalDavException {
-        // owner can only read and write, admin can do anything
-        Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
-        Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
-        Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
-        Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,
-                Privilege.PRIVILEGE_WRITE_CONTENT, Privilege.PRIVILEGE_WRITE_PROPERTIES};
-        AclProperty.Ace[] aces = new AclProperty.Ace[]{
-                AclProperty.createDenyAce(owner, new Privilege[]{Privilege.PRIVILEGE_ALL}, false, false, null),
-                AclProperty.createGrantAce(owner, ownerPrivs, false, false, null),
-                AclProperty.createGrantAce(admin, adminPrivs, false, false, null)
-        };
-        AclProperty acl = new AclProperty(aces);
-        AclMethod aclMethod;
-        try {
-            aclMethod = new AclMethod(uri.toString(), acl);
-            executeMethod(aclMethod);
-        } catch (IOException ioe) {
-            LOGGER.error("Got exception setting ACL", ioe);
-        }
-    }
+  }
 
 }

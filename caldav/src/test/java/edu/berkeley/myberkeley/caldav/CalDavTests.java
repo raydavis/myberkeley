@@ -26,103 +26,103 @@ import java.util.UUID;
 
 public abstract class CalDavTests extends Assert {
 
-    protected static final String RANDOM_ETAG = "20110316T191659Z-0";
+  protected static final String RANDOM_ETAG = "20110316T191659Z-0";
 
-    protected static final String MONTH_AFTER_RANDOM_ETAG = "20110416T191659Z-0";
+  protected static final String MONTH_AFTER_RANDOM_ETAG = "20110416T191659Z-0";
 
-    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
+  protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
 
-    protected CalDavConnector adminConnector;
+  protected CalDavConnector adminConnector;
 
-    protected void deleteAll() throws CalDavException {
-        try {
-            List<CalendarURI> uris = this.adminConnector.getCalendarUris();
-            for (CalendarURI uri : uris) {
-                this.adminConnector.deleteCalendar(uri);
-            }
-            assertTrue(this.adminConnector.getCalendarUris().isEmpty());
-        } catch (IOException ioe) {
-            LOGGER.error("Trouble contacting server", ioe);
-        }
+  protected void deleteAll() throws CalDavException {
+    try {
+      List<CalendarURI> uris = this.adminConnector.getCalendarUris();
+      for (CalendarURI uri : uris) {
+        this.adminConnector.deleteCalendar(uri);
+      }
+      assertTrue(this.adminConnector.getCalendarUris().isEmpty());
+    } catch (IOException ioe) {
+      LOGGER.error("Trouble contacting server", ioe);
     }
+  }
 
-    protected Calendar buildVevent(String summary) {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar c = new Calendar();
-        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        c.getProperties().add(Version.VERSION_2_0);
-        c.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        c.getComponents().add(tz);
-        DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
-        VEvent vevent = new VEvent(start,
-                new Dur(0, 1, 0, 0), summary);
-        vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
-                "specified standard 75th column"));
-        vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        c.getComponents().add(vevent);
-        return c;
-    }
+  protected Calendar buildVevent(String summary) {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar c = new Calendar();
+    c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    c.getProperties().add(Version.VERSION_2_0);
+    c.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    c.getComponents().add(tz);
+    DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+    VEvent vevent = new VEvent(start,
+            new Dur(0, 1, 0, 0), summary);
+    vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    c.getComponents().add(vevent);
+    return c;
+  }
 
-    protected Calendar buildVTodo(String summary) {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar calendar = new Calendar();
-        calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        calendar.getProperties().add(Version.VERSION_2_0);
-        calendar.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        calendar.getComponents().add(tz);
-        DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
-        VToDo vtodo = new VToDo(due, due, summary);
-        vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
-                "specified standard 75th column"));
-        vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
-        calendar.getComponents().add(vtodo);
-        return calendar;
-    }
+  protected Calendar buildVTodo(String summary) {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar calendar = new Calendar();
+    calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    calendar.getProperties().add(Version.VERSION_2_0);
+    calendar.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    calendar.getComponents().add(tz);
+    DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+    VToDo vtodo = new VToDo(due, due, summary);
+    vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+    vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
+    calendar.getComponents().add(vtodo);
+    return calendar;
+  }
 
-    protected Calendar buildOverdueTask(String summary) {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar calendar = new Calendar();
-        calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        calendar.getProperties().add(Version.VERSION_2_0);
-        calendar.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        calendar.getComponents().add(tz);
-        DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
-        VToDo vtodo = new VToDo(due, due, summary);
-        vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
-                "specified standard 75th column"));
-        vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
-        calendar.getComponents().add(vtodo);
-        return calendar;
-    }
+  protected Calendar buildOverdueTask(String summary) {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar calendar = new Calendar();
+    calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    calendar.getProperties().add(Version.VERSION_2_0);
+    calendar.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    calendar.getComponents().add(tz);
+    DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
+    VToDo vtodo = new VToDo(due, due, summary);
+    vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+    vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vtodo.getProperties().add(Status.VTODO_NEEDS_ACTION);
+    calendar.getComponents().add(vtodo);
+    return calendar;
+  }
 
-    protected Calendar buildPastEvent(String summary) {
-        CalendarBuilder builder = new CalendarBuilder();
-        Calendar c = new Calendar();
-        c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-        c.getProperties().add(Version.VERSION_2_0);
-        c.getProperties().add(CalScale.GREGORIAN);
-        TimeZoneRegistry registry = builder.getRegistry();
-        VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-        c.getComponents().add(tz);
-        DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * new Random().nextInt(28)));
-        VEvent vevent = new VEvent(start,
-                new Dur(0, 1, 0, 0), summary);
-        vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
-                "specified standard 75th column"));
-        vevent.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
-        vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
-        c.getComponents().add(vevent);
-        return c;
-    }
+  protected Calendar buildPastEvent(String summary) {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar c = new Calendar();
+    c.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    c.getProperties().add(Version.VERSION_2_0);
+    c.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    c.getComponents().add(tz);
+    DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * new Random().nextInt(28)));
+    VEvent vevent = new VEvent(start,
+            new Dur(0, 1, 0, 0), summary);
+    vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vevent.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+    vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    c.getComponents().add(vevent);
+    return c;
+  }
 
 }

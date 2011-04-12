@@ -12,29 +12,29 @@ import org.w3c.dom.Element;
 /**
  * Based on code found in "Introducing CalDAV (Part I and II)" at
  * http://blogs.nologin.es/rickyepoderi/index.php?/archives/15-Introducing-CalDAV-Part-II.html
+ *
  * @author ricky
  */
 public class CalendarQueryReport implements Report, DeltaVConstants {
-   public static final ReportType CALENDAR_QUERY = ReportType.register(
-            CalDavConstants.CALDAV_XML_CALENDAR_QUERY,
-            CalDavConstants.CALDAV_NAMESPACE,
-            CalendarMultiGetReport.class);
+  public static final ReportType CALENDAR_QUERY = ReportType.register(
+          CalDavConstants.CALDAV_XML_CALENDAR_QUERY,
+          CalDavConstants.CALDAV_NAMESPACE,
+          CalendarMultiGetReport.class);
 
-    public ReportType getType() {
-        return CALENDAR_QUERY;
-    }
+  public ReportType getType() {
+    return CALENDAR_QUERY;
+  }
 
-    public boolean isMultiStatusReport() {
-        return true;
-    }
+  public boolean isMultiStatusReport() {
+    return true;
+  }
 
-    public void init(DavResource dr, ReportInfo ri) throws DavException {
-    }
+  public void init(DavResource dr, ReportInfo ri) throws DavException {
+  }
 
-    public Element toXml(Document dcmnt) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+  public Element toXml(Document dcmnt) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 
-    
 
 }

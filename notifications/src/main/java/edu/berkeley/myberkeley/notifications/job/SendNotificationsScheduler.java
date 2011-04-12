@@ -22,38 +22,38 @@ import java.util.Map;
 @Service(value = SendNotificationsScheduler.class)
 public class SendNotificationsScheduler {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
 
-    @Reference
-    protected Repository repository;
+  @Reference
+  protected Repository repository;
 
-    @Reference
-    protected Scheduler scheduler;
+  @Reference
+  protected Scheduler scheduler;
 
-    @Reference
-    protected CalDavConnectorProvider provider;
+  @Reference
+  protected CalDavConnectorProvider provider;
 
-    @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds")
-    protected static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
+  @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds")
+  protected static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
 
-    protected final static String JOB_NAME = "sendNotificationsJob";
+  protected final static String JOB_NAME = "sendNotificationsJob";
 
-    protected void activate(ComponentContext componentContext) throws Exception {
-        Dictionary<?, ?> props = componentContext.getProperties();
-        Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
-        Map<String, Serializable> config = new HashMap<String, Serializable>();
-        final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.provider);
-        try {
-            LOGGER.debug("Activating SendNotificationsJob...");
-            this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
-        } catch (Exception e) {
-            LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
-        }
+  protected void activate(ComponentContext componentContext) throws Exception {
+    Dictionary<?, ?> props = componentContext.getProperties();
+    Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
+    Map<String, Serializable> config = new HashMap<String, Serializable>();
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.provider);
+    try {
+      LOGGER.debug("Activating SendNotificationsJob...");
+      this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
+    } catch (Exception e) {
+      LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
     }
+  }
 
-    protected void deactivate(ComponentContext componentContext) throws Exception {
-        LOGGER.debug("Removing SendNotificationsJob...");
-        this.scheduler.removeJob(JOB_NAME);
-    }
+  protected void deactivate(ComponentContext componentContext) throws Exception {
+    LOGGER.debug("Removing SendNotificationsJob...");
+    this.scheduler.removeJob(JOB_NAME);
+  }
 
 }

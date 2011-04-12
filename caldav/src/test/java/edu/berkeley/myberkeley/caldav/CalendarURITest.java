@@ -9,13 +9,13 @@ import org.junit.Test;
 
 public class CalendarURITest extends CalDavTests {
 
-    @Test
-    public void toJSONAndBackAgain() throws URIException, JSONException {
-        CalendarURI uri = new CalendarURI(new URI("/foo", false), new Date());
-        JSONObject json = uri.toJSON();
-        CalendarURI deserialized = new CalendarURI(json);
-        assertEquals(uri, deserialized);
-        assertEquals(uri.getEtag(), deserialized.getEtag());
-    }
+  @Test
+  public void toJSONAndBackAgain() throws URIException, JSONException {
+    CalendarURI uri = new CalendarURI(new URI("/foo", false), new Date());
+    JSONObject json = uri.toJSON();
+    CalendarURI deserialized = new CalendarURI(json);
+    assertEquals(uri, deserialized);
+    assertEquals(uri.getEtag(), deserialized.getEtag());
+  }
 
 }
