@@ -62,7 +62,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
   private static final long serialVersionUID = -1868784233373889299L;
 
-  public enum POST_PARAMS {
+  enum POST_PARAMS {
     notification
   }
 
