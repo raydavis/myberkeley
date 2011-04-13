@@ -112,8 +112,8 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
     Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
-    firstRecip.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(firstRecip);
+    firstRecip.setProperty("value", "chris@media.berkeley.edu");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(firstRecip);
 
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);
@@ -125,8 +125,8 @@ public class NotificationEmailSenderTest extends NotificationTests {
     List<String> recips = Arrays.asList("user@foo.com");
     Content badSender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
-    badSender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "not an email");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(badSender);
+    badSender.setProperty("value", "not an email");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(badSender);
     this.sender.buildEmail(this.notification, recips, this.contentManager);
   }
 
@@ -135,8 +135,8 @@ public class NotificationEmailSenderTest extends NotificationTests {
     List<String> recips = Arrays.asList("chris@media.berkeley.edu", "not.an.email");
     Content sender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
-    sender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(sender);
+    sender.setProperty("value", "chris@media.berkeley.edu");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(sender);
 
     MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
     assertNotNull(email);

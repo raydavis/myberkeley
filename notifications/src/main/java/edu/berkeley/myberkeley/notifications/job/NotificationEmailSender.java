@@ -26,6 +26,7 @@ import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
@@ -78,6 +79,7 @@ public class NotificationEmailSender {
   Integer retryInterval;
   boolean sendEmail;
 
+  @Reference
   Repository repository;
 
   private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
@@ -137,9 +139,13 @@ public class NotificationEmailSender {
   }
 
   private String userIDToEmail(ContentManager contentManager, String id) throws StorageClientException, AccessDeniedException {
-    String recipientPath = LitePersonalUtils.getProfilePath(id);
-    Content content = contentManager.get(recipientPath);
-    return LitePersonalUtils.getPrimaryEmailAddress(content);
+    String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + "/basic/elements/email";
+    Content content = contentManager.get(recipBasicProfilePath);
+    if ( content != null ) {
+      // TODO is there a better way to get emails out of profiles?
+      return (String) content.getProperty("value");
+    }
+    return null;
   }
 
   MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails, ContentManager contentManager)
