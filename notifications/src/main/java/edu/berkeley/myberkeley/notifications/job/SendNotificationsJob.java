@@ -29,7 +29,6 @@ import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
@@ -124,8 +123,8 @@ public class SendNotificationsJob implements Job {
 
     try {
 
-      JSONObject json = new JSONObject((String) result.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString()));
-      CalendarWrapper wrapper = CalendarWrapper.fromJSON(json);
+      Notification notification = new Notification(result);
+      CalendarWrapper wrapper = notification.getWrapper();
 
       JSONArray urisJson = new JSONArray();
 

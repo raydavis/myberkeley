@@ -118,6 +118,25 @@ public class Notification {
     this.uxState = uxState;
   }
 
+  public Notification(Content content) throws JSONException, CalDavException {
+    this.id = UUID.fromString((String) content.getProperty(JSON_PROPERTIES.id.toString()));
+    this.wrapper = CalendarWrapper.fromJSON(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
+    this.sendDate = new ISO8601Date((String) content.getProperty(JSON_PROPERTIES.sendDate.toString()));
+    this.dynamicListID = (String) content.getProperty(JSON_PROPERTIES.dynamicListID.toString());
+    this.category = CATEGORY.valueOf((String) content.getProperty(JSON_PROPERTIES.category.toString()));
+
+    // set defaults for optional properties
+    JSONObject uxState = new JSONObject();
+    // set optional properties
+    try {
+      uxState = new JSONObject((String) content.getProperty(JSON_PROPERTIES.uxState.toString()));
+    } catch (JSONException ignored) {
+    }
+    this.sendState = SEND_STATE.valueOf((String) content.getProperty(JSON_PROPERTIES.sendState.toString()));
+    this.messageBox = MESSAGEBOX.valueOf((String) content.getProperty(JSON_PROPERTIES.messageBox.toString()));
+    this.uxState = uxState;
+  }
+
   public UUID getId() {
     return id;
   }
@@ -171,4 +190,35 @@ public class Notification {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    Notification that = (Notification) o;
+
+    if (category != that.category) return false;
+    if (dynamicListID != null ? !dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null) return false;
+    if (id != null ? !id.equals(that.id) : that.id != null) return false;
+    if (messageBox != that.messageBox) return false;
+    if (sendDate != null ? !sendDate.equals(that.sendDate) : that.sendDate != null) return false;
+    if (sendState != that.sendState) return false;
+    if (wrapper != null ? !wrapper.equals(that.wrapper) : that.wrapper != null) return false;
+    if (uxState != null ? !uxState.toString().equals(that.uxState.toString()) : that.uxState != null) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = id != null ? id.hashCode() : 0;
+    result = 31 * result + (sendDate != null ? sendDate.hashCode() : 0);
+    result = 31 * result + (sendState != null ? sendState.hashCode() : 0);
+    result = 31 * result + (messageBox != null ? messageBox.hashCode() : 0);
+    result = 31 * result + (dynamicListID != null ? dynamicListID.hashCode() : 0);
+    result = 31 * result + (wrapper != null ? wrapper.hashCode() : 0);
+    result = 31 * result + (category != null ? category.hashCode() : 0);
+    result = 31 * result + (uxState != null ? uxState.hashCode() : 0);
+    return result;
+  }
 }

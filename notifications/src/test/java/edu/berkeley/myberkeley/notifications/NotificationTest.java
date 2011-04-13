@@ -59,4 +59,16 @@ public class NotificationTest extends NotificationTests {
     assertNotNull(wrapper);
     assertTrue(wrapper.isRequired());
   }
+
+  @Test
+  public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException {
+    String originalJSON = readNotificationFromFile();
+    Notification notification = new Notification(new JSONObject(originalJSON));
+    Content content = new Content("/some/path", ImmutableMap.of(
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) Notification.RESOURCETYPE));
+    notification.toContent("/some", content);
+    Notification notificationFromContent = new Notification(content);
+    assertEquals(notification, notificationFromContent);
+  }
 }
