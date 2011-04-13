@@ -30,7 +30,9 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.SessionAdaptable;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
@@ -50,6 +52,16 @@ public class CreateNotificationServletTest extends NotificationTests {
 
   private CreateNotificationServlet servlet;
 
+  @Mock
+  private SlingHttpServletRequest request;
+
+  @Mock
+  private SlingHttpServletResponse response;
+
+  public CreateNotificationServletTest() {
+    MockitoAnnotations.initMocks(this);
+  }
+
   @Before
   public void setup() {
     this.servlet = new CreateNotificationServlet();
@@ -57,9 +69,6 @@ public class CreateNotificationServletTest extends NotificationTests {
 
   @Test
   public void badParam() throws ServletException, IOException {
-    SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-    SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
-
     this.servlet.doPost(request, response);
     verify(response).sendError(Mockito.eq(HttpServletResponse.SC_BAD_REQUEST),
             Mockito.anyString());
@@ -67,9 +76,6 @@ public class CreateNotificationServletTest extends NotificationTests {
 
   @Test
   public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
-    SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-    SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
-
     String json = readNotificationFromFile();
     when(request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
             new ContainerRequestParameter(json, "utf-8"));

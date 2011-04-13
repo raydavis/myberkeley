@@ -29,6 +29,8 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
 
@@ -41,6 +43,13 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
 
   private SendNotificationsScheduler sender;
 
+  @Mock
+  private ComponentContext context;
+
+  public SendNotificationsSchedulerTest() {
+    MockitoAnnotations.initMocks(this);
+  }
+
   @Before
   public void setup() {
     this.sender = new SendNotificationsScheduler();
@@ -50,7 +59,6 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
 
   @Test
   public void activate() throws Exception {
-    ComponentContext context = mock(ComponentContext.class);
     Dictionary<String, Long> dictionary = new Hashtable<String, Long>();
     dictionary.put(SendNotificationsScheduler.PROP_POLL_INTERVAL_SECONDS, 60L);
     when(context.getProperties()).thenReturn(dictionary);
@@ -61,7 +69,6 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
 
   @Test
   public void deactivate() throws Exception {
-    ComponentContext context = mock(ComponentContext.class);
     this.sender.deactivate(context);
     verify(this.sender.scheduler).removeJob(SendNotificationsScheduler.JOB_NAME);
   }

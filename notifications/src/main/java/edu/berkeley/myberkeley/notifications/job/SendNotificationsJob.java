@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,10 +54,13 @@ public class SendNotificationsJob implements Job {
 
   final Repository repository;
 
+  final NotificationEmailSender emailSender;
+
   final CalDavConnectorProvider calDavConnectorProvider;
 
-  public SendNotificationsJob(Repository repository, CalDavConnectorProvider calDavConnectorProvider) {
+  public SendNotificationsJob(Repository repository, NotificationEmailSender emailSender, CalDavConnectorProvider calDavConnectorProvider) {
     this.repository = repository;
+    this.emailSender = emailSender;
     this.calDavConnectorProvider = calDavConnectorProvider;
   }
 
@@ -134,6 +138,10 @@ public class SendNotificationsJob implements Job {
       wrapper.generateNewUID();
       CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), "vbede");
       urisJson.put(uri.toJSON());
+
+      // send email
+      // TODO get real user ids of recips instead of hardcoding
+      this.emailSender.send(notification, Arrays.asList("904715"));
 
       // mark the notification as archived in our repo
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());

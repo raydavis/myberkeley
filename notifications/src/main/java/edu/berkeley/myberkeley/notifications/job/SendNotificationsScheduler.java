@@ -51,6 +51,9 @@ public class SendNotificationsScheduler {
   protected Scheduler scheduler;
 
   @Reference
+  protected NotificationEmailSender emailSender;
+
+  @Reference
   protected CalDavConnectorProvider provider;
 
   @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds")
@@ -62,7 +65,7 @@ public class SendNotificationsScheduler {
     Dictionary<?, ?> props = componentContext.getProperties();
     Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
-    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.provider);
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);

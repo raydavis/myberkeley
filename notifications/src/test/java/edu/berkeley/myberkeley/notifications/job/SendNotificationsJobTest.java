@@ -41,6 +41,7 @@ import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.mockito.MockitoAnnotations;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
@@ -61,7 +62,8 @@ public class SendNotificationsJobTest extends NotificationTests {
   public void setup() {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
-    this.job = new SendNotificationsJob(repo, provider);
+    NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
+    this.job = new SendNotificationsJob(repo, emailSender, provider);
   }
 
   @Test
