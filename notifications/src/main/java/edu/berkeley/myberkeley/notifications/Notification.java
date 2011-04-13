@@ -56,6 +56,7 @@ public class Notification {
 
   public enum JSON_PROPERTIES {
     id,
+    senderID,
     sendDate,
     sendState,
     messageBox {
@@ -73,6 +74,8 @@ public class Notification {
 
   private UUID id;
 
+  private String senderID;
+
   private ISO8601Date sendDate;
 
   private SEND_STATE sendState;
@@ -89,6 +92,7 @@ public class Notification {
 
   public Notification(JSONObject json) throws JSONException, CalDavException {
     this.id = getNotificationID(json);
+    this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
     this.wrapper = CalendarWrapper.fromJSON(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
     this.sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
@@ -120,6 +124,7 @@ public class Notification {
 
   public Notification(Content content) throws JSONException, CalDavException {
     this.id = UUID.fromString((String) content.getProperty(JSON_PROPERTIES.id.toString()));
+    this.senderID = (String) content.getProperty(JSON_PROPERTIES.senderID.toString());
     this.wrapper = CalendarWrapper.fromJSON(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
     this.sendDate = new ISO8601Date((String) content.getProperty(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = (String) content.getProperty(JSON_PROPERTIES.dynamicListID.toString());
@@ -139,6 +144,10 @@ public class Notification {
 
   public UUID getId() {
     return id;
+  }
+
+  public String getSenderID() {
+    return senderID;
   }
 
   public ISO8601Date getSendDate() {
@@ -172,6 +181,7 @@ public class Notification {
   public void toContent(String storePath, Content content) throws JSONException {
     content.setProperty("sakai:messagestore", storePath);
     content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
+    content.setProperty(JSON_PROPERTIES.senderID.toString(), this.getSenderID());
     content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());
     content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());
     content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
@@ -200,6 +210,7 @@ public class Notification {
     if (category != that.category) return false;
     if (dynamicListID != null ? !dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null) return false;
     if (id != null ? !id.equals(that.id) : that.id != null) return false;
+    if (senderID != null ? !senderID.equals(that.senderID) : that.senderID != null) return false;
     if (messageBox != that.messageBox) return false;
     if (sendDate != null ? !sendDate.equals(that.sendDate) : that.sendDate != null) return false;
     if (sendState != that.sendState) return false;
@@ -212,6 +223,7 @@ public class Notification {
   @Override
   public int hashCode() {
     int result = id != null ? id.hashCode() : 0;
+    result = 31 * result + (senderID != null ? senderID.hashCode() : 0);
     result = 31 * result + (sendDate != null ? sendDate.hashCode() : 0);
     result = 31 * result + (sendState != null ? sendState.hashCode() : 0);
     result = 31 * result + (messageBox != null ? messageBox.hashCode() : 0);

@@ -40,6 +40,7 @@ public class NotificationTest extends NotificationTests {
     assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
+    assertNotNull(notification.getSenderID());
   }
 
   @Test
