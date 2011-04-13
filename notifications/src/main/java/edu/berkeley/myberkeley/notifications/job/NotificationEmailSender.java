@@ -21,13 +21,12 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import edu.berkeley.myberkeley.notifications.Notification;
+import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
 import org.sakaiproject.nakamura.api.lite.Repository;
@@ -40,16 +39,26 @@ import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Component(label = "MyBerkeley :: NotificationEmailSender",
         description = "Sends emails for notifications",
         immediate = true, metatype = true)
 @Service(value = NotificationEmailSender.class)
 public class NotificationEmailSender {
+
+  // Subject prefixes (each of them must end with a space character)
+  private static final String SUBJECT_PREFIX_TASK = "[myB-task] ";
+  private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[myB-task-required] ";
+  private static final String SUBJECT_PREFIX_EVENT = "[myB-event] ";
+  private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
 
   @Property(value = "localhost")
   static final String SMTP_SERVER = "sakai.smtp.server";
@@ -62,11 +71,11 @@ public class NotificationEmailSender {
   @Property(boolValue = false, label = "%sakai.email.sendemail.name", description = "%sakai.email.sendemail.description")
   static final String SEND_EMAIL = "notifications.sendEmail";
 
-  private Integer maxRetries;
-  private Integer smtpPort;
-  private String smtpServer;
-  private Integer retryInterval;
-  private boolean sendEmail;
+  Integer maxRetries;
+  Integer smtpPort;
+  String smtpServer;
+  Integer retryInterval;
+  boolean sendEmail;
 
   Repository repository;
 
@@ -89,11 +98,13 @@ public class NotificationEmailSender {
     Session adminSession = null;
     try {
       adminSession = this.repository.loginAdministrative();
-      List<String> emails = getEmails(adminSession, recipientIDs);
-
+      List<String> recipAddresses = getRecipientEmails(adminSession, recipientIDs);
+      MultiPartEmail email = buildEmail(notification, recipAddresses, adminSession.getContentManager());
     } catch (AccessDeniedException e) {
       LOGGER.error("NotificationEmailSender failed", e);
     } catch (StorageClientException e) {
+      LOGGER.error("NotificationEmailSender failed", e);
+    } catch (EmailException e) {
       LOGGER.error("NotificationEmailSender failed", e);
     } finally {
       if (adminSession != null) {
@@ -106,31 +117,84 @@ public class NotificationEmailSender {
     }
   }
 
-  private List<String> getEmails(Session adminSession, List<String> recipientIDs) throws StorageClientException, AccessDeniedException {
+  private List<String> getRecipientEmails(Session adminSession, List<String> recipientIDs) throws StorageClientException, AccessDeniedException {
     List<String> emails = new ArrayList<String>();
     ContentManager contentManager = adminSession.getContentManager();
     for (String id : recipientIDs) {
-      String recipientPath = LitePersonalUtils.getProfilePath(id);
-      Content content = contentManager.get(recipientPath);
-      String email = LitePersonalUtils.getPrimaryEmailAddress(content);
-      emails.add(email);
-
+      emails.add(userIDToEmail(contentManager, id));
     }
-    LOGGER.info("Email addresses: " + emails);
+    LOGGER.info("Recipient email addresses: " + emails);
     return emails;
   }
 
-  MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails) throws EmailException {
+  private String userIDToEmail(ContentManager contentManager, String id) throws StorageClientException, AccessDeniedException {
+    String recipientPath = LitePersonalUtils.getProfilePath(id);
+    Content content = contentManager.get(recipientPath);
+    return LitePersonalUtils.getPrimaryEmailAddress(content);
+  }
+
+  MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails, ContentManager contentManager)
+          throws StorageClientException, AccessDeniedException, EmailException {
     MultiPartEmail email = new MultiPartEmail();
     for (String recipient : recipientEmails) {
       try {
         email.addBcc(recipient);
       } catch (EmailException e) {
         // just skip invalid email addrs
-        LOGGER.warn("Invalid email address [" + recipient + "] :" + e);
+        LOGGER.warn("Invalid recipient email address [" + recipient + "] :" + e);
       }
     }
+
+    try {
+      email.setFrom(userIDToEmail(contentManager, notification.getSenderID()));
+    } catch (EmailException e) {
+      LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
+      throw e;
+    }
+
+    // TODO convert calendarWrapper to a nice email
+    email.setMsg(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
+
+    String subjectPrefix = getSubjectPrefix(notification);
+    email.setSubject(subjectPrefix + " " + notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
+
+    email.setDebug(true);
+    email.setSmtpPort(this.smtpPort);
+    email.setHostName(this.smtpServer);
+    email.buildMimeMessage();
+    logEmail(email.getMimeMessage());
     return email;
   }
+
+  private String getSubjectPrefix(Notification notification) {
+    if (notification.getWrapper().isRequired()) {
+      if (notification.getWrapper().getComponent() instanceof VToDo) {
+        return SUBJECT_PREFIX_TASK_REQUIRED;
+      } else {
+        return SUBJECT_PREFIX_EVENT_REQUIRED;
+      }
+    } else {
+      if (notification.getWrapper().getComponent() instanceof VToDo) {
+        return SUBJECT_PREFIX_TASK;
+      } else {
+        return SUBJECT_PREFIX_EVENT;
+      }
+    }
+  }
+
+  private void logEmail(MimeMessage mimeMessage) {
+    if (LOGGER.isInfoEnabled() && mimeMessage != null) {
+      try {
+        ByteArrayOutputStream mout = new ByteArrayOutputStream();
+        mimeMessage.writeTo(new FilterOutputStream(mout));
+        LOGGER.info(mout.toString());
+      } catch (IOException e) {
+        LOGGER.error("failed to log email", e);
+      } catch (MessagingException e) {
+        LOGGER.error("failed to log email", e);
+      }
+    }
+  }
+
 }
 

@@ -46,7 +46,6 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -61,6 +60,9 @@ public class NotificationEmailSenderTest extends NotificationTests {
   @Mock
   private ComponentContext componentContext;
 
+  @Mock
+  private ContentManager contentManager;
+
   public NotificationEmailSenderTest() {
     MockitoAnnotations.initMocks(this);
   }
@@ -71,6 +73,11 @@ public class NotificationEmailSenderTest extends NotificationTests {
     this.sender.repository = mock(Repository.class);
     this.notification = new Notification(new JSONObject(readNotificationFromFile()));
 
+    this.sender.smtpServer = "localhost";
+    this.sender.smtpPort = 25;
+    this.sender.maxRetries = 1;
+    this.sender.retryInterval = 60;
+    this.sender.sendEmail = true;
   }
 
   @Test
@@ -79,10 +86,16 @@ public class NotificationEmailSenderTest extends NotificationTests {
     dictionary.put(NotificationEmailSender.MAX_RETRIES, 10);
     dictionary.put(NotificationEmailSender.RETRY_INTERVAL, 5);
     dictionary.put(NotificationEmailSender.SEND_EMAIL, false);
-    dictionary.put(NotificationEmailSender.SMTP_PORT, 25);
-    dictionary.put(NotificationEmailSender.SMTP_SERVER, "localhost");
+    dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
+    dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
     when(componentContext.getProperties()).thenReturn(dictionary);
     this.sender.activate(componentContext);
+
+    assertEquals(this.sender.maxRetries, (Integer) 10);
+    assertEquals(this.sender.retryInterval, (Integer) 5);
+    assertEquals(this.sender.sendEmail, false);
+    assertEquals(this.sender.smtpPort, (Integer) 27);
+    assertEquals(this.sender.smtpServer, "anotherhost");
   }
 
   @Test
@@ -94,24 +107,39 @@ public class NotificationEmailSenderTest extends NotificationTests {
   public void send() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
     Session adminSession = mock(Session.class);
     when(this.sender.repository.loginAdministrative()).thenReturn(adminSession);
-    ContentManager cm = mock(ContentManager.class);
-    when(adminSession.getContentManager()).thenReturn(cm);
+    when(adminSession.getContentManager()).thenReturn(this.contentManager);
 
     Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     firstRecip.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "user@foo");
-    when(cm.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(firstRecip);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(firstRecip);
 
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);
 
   }
 
+  @Test(expected = EmailException.class)
+  public void buildEmailWithBogusSender() throws EmailException, StorageClientException, AccessDeniedException {
+    List<String> recips = Arrays.asList("user@foo.com");
+    Content badSender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) "user"));
+    badSender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "not an email");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(badSender);
+    this.sender.buildEmail(this.notification, recips, this.contentManager);
+  }
+
   @Test
-  public void buildEmail() throws EmailException {
+  public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException {
     List<String> recips = Arrays.asList("user@foo.com", "not.an.email");
-    MultiPartEmail email = this.sender.buildEmail(this.notification, recips);
+    Content sender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) "user"));
+    sender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "sender@myberkeley.edu");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(sender);
+
+    MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
     assertNotNull(email);
+
   }
 
 

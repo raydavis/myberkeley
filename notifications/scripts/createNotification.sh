@@ -3,6 +3,7 @@
 JSON='
 {
     "sakai:messagebox":"queue",
+    "senderID" : "904715",
     "category":"reminder",
     "sendDate":"2011-02-02T12:16:59-01:00",
     "sendState":"pending",
