@@ -59,6 +59,7 @@ public class NotificationEmailSender {
   private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[myB-task-required] ";
   private static final String SUBJECT_PREFIX_EVENT = "[myB-event] ";
   private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
+  private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
   @Property(value = "localhost")
   static final String SMTP_SERVER = "sakai.smtp.server";
@@ -100,13 +101,21 @@ public class NotificationEmailSender {
       adminSession = this.repository.loginAdministrative();
       List<String> recipAddresses = getRecipientEmails(adminSession, recipientIDs);
       MultiPartEmail email = buildEmail(notification, recipAddresses, adminSession.getContentManager());
+      if ( this.sendEmail ) {
+        String messageID = email.sendMimeMessage();
+        LOGGER.info("Sent real email with outgoing message ID = " + messageID);
+      } else {
+        LOGGER.info("sendEmail is false, not sending mail");
+      }
     } catch (AccessDeniedException e) {
       LOGGER.error("NotificationEmailSender failed", e);
     } catch (StorageClientException e) {
       LOGGER.error("NotificationEmailSender failed", e);
     } catch (EmailException e) {
       LOGGER.error("NotificationEmailSender failed", e);
-    } finally {
+    } catch (MessagingException e) {
+      LOGGER.error("NotificationEmailSender failed", e);
+    }finally {
       if (adminSession != null) {
         try {
           adminSession.logout();
@@ -134,7 +143,7 @@ public class NotificationEmailSender {
   }
 
   MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails, ContentManager contentManager)
-          throws StorageClientException, AccessDeniedException, EmailException {
+          throws StorageClientException, AccessDeniedException, EmailException, MessagingException {
     MultiPartEmail email = new MultiPartEmail();
     for (String recipient : recipientEmails) {
       try {
@@ -162,6 +171,9 @@ public class NotificationEmailSender {
     email.setSmtpPort(this.smtpPort);
     email.setHostName(this.smtpServer);
     email.buildMimeMessage();
+    // adding this special recipient here as header directly, otherwise address parsing will fail
+    email.getMimeMessage().addHeader("To", REMINDER_RECIPIENT);
+
     logEmail(email.getMimeMessage());
     return email;
   }
@@ -187,7 +199,7 @@ public class NotificationEmailSender {
       try {
         ByteArrayOutputStream mout = new ByteArrayOutputStream();
         mimeMessage.writeTo(new FilterOutputStream(mout));
-        LOGGER.info(mout.toString());
+        LOGGER.info("Email content = " + mout.toString());
       } catch (IOException e) {
         LOGGER.error("failed to log email", e);
       } catch (MessagingException e) {

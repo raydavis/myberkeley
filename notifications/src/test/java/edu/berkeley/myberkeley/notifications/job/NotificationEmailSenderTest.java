@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import javax.mail.MessagingException;
 
 public class NotificationEmailSenderTest extends NotificationTests {
 
@@ -77,7 +78,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
     this.sender.smtpPort = 25;
     this.sender.maxRetries = 1;
     this.sender.retryInterval = 60;
-    this.sender.sendEmail = true;
+    this.sender.sendEmail = false;
   }
 
   @Test
@@ -85,7 +86,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
     Dictionary<String, Object> dictionary = new Hashtable<String, Object>();
     dictionary.put(NotificationEmailSender.MAX_RETRIES, 10);
     dictionary.put(NotificationEmailSender.RETRY_INTERVAL, 5);
-    dictionary.put(NotificationEmailSender.SEND_EMAIL, false);
+    dictionary.put(NotificationEmailSender.SEND_EMAIL, true);
     dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
     dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
     when(componentContext.getProperties()).thenReturn(dictionary);
@@ -93,7 +94,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
     assertEquals(this.sender.maxRetries, (Integer) 10);
     assertEquals(this.sender.retryInterval, (Integer) 5);
-    assertEquals(this.sender.sendEmail, false);
+    assertTrue(this.sender.sendEmail);
     assertEquals(this.sender.smtpPort, (Integer) 27);
     assertEquals(this.sender.smtpServer, "anotherhost");
   }
@@ -111,7 +112,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
     Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
-    firstRecip.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "user@foo");
+    firstRecip.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "chris@media.berkeley.edu");
     when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(firstRecip);
 
     List<String> recipients = Arrays.asList("904715");
@@ -120,7 +121,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
   }
 
   @Test(expected = EmailException.class)
-  public void buildEmailWithBogusSender() throws EmailException, StorageClientException, AccessDeniedException {
+  public void buildEmailWithBogusSender() throws EmailException, StorageClientException, AccessDeniedException, MessagingException {
     List<String> recips = Arrays.asList("user@foo.com");
     Content badSender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
@@ -130,11 +131,11 @@ public class NotificationEmailSenderTest extends NotificationTests {
   }
 
   @Test
-  public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException {
-    List<String> recips = Arrays.asList("user@foo.com", "not.an.email");
+  public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException, MessagingException {
+    List<String> recips = Arrays.asList("chris@media.berkeley.edu", "not.an.email");
     Content sender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
-    sender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "sender@myberkeley.edu");
+    sender.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "chris@media.berkeley.edu");
     when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(sender);
 
     MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
