@@ -21,19 +21,42 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
+import com.google.common.collect.ImmutableMap;
+import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.notifications.Notification;
+import edu.berkeley.myberkeley.notifications.NotificationTests;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.MultiPartEmail;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
+import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.osgi.service.component.ComponentContext;
+import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 
-public class NotificationEmailSenderTest {
+public class NotificationEmailSenderTest extends NotificationTests {
 
   private NotificationEmailSender sender;
+
+  private Notification notification;
 
   @Mock
   private ComponentContext componentContext;
@@ -43,8 +66,11 @@ public class NotificationEmailSenderTest {
   }
 
   @Before
-  public void setup() {
+  public void setup() throws IOException, JSONException, CalDavException {
     this.sender = new NotificationEmailSender();
+    this.sender.repository = mock(Repository.class);
+    this.notification = new Notification(new JSONObject(readNotificationFromFile()));
+
   }
 
   @Test
@@ -63,5 +89,30 @@ public class NotificationEmailSenderTest {
   public void deactivate() throws Exception {
     this.sender.deactivate(componentContext);
   }
+
+  @Test
+  public void send() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
+    Session adminSession = mock(Session.class);
+    when(this.sender.repository.loginAdministrative()).thenReturn(adminSession);
+    ContentManager cm = mock(ContentManager.class);
+    when(adminSession.getContentManager()).thenReturn(cm);
+
+    Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) "user"));
+    firstRecip.setProperty(LitePersonalUtils.PROP_EMAIL_ADDRESS, "user@foo");
+    when(cm.get(LitePersonalUtils.getProfilePath("904715"))).thenReturn(firstRecip);
+
+    List<String> recipients = Arrays.asList("904715");
+    this.sender.send(this.notification, recipients);
+
+  }
+
+  @Test
+  public void buildEmail() throws EmailException {
+    List<String> recips = Arrays.asList("user@foo.com", "not.an.email");
+    MultiPartEmail email = this.sender.buildEmail(this.notification, recips);
+    assertNotNull(email);
+  }
+
 
 }

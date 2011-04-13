@@ -20,14 +20,30 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.notifications.Notification;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.MultiPartEmail;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
+import org.sakaiproject.nakamura.api.lite.ClientPoolException;
+import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
 
 @Component(label = "MyBerkeley :: NotificationEmailSender",
         description = "Sends emails for notifications",
@@ -52,6 +68,8 @@ public class NotificationEmailSender {
   private Integer retryInterval;
   private boolean sendEmail;
 
+  Repository repository;
+
   private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
 
   protected void activate(ComponentContext componentContext) throws Exception {
@@ -67,4 +85,52 @@ public class NotificationEmailSender {
     // nothing to do
   }
 
+  public void send(Notification notification, List<String> recipientIDs) {
+    Session adminSession = null;
+    try {
+      adminSession = this.repository.loginAdministrative();
+      List<String> emails = getEmails(adminSession, recipientIDs);
+
+    } catch (AccessDeniedException e) {
+      LOGGER.error("NotificationEmailSender failed", e);
+    } catch (StorageClientException e) {
+      LOGGER.error("NotificationEmailSender failed", e);
+    } finally {
+      if (adminSession != null) {
+        try {
+          adminSession.logout();
+        } catch (ClientPoolException e) {
+          LOGGER.error("NotificationEmailSender failed to log out of admin session", e);
+        }
+      }
+    }
+  }
+
+  private List<String> getEmails(Session adminSession, List<String> recipientIDs) throws StorageClientException, AccessDeniedException {
+    List<String> emails = new ArrayList<String>();
+    ContentManager contentManager = adminSession.getContentManager();
+    for (String id : recipientIDs) {
+      String recipientPath = LitePersonalUtils.getProfilePath(id);
+      Content content = contentManager.get(recipientPath);
+      String email = LitePersonalUtils.getPrimaryEmailAddress(content);
+      emails.add(email);
+
+    }
+    LOGGER.info("Email addresses: " + emails);
+    return emails;
+  }
+
+  MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails) throws EmailException {
+    MultiPartEmail email = new MultiPartEmail();
+    for (String recipient : recipientEmails) {
+      try {
+        email.addBcc(recipient);
+      } catch (EmailException e) {
+        // just skip invalid email addrs
+        LOGGER.warn("Invalid email address [" + recipient + "] :" + e);
+      }
+    }
+    return email;
+  }
 }
+
