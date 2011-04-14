@@ -144,6 +144,7 @@ public class SendNotificationsJob implements Job {
       this.emailSender.send(notification, Arrays.asList("904715"));
 
       // mark the notification as archived in our repo
+      // TODO don't set to archive-sent unless email was sent successfully and all recipients have calendar URIs recorded
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
       result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
       result.setProperty(Notification.JSON_PROPERTIES.calendarURIs.toString(), urisJson.toString());
