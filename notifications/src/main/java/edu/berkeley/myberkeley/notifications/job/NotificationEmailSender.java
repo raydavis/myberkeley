@@ -82,7 +82,7 @@ public class NotificationEmailSender {
   @Reference
   Repository repository;
 
-  private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(NotificationEmailSender.class);
 
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
@@ -101,8 +101,9 @@ public class NotificationEmailSender {
     Session adminSession = null;
     try {
       adminSession = this.repository.loginAdministrative();
-      List<String> recipAddresses = getRecipientEmails(adminSession, recipientIDs);
-      MultiPartEmail email = buildEmail(notification, recipAddresses, adminSession.getContentManager());
+      ContentManager contentManager = adminSession.getContentManager();
+      List<String> recipAddresses = getRecipientEmails(recipientIDs, contentManager);
+      MultiPartEmail email = buildEmail(notification, recipAddresses, contentManager);
       if ( this.sendEmail ) {
         String messageID = email.sendMimeMessage();
         LOGGER.info("Sent real email with outgoing message ID = " + messageID);
@@ -128,17 +129,16 @@ public class NotificationEmailSender {
     }
   }
 
-  private List<String> getRecipientEmails(Session adminSession, List<String> recipientIDs) throws StorageClientException, AccessDeniedException {
+  private List<String> getRecipientEmails(List<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
     List<String> emails = new ArrayList<String>();
-    ContentManager contentManager = adminSession.getContentManager();
     for (String id : recipientIDs) {
-      emails.add(userIDToEmail(contentManager, id));
+      emails.add(userIDToEmail(id, contentManager));
     }
     LOGGER.info("Recipient email addresses: " + emails);
     return emails;
   }
 
-  private String userIDToEmail(ContentManager contentManager, String id) throws StorageClientException, AccessDeniedException {
+  private String userIDToEmail(String id, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
     String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + "/basic/elements/email";
     Content content = contentManager.get(recipBasicProfilePath);
     if ( content != null ) {
@@ -151,6 +151,16 @@ public class NotificationEmailSender {
   MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails, ContentManager contentManager)
           throws StorageClientException, AccessDeniedException, EmailException, MessagingException {
     MultiPartEmail email = new MultiPartEmail();
+
+    // sender
+    try {
+      email.setFrom(userIDToEmail(notification.getSenderID(), contentManager));
+    } catch (EmailException e) {
+      LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
+      throw e;
+    }
+
+    // recipients (all are in bcc field)
     for (String recipient : recipientEmails) {
       try {
         email.addBcc(recipient);
@@ -160,26 +170,19 @@ public class NotificationEmailSender {
       }
     }
 
-    try {
-      email.setFrom(userIDToEmail(contentManager, notification.getSenderID()));
-    } catch (EmailException e) {
-      LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
-      throw e;
-    }
-
+    // body and subject
     // TODO convert calendarWrapper to a nice email
     email.setMsg(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
-
     String subjectPrefix = getSubjectPrefix(notification);
     email.setSubject(subjectPrefix + " " + notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
 
     email.setDebug(true);
     email.setSmtpPort(this.smtpPort);
     email.setHostName(this.smtpServer);
+
     email.buildMimeMessage();
     // adding this special recipient here as header directly, otherwise address parsing will fail
     email.getMimeMessage().addHeader("To", REMINDER_RECIPIENT);
-
     logEmail(email.getMimeMessage());
     return email;
   }
