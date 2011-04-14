@@ -56,7 +56,8 @@ public class SendNotificationsScheduler {
   @Reference
   protected CalDavConnectorProvider provider;
 
-  @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds")
+  @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds",
+          description = "How often to wake up and check for outgoing notifications")
   protected static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
 
   protected final static String JOB_NAME = "sendNotificationsJob";

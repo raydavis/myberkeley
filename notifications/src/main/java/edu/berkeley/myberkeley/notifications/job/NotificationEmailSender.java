@@ -62,16 +62,16 @@ public class NotificationEmailSender {
   private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
-  @Property(value = "localhost")
-  static final String SMTP_SERVER = "sakai.smtp.server";
-  @Property(intValue = 25, label = "%sakai.smtp.port.name")
-  static final String SMTP_PORT = "sakai.smtp.port";
-  @Property(intValue = 240)
-  static final String MAX_RETRIES = "sakai.email.maxRetries";
-  @Property(intValue = 30)
-  static final String RETRY_INTERVAL = "sakai.email.retryIntervalMinutes";
-  @Property(boolValue = false, label = "%sakai.email.sendemail.name", description = "%sakai.email.sendemail.description")
-  static final String SEND_EMAIL = "notifications.sendEmail";
+  @Property(value = "localhost", label = "SMTP Server")
+  static final String SMTP_SERVER = "smtp.server";
+  @Property(intValue = 25, label = "SMTP Port")
+  static final String SMTP_PORT = "smtp.port";
+  @Property(intValue = 240, label = "Maximum number of retries")
+  static final String MAX_RETRIES = "email.maxRetries";
+  @Property(intValue = 30, label = "Retry interval in minutes")
+  static final String RETRY_INTERVAL = "email.retryIntervalMinutes";
+  @Property(boolValue = false, label = "Send email?", description = "Whether or not to actually send real email")
+  static final String SEND_EMAIL = "email.sendEmailEnabled";
 
   Integer maxRetries;
   Integer smtpPort;
