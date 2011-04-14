@@ -69,7 +69,8 @@ public class Notification {
     calendarWrapper,
     category,
     uxState,
-    calendarURIs
+    calendarURIs,
+    emailMessageID
   }
 
   private UUID id;
@@ -90,6 +91,8 @@ public class Notification {
 
   private JSONObject uxState;
 
+  private String emailMessageID;
+
   public Notification(JSONObject json) throws JSONException, CalDavException {
     this.id = getNotificationID(json);
     this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
@@ -102,6 +105,7 @@ public class Notification {
     SEND_STATE sendState = SEND_STATE.pending;
     MESSAGEBOX messageBox = MESSAGEBOX.drafts;
     JSONObject uxState = new JSONObject();
+    String emailMessageID = null;
 
     // set optional properties
     try {
@@ -116,10 +120,15 @@ public class Notification {
       messageBox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
     } catch (JSONException ignored) {
     }
+    try {
+      emailMessageID = json.getString(JSON_PROPERTIES.emailMessageID.toString());
+    } catch ( JSONException ignored ) {
 
+    }
     this.sendState = sendState;
     this.messageBox = messageBox;
     this.uxState = uxState;
+    this.emailMessageID = emailMessageID;
   }
 
   public Notification(Content content) throws JSONException, CalDavException {
@@ -136,6 +145,9 @@ public class Notification {
     try {
       uxState = new JSONObject((String) content.getProperty(JSON_PROPERTIES.uxState.toString()));
     } catch (JSONException ignored) {
+    }
+    if ( content.hasProperty(JSON_PROPERTIES.emailMessageID.toString())) {
+      this.emailMessageID = (String) content.getProperty(JSON_PROPERTIES.emailMessageID.toString());
     }
     this.sendState = SEND_STATE.valueOf((String) content.getProperty(JSON_PROPERTIES.sendState.toString()));
     this.messageBox = MESSAGEBOX.valueOf((String) content.getProperty(JSON_PROPERTIES.messageBox.toString()));
@@ -178,6 +190,10 @@ public class Notification {
     return uxState;
   }
 
+  public String getEmailMessageID() {
+    return emailMessageID;
+  }
+
   public void toContent(String storePath, Content content) throws JSONException {
     content.setProperty("sakai:messagestore", storePath);
     content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
@@ -189,6 +205,9 @@ public class Notification {
     content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
     content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
     content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
+    if ( this.getEmailMessageID() != null ) {
+      content.setProperty(JSON_PROPERTIES.emailMessageID.toString(), this.getEmailMessageID());
+    }
   }
 
   private static UUID getNotificationID(JSONObject notificationJSON) {
@@ -216,6 +235,7 @@ public class Notification {
     if (sendState != that.sendState) return false;
     if (wrapper != null ? !wrapper.equals(that.wrapper) : that.wrapper != null) return false;
     if (uxState != null ? !uxState.toString().equals(that.uxState.toString()) : that.uxState != null) return false;
+    if (emailMessageID != null ? !emailMessageID.equals(that.emailMessageID) : that.emailMessageID != null) return false;
 
     return true;
   }
@@ -231,6 +251,7 @@ public class Notification {
     result = 31 * result + (wrapper != null ? wrapper.hashCode() : 0);
     result = 31 * result + (category != null ? category.hashCode() : 0);
     result = 31 * result + (uxState != null ? uxState.hashCode() : 0);
+    result = 31 * result + (emailMessageID != null ? emailMessageID.hashCode() : 0);
     return result;
   }
 }

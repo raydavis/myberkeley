@@ -141,7 +141,13 @@ public class SendNotificationsJob implements Job {
 
       // send email
       // TODO get real user ids of recips instead of hardcoding
-      this.emailSender.send(notification, Arrays.asList("904715"));
+      // TODO this check needs real coverage in the unit test
+      if (notification.getEmailMessageID() == null) {
+        String messageID = this.emailSender.send(notification, Arrays.asList("904715"));
+        if (messageID != null) {
+          result.setProperty(Notification.JSON_PROPERTIES.emailMessageID.toString(), messageID);
+        }
+      }
 
       // mark the notification as archived in our repo
       // TODO don't set to archive-sent unless email was sent successfully and all recipients have calendar URIs recorded

@@ -97,17 +97,19 @@ public class NotificationEmailSender {
     // nothing to do
   }
 
-  public void send(Notification notification, List<String> recipientIDs) {
+  public String send(Notification notification, List<String> recipientIDs) {
     Session adminSession = null;
+    String messageID = null;
     try {
       adminSession = this.repository.loginAdministrative();
       ContentManager contentManager = adminSession.getContentManager();
       List<String> recipAddresses = getRecipientEmails(recipientIDs, contentManager);
       MultiPartEmail email = buildEmail(notification, recipAddresses, contentManager);
       if ( this.sendEmail ) {
-        String messageID = email.sendMimeMessage();
+        messageID = email.sendMimeMessage();
         LOGGER.info("Sent real email with outgoing message ID = " + messageID);
       } else {
+        messageID = "sendEmail is false, email not sent";
         LOGGER.info("sendEmail is false, not sending mail");
       }
     } catch (AccessDeniedException e) {
@@ -127,6 +129,7 @@ public class NotificationEmailSender {
         }
       }
     }
+    return messageID;
   }
 
   private List<String> getRecipientEmails(List<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
