@@ -141,7 +141,6 @@ public class SendNotificationsJob implements Job {
 
       // send email
       // TODO get real user ids of recips instead of hardcoding
-      // TODO this check needs real coverage in the unit test
       if (notification.getEmailMessageID() == null) {
         String messageID = this.emailSender.send(notification, Arrays.asList("904715"));
         if (messageID != null) {
