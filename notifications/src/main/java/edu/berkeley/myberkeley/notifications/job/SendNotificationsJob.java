@@ -126,47 +126,50 @@ public class SendNotificationsJob implements Job {
 
   private void sendNotification(Content result, ContentManager contentManager) throws IOException {
 
+    boolean success = false;
+    Notification notification;
+
     try {
+      notification = new Notification(result);
+    } catch (JSONException e) {
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
+      return;
+    } catch (CalDavException e) {
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+      return;
+    }
 
-      Notification notification = new Notification(result);
-      CalendarWrapper wrapper = notification.getWrapper();
+    JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
 
-      JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
-
+    try {
       // save notification in bedework server
       // TODO get list of users based on dynamicListID and loop over them -- one connector per user
       String userID = "vbede";
 
       boolean needsCalendarEntry;
+      boolean needsEmail = notification.getEmailMessageID() == null;
       try {
         needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
-      }catch (JSONException ignored) {
+      } catch (JSONException ignored) {
         needsCalendarEntry = true;
       }
 
-      if ( needsCalendarEntry ) {
+      if (needsCalendarEntry) {
         CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
-        wrapper.generateNewUID();
-        CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), userID);
+        notification.getWrapper().generateNewUID();
+        CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar(), userID);
         recipientToCalendarURIMap.put(userID, uri.toJSON());
       }
 
       // send email
-      // TODO get real user ids of recips instead of hardcoding
-      if (notification.getEmailMessageID() == null) {
+      if (needsEmail) {
         String messageID = this.emailSender.send(notification, Arrays.asList("904715"));
         if (messageID != null) {
           result.setProperty(Notification.JSON_PROPERTIES.emailMessageID.toString(), messageID);
         }
       }
 
-      // mark the notification as archived in our repo
-      // TODO don't set to archive-sent unless email was sent successfully and all recipients have calendar URIs recorded
-      result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
-      result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
-      result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());
-      contentManager.update(result);
-
+      success = true;
       LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
               + recipientToCalendarURIMap.toString(2));
 
@@ -176,11 +179,24 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
     } catch (CalDavException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+    }
+
+    result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());
+
+    // mark the notification as archived in our repo if all went well
+    if (success) {
+      result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
+      result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
+    }
+
+    try {
+      contentManager.update(result);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
     } catch (StorageClientException e) {
       LOGGER.error("Got storage client exception saving notification at path " + result.getPath(), e);
     }
+
   }
 
 }
