@@ -22,7 +22,10 @@ package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.caldav.CalendarWrapper;
+import net.fortuna.ical4j.model.Date;
+import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
@@ -41,6 +44,7 @@ public class NotificationTest extends NotificationTests {
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
     assertNotNull(notification.getSenderID());
+    assertNotNull(notification.getRecipientToCalendarURIMap());
   }
 
   @Test
@@ -56,6 +60,8 @@ public class NotificationTest extends NotificationTests {
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.reminder.toString());
     assertNotNull(notification.getUXState());
     assertNotNull(notification.getUXState().get("eventHour"));
+    assertNotNull(notification.getRecipientToCalendarURIMap());
+    assertFalse(notification.getRecipientToCalendarURIMap().keys().hasNext());
     CalendarWrapper wrapper = CalendarWrapper.fromJSON(new JSONObject((String) content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
     assertNotNull(wrapper);
     assertTrue(wrapper.isRequired());
@@ -63,13 +69,21 @@ public class NotificationTest extends NotificationTests {
 
   @Test
   public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException {
-    String originalJSON = readNotificationFromFile();
-    Notification notification = new Notification(new JSONObject(originalJSON));
+    JSONObject originalJSON = new JSONObject(readNotificationFromFile());
+    JSONObject recipMap = new JSONObject();
+    recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
+    originalJSON.put(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap);
+    Notification notification = new Notification(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
+    content.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap.toString());
     Notification notificationFromContent = new Notification(content);
     assertEquals(notification, notificationFromContent);
+    assertNotNull(notification.getRecipientToCalendarURIMap().get("904715"));
+    CalendarURI uri = new CalendarURI(notification.getRecipientToCalendarURIMap().getJSONObject("904715"));
+    assertNotNull(uri);
+    assertEquals("foo", uri.getURI());
   }
 }

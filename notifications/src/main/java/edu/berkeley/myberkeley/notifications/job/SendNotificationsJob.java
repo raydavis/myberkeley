@@ -29,6 +29,7 @@ import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
@@ -130,14 +131,25 @@ public class SendNotificationsJob implements Job {
       Notification notification = new Notification(result);
       CalendarWrapper wrapper = notification.getWrapper();
 
-      JSONArray urisJson = new JSONArray();
+      JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
 
       // save notification in bedework server
       // TODO get list of users based on dynamicListID and loop over them -- one connector per user
-      CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
-      wrapper.generateNewUID();
-      CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), "vbede");
-      urisJson.put(uri.toJSON());
+      String userID = "vbede";
+
+      boolean needsCalendarEntry;
+      try {
+        needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
+      }catch (JSONException ignored) {
+        needsCalendarEntry = true;
+      }
+
+      if ( needsCalendarEntry ) {
+        CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
+        wrapper.generateNewUID();
+        CalendarURI uri = connector.putCalendar(wrapper.getCalendar(), userID);
+        recipientToCalendarURIMap.put(userID, uri.toJSON());
+      }
 
       // send email
       // TODO get real user ids of recips instead of hardcoding
@@ -152,10 +164,11 @@ public class SendNotificationsJob implements Job {
       // TODO don't set to archive-sent unless email was sent successfully and all recipients have calendar URIs recorded
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
       result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
-      result.setProperty(Notification.JSON_PROPERTIES.calendarURIs.toString(), urisJson.toString());
+      result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());
       contentManager.update(result);
 
-      LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; bedework uri = " + uri);
+      LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+              + recipientToCalendarURIMap.toString(2));
 
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);

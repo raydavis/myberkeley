@@ -74,18 +74,19 @@ public class SendNotificationsJobTest extends NotificationTests {
   }
 
   @Before
-  public void setup() {
+  public void setup() throws StorageClientException, AccessDeniedException, IOException {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     this.job = new SendNotificationsJob(repo, emailSender, provider);
+
+    when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
+    when(adminSession.getContentManager()).thenReturn(cm);
+
   }
 
   @Test
   public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
-
-    when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
-    when(adminSession.getContentManager()).thenReturn(cm);
 
     Notification notification = new Notification(new JSONObject(readNotificationFromFile()));
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
@@ -112,37 +113,67 @@ public class SendNotificationsJobTest extends NotificationTests {
   }
 
   @Test
-    public void executeWhenEmailHasAlreadyBeenSent() throws StorageClientException, AccessDeniedException, IOException,
+  public void executeWhenEmailHasAlreadyBeenSent() throws StorageClientException, AccessDeniedException, IOException,
           JSONException, CalDavException {
 
-      when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
-      when(adminSession.getContentManager()).thenReturn(cm);
+    JSONObject json = new JSONObject(readNotificationFromFile());
+    json.put(Notification.JSON_PROPERTIES.emailMessageID.toString(), "some message id");
+    Notification notification = new Notification(json);
 
-      JSONObject json = new JSONObject(readNotificationFromFile());
-      json.put(Notification.JSON_PROPERTIES.emailMessageID.toString(), "some message id");
-      Notification notification = new Notification(json);
+    Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) Notification.RESOURCETYPE));
+    notification.toContent("/notice1", content);
+    List<Content> results = new ArrayList<Content>();
+    results.add(content);
+    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
 
-      Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
-              JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-              (Object) Notification.RESOURCETYPE));
-      notification.toContent("/notice1", content);
-      List<Content> results = new ArrayList<Content>();
-      results.add(content);
-      when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-      when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+    CalDavConnector connector = mock(CalDavConnector.class);
+    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
+    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
 
-      CalDavConnector connector = mock(CalDavConnector.class);
-      when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
-      CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
-      when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+    this.job.execute(context);
 
-      this.job.execute(context);
+    verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(cm).update(Matchers.<Content>any());
+    verify(adminSession).logout();
+    verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
+  }
 
-      verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
-      verify(cm).update(Matchers.<Content>any());
-      verify(adminSession).logout();
-      verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
-    }
+  @Test
+  public void executeWhenCalendarHasAlreadyBeenSent() throws StorageClientException, AccessDeniedException, IOException,
+          JSONException, CalDavException {
+
+    JSONObject json = new JSONObject(readNotificationFromFile());
+    JSONObject recipMap = new JSONObject();
+    recipMap.put("vbede", new CalendarURI(new URI("foo", false), new Date()).toJSON());
+    json.put(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap);
+    Notification notification = new Notification(json);
+
+    Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) Notification.RESOURCETYPE));
+    notification.toContent("/notice1", content);
+    List<Content> results = new ArrayList<Content>();
+    results.add(content);
+    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+
+    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+
+    CalDavConnector connector = mock(CalDavConnector.class);
+    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
+    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+
+    this.job.execute(context);
+
+    verify(connector, times(0)).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(cm).update(Matchers.<Content>any());
+    verify(adminSession).logout();
+    verify(this.job.emailSender, times(1)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
+  }
 
 }
