@@ -42,7 +42,7 @@ import java.util.Map;
 @Service(value = SendNotificationsScheduler.class)
 public class SendNotificationsScheduler {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
 
   @Reference
   protected Repository repository;
@@ -68,16 +68,16 @@ public class SendNotificationsScheduler {
     Map<String, Serializable> config = new HashMap<String, Serializable>();
     final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider);
     try {
-      this.LOGGER.debug("Activating SendNotificationsJob...");
+      LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
     } catch (Exception e) {
-      this.LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
+      LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
     }
   }
 
   @SuppressWarnings({"UnusedParameters"})
   protected void deactivate(ComponentContext componentContext) throws Exception {
-    this.LOGGER.debug("Removing SendNotificationsJob...");
+    LOGGER.debug("Removing SendNotificationsJob...");
     this.scheduler.removeJob(JOB_NAME);
   }
 

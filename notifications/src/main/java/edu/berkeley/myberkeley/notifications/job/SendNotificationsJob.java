@@ -49,7 +49,7 @@ import java.util.Map;
 
 public class SendNotificationsJob implements Job {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsJob.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsJob.class);
 
   final Repository repository;
 
@@ -73,21 +73,21 @@ public class SendNotificationsJob implements Job {
       Iterable<Content> results = getQueuedNotifications(adminSession);
       processResults(results, adminSession.getContentManager());
     } catch (AccessDeniedException e) {
-      this.LOGGER.error("SendNotificationsJob failed", e);
+      LOGGER.error("SendNotificationsJob failed", e);
     } catch (StorageClientException e) {
-      this.LOGGER.error("SendNotificationsJob failed", e);
+      LOGGER.error("SendNotificationsJob failed", e);
     } catch (IOException e) {
-      this.LOGGER.error("SendNotificationsJob failed", e);
+      LOGGER.error("SendNotificationsJob failed", e);
     } finally {
       if (adminSession != null) {
         try {
           adminSession.logout();
         } catch (ClientPoolException e) {
-          this.LOGGER.error("SendNotificationsJob failed to log out of admin session", e);
+          LOGGER.error("SendNotificationsJob failed to log out of admin session", e);
         }
       }
       long endMillis = System.currentTimeMillis();
-      this.LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
+      LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
     }
   }
 
@@ -107,11 +107,11 @@ public class SendNotificationsJob implements Job {
       resultCount++;
       if (eligibleForSending(result, now)) {
         eligibleCount++;
-        this.LOGGER.debug("The time has come to send notification at path " + result.getPath());
+        LOGGER.debug("The time has come to send notification at path " + result.getPath());
         sendNotification(result, contentManager);
       }
     }
-    this.LOGGER.info("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
+    LOGGER.info("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
   }
 
   private boolean eligibleForSending(Content result, Date now) {
@@ -130,10 +130,10 @@ public class SendNotificationsJob implements Job {
     try {
       notification = new Notification(result);
     } catch (JSONException e) {
-      this.LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
       return;
     } catch (CalDavException e) {
-      this.LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
       return;
     }
 
@@ -168,15 +168,15 @@ public class SendNotificationsJob implements Job {
       }
 
       success = true;
-      this.LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+      LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
               + recipientToCalendarURIMap.toString(2));
 
     } catch (JSONException e) {
-      this.LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
     } catch (BadRequestException e) {
-      this.LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
+      LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
     } catch (CalDavException e) {
-      this.LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+      LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
     }
 
     result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());
@@ -190,9 +190,9 @@ public class SendNotificationsJob implements Job {
     try {
       contentManager.update(result);
     } catch (AccessDeniedException e) {
-      this.LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
+      LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
     } catch (StorageClientException e) {
-      this.LOGGER.error("Got storage client exception saving notification at path " + result.getPath(), e);
+      LOGGER.error("Got storage client exception saving notification at path " + result.getPath(), e);
     }
 
   }

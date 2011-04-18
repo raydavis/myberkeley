@@ -62,11 +62,11 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
   private static final long serialVersionUID = -1868784233373889299L;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CreateNotificationServlet.class);
+
   enum POST_PARAMS {
     notification
   }
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CreateNotificationServlet.class);
 
   @Override
   protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
