@@ -21,7 +21,7 @@
 package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
-import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import org.apache.felix.scr.annotations.Properties;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.sling.SlingServlet;

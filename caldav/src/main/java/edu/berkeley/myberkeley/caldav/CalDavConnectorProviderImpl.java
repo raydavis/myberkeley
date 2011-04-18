@@ -20,6 +20,8 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.felix.scr.annotations.Component;
@@ -28,11 +30,11 @@ import org.osgi.service.component.ComponentContext;
 
 import java.util.Dictionary;
 
-@Component(label = "MyBerkeley :: CalDavConnectorProvider",
+@Component(label = "MyBerkeley :: CalDavConnectorProviderImpl",
         description = "Provider for CalDav server authentication information",
         immediate = true, metatype = true)
-@Service(value = CalDavConnectorProvider.class)
-public class CalDavConnectorProvider {
+@Service(value = CalDavConnectorProviderImpl.class)
+public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
 
   @org.apache.felix.scr.annotations.Property(value = "admin", label = "CalDav Admin Username")
   protected static final String PROP_ADMIN_USERNAME = "caldavconnectorprovider.adminusername";
@@ -62,8 +64,8 @@ public class CalDavConnectorProvider {
     return getConnector(this.adminUsername, this.adminPassword);
   }
 
-  public CalDavConnector getConnector(String username, String password) throws URIException {
-    return new CalDavConnector(username, password,
+  public CalDavConnectorImpl getConnector(String username, String password) throws URIException {
+    return new CalDavConnectorImpl(username, password,
             new URI(this.calDavServerRoot, false),
             new URI(this.calDavServerRoot + "/ucaldav/user/" + username + "/calendar/", false));
   }

@@ -20,8 +20,8 @@
 
 package edu.berkeley.myberkeley.notifications;
 
-import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarWrapper;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.lite.content.Content;

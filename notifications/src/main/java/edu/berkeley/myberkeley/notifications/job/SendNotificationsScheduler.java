@@ -20,7 +20,7 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
-import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;

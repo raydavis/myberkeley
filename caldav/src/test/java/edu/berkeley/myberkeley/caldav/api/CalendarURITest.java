@@ -18,14 +18,26 @@
 
  */
 
-package edu.berkeley.myberkeley.caldav;
+package edu.berkeley.myberkeley.caldav.api;
 
-public class CalDavException extends Exception {
+import edu.berkeley.myberkeley.caldav.CalDavTests;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import net.fortuna.ical4j.model.Date;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
+import org.junit.Test;
 
-  private static final long serialVersionUID = 2546182064294742075L;
+public class CalendarURITest extends CalDavTests {
 
-  public CalDavException(String message, Throwable t) {
-    super(message, t);
+  @Test
+  public void toJSONAndBackAgain() throws URIException, JSONException {
+    CalendarURI uri = new CalendarURI(new URI("/foo", false), new Date());
+    JSONObject json = uri.toJSON();
+    CalendarURI deserialized = new CalendarURI(json);
+    assertEquals(uri, deserialized);
+    assertEquals(uri.getEtag(), deserialized.getEtag());
   }
 
 }

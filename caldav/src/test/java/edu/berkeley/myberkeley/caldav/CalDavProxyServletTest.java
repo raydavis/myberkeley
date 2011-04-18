@@ -24,6 +24,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
@@ -63,7 +67,7 @@ public class CalDavProxyServletTest extends CalDavTests {
   @Before
   public void setUp() throws Exception {
     this.servlet = new CalDavProxyServlet();
-    this.servlet.calDavConnectorProvider = new CalDavConnectorProvider();
+    this.servlet.calDavConnectorProvider = new CalDavConnectorProviderImpl();
     this.servlet.calDavConnectorProvider.adminUsername = "admin";
     this.servlet.calDavConnectorProvider.adminPassword = "bedework";
     this.servlet.calDavConnectorProvider.calDavServerRoot = "http://test.media.berkeley.edu:8080";
@@ -108,7 +112,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
     when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
     when(response.getWriter()).thenReturn(new PrintWriter(System.out));
-    CalDavConnector connector = mock(CalDavConnector.class);
+    CalDavConnectorImpl connector = mock(CalDavConnectorImpl.class);
     List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false), RANDOM_ETAG));
@@ -194,7 +198,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     JSONArray batch = this.servlet.getCalendars(request);
     assertNotNull(batch);
 
-    CalDavConnector connector = mock(CalDavConnector.class);
+    CalDavConnector connector = mock(CalDavConnectorImpl.class);
     List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal1", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal2", false), RANDOM_ETAG));

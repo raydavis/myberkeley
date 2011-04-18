@@ -20,11 +20,11 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
-import edu.berkeley.myberkeley.caldav.BadRequestException;
-import edu.berkeley.myberkeley.caldav.CalDavConnector;
-import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
-import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarURI;
+import edu.berkeley.myberkeley.caldav.api.BadRequestException;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;

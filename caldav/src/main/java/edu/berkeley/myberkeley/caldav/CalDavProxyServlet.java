@@ -20,6 +20,10 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
@@ -60,7 +64,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 5522248522595237407L;
 
   @Reference
-  CalDavConnectorProvider calDavConnectorProvider;
+  CalDavConnectorProviderImpl calDavConnectorProvider;
 
   public enum REQUEST_PARAMS {
     type,
@@ -107,7 +111,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     // TODO set the correct username instead of hardcoding vbede
-    CalDavConnector connector = this.calDavConnectorProvider.getConnector("vbede", "bedework");
+    CalDavConnectorImpl connector = this.calDavConnectorProvider.getConnector("vbede", "bedework");
 
     CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 
@@ -156,7 +160,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     return criteria;
   }
 
-  protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector,
+  protected void handleGet(SlingHttpServletResponse response, CalDavConnectorImpl connector,
                            CalendarSearchCriteria criteria) throws IOException {
     List<CalendarWrapper> calendars;
     boolean hasOverdue = false;

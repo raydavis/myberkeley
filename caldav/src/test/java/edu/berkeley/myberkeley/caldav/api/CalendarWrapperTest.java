@@ -18,8 +18,9 @@
 
  */
 
-package edu.berkeley.myberkeley.caldav;
+package edu.berkeley.myberkeley.caldav.api;
 
+import edu.berkeley.myberkeley.caldav.CalDavTests;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;

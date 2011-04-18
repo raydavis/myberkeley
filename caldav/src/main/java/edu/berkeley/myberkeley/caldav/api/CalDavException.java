@@ -18,13 +18,14 @@
 
  */
 
-package edu.berkeley.myberkeley.caldav;
+package edu.berkeley.myberkeley.caldav.api;
 
-public class BadRequestException extends CalDavException {
+public class CalDavException extends Exception {
 
-  private static final long serialVersionUID = -4361376969555851017L;
+  private static final long serialVersionUID = 2546182064294742075L;
 
-  public BadRequestException(String message) {
-    super(message, null);
+  public CalDavException(String message, Throwable t) {
+    super(message, t);
   }
+
 }

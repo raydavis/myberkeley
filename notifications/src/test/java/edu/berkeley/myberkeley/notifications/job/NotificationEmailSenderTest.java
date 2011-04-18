@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
-import edu.berkeley.myberkeley.caldav.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import org.apache.commons.mail.EmailException;

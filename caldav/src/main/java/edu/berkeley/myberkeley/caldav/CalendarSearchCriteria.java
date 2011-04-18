@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;

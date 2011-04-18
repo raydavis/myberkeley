@@ -20,6 +20,8 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Calendar;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;

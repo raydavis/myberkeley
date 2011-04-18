@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-import edu.berkeley.myberkeley.caldav.CalendarWrapper;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.commons.json.JSONObject;

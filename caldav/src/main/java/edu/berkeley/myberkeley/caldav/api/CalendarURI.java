@@ -18,7 +18,7 @@
 
  */
 
-package edu.berkeley.myberkeley.caldav;
+package edu.berkeley.myberkeley.caldav.api;
 
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;

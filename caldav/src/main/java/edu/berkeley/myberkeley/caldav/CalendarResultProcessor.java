@@ -20,6 +20,8 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

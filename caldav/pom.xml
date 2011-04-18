@@ -26,7 +26,7 @@
             <Bundle-Category>myberkeley</Bundle-Category>
             <Import-Package>!sun.misc,*</Import-Package>
             <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
-            <Export-Package>edu.berkeley.myberkeley.caldav.*,net.fortuna.ical4j.*</Export-Package>
+            <Export-Package>edu.berkeley.myberkeley.caldav.api.*,net.fortuna.ical4j.*</Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
             <Embed-Dependency>jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
             <Include-Resource>{maven-resources}</Include-Resource>

@@ -26,10 +26,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 import com.google.common.collect.ImmutableMap;
-import edu.berkeley.myberkeley.caldav.CalDavConnector;
-import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
-import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarURI;
+import edu.berkeley.myberkeley.caldav.CalDavConnectorImpl;
+import edu.berkeley.myberkeley.caldav.CalDavConnectorProviderImpl;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import net.fortuna.ical4j.model.Calendar;
@@ -76,7 +78,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   @Before
   public void setup() throws StorageClientException, AccessDeniedException, IOException {
     Repository repo = mock(Repository.class);
-    CalDavConnectorProvider provider = mock(CalDavConnectorProvider.class);
+    CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     this.job = new SendNotificationsJob(repo, emailSender, provider);
 
@@ -99,7 +101,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnector.class);
+    CalDavConnector connector = mock(CalDavConnectorImpl.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
@@ -130,7 +132,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnector.class);
+    CalDavConnector connector = mock(CalDavConnectorImpl.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
@@ -163,7 +165,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnector.class);
+    CalDavConnector connector = mock(CalDavConnectorImpl.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);

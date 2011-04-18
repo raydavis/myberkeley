@@ -20,6 +20,8 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -48,11 +50,11 @@ public class EventGeneratorTest extends CalDavTests {
 
   private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/" + OWNER + "/calendar/";
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorImplTest.class);
 
   @Before
   public void setup() throws CalDavException, URIException {
-    this.adminConnector = new CalDavConnector("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+    this.adminConnector = new CalDavConnectorImpl("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
   }
 
   @Test

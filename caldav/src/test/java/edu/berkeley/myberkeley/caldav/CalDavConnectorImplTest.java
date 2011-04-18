@@ -20,6 +20,11 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.BadRequestException;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
@@ -48,7 +53,7 @@ import java.util.UUID;
  * If Bedework isn't running, the tests will still pass, although they won't be as informative.
  */
 
-public class CalDavConnectorTest extends CalDavTests {
+public class CalDavConnectorImplTest extends CalDavTests {
 
   private static final String OWNER = "mtwain";
 
@@ -60,8 +65,8 @@ public class CalDavConnectorTest extends CalDavTests {
 
   @Before
   public void setup() throws CalDavException, URIException {
-    this.adminConnector = new CalDavConnector("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
-    this.userConnector = new CalDavConnector(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+    this.adminConnector = new CalDavConnectorImpl("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+    this.userConnector = new CalDavConnectorImpl(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
     deleteAll();
   }
 

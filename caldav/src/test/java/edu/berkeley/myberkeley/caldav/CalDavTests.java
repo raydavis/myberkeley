@@ -20,6 +20,9 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.DateTime;
@@ -50,9 +53,9 @@ public abstract class CalDavTests extends Assert {
 
   protected static final String MONTH_AFTER_RANDOM_ETAG = "20110416T191659Z-0";
 
-  protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorTest.class);
+  protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorImplTest.class);
 
-  protected CalDavConnector adminConnector;
+  protected CalDavConnectorImpl adminConnector;
 
   protected void deleteAll() throws CalDavException {
     try {

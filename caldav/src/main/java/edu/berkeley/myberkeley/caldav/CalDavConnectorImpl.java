@@ -20,6 +20,11 @@
 
 package edu.berkeley.myberkeley.caldav;
 
+import edu.berkeley.myberkeley.caldav.api.BadRequestException;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.caldav.report.CalDavConstants;
 import edu.berkeley.myberkeley.caldav.report.CalendarMultiGetReportInfo;
 import edu.berkeley.myberkeley.caldav.report.CalendarQueryReportInfo;
@@ -31,7 +36,6 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.property.Categories;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -76,13 +80,9 @@ import java.util.Set;
 import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
-public class CalDavConnector {
+public class CalDavConnectorImpl implements CalDavConnector {
 
-  public static final Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
-
-  public static final Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnector.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorImpl.class);
 
   private static final Set<Integer> ALLOWABLE_HTTP_STATUS_CODES = new HashSet<Integer>(Arrays.asList(
           HttpStatus.SC_OK, HttpStatus.SC_CREATED, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_MULTI_STATUS));
@@ -95,7 +95,7 @@ public class CalDavConnector {
 
   private final String username;
 
-  public CalDavConnector(String username, String password, URI serverRoot, URI userHome) {
+  public CalDavConnectorImpl(String username, String password, URI serverRoot, URI userHome) {
     HttpState httpState = new HttpState();
     Credentials credentials = new UsernamePasswordCredentials(username, password);
     httpState.setCredentials(AuthScope.ANY, credentials);
