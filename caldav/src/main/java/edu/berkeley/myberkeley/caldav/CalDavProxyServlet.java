@@ -21,6 +21,7 @@
 package edu.berkeley.myberkeley.caldav;
 
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
+import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
@@ -64,7 +65,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 5522248522595237407L;
 
   @Reference
-  CalDavConnectorProviderImpl calDavConnectorProvider;
+  CalDavConnectorProvider calDavConnectorProvider;
 
   public enum REQUEST_PARAMS {
     type,

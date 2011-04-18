@@ -67,10 +67,11 @@ public class CalDavProxyServletTest extends CalDavTests {
   @Before
   public void setUp() throws Exception {
     this.servlet = new CalDavProxyServlet();
-    this.servlet.calDavConnectorProvider = new CalDavConnectorProviderImpl();
-    this.servlet.calDavConnectorProvider.adminUsername = "admin";
-    this.servlet.calDavConnectorProvider.adminPassword = "bedework";
-    this.servlet.calDavConnectorProvider.calDavServerRoot = "http://test.media.berkeley.edu:8080";
+    CalDavConnectorProviderImpl provider = new CalDavConnectorProviderImpl();
+    provider.adminUsername = "admin";
+    provider.adminPassword = "bedework";
+    provider.calDavServerRoot = "http://test.media.berkeley.edu:8080";
+    this.servlet.calDavConnectorProvider = provider;
   }
 
   @Test

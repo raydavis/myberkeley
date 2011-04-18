@@ -30,10 +30,10 @@ import org.osgi.service.component.ComponentContext;
 
 import java.util.Dictionary;
 
-@Component(label = "MyBerkeley :: CalDavConnectorProviderImpl",
+@Component(label = "MyBerkeley :: CalDavConnectorProvider",
         description = "Provider for CalDav server authentication information",
         immediate = true, metatype = true)
-@Service(value = CalDavConnectorProviderImpl.class)
+@Service(value = CalDavConnectorProvider.class)
 public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
 
   @org.apache.felix.scr.annotations.Property(value = "admin", label = "CalDav Admin Username")
