@@ -20,7 +20,6 @@
 
 package edu.berkeley.myberkeley.caldav.api;
 
-import edu.berkeley.myberkeley.caldav.CalendarSearchCriteria;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.property.Categories;
 
@@ -31,15 +30,10 @@ public interface CalDavConnector {
   Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
   Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
 
-  List<CalendarURI> getCalendarUris() throws CalDavException, IOException;
-
   CalendarURI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException;
 
   CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar, String ownerID) throws CalDavException, IOException;
 
-  void deleteCalendar(CalendarURI uri) throws CalDavException, IOException;
-
   List<CalendarWrapper> getCalendars(List<CalendarURI> uris) throws CalDavException, IOException;
 
-  List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException;
 }

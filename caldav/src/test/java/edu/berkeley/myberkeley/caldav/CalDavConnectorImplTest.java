@@ -61,7 +61,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
 
   private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/" + OWNER + "/calendar/";
 
-  private CalDavConnector userConnector;
+  private CalDavConnectorImpl userConnector;
 
   @Before
   public void setup() throws CalDavException, URIException {
