@@ -81,7 +81,7 @@ public class NotificationSearchResultProcessor implements SolrSearchResultProces
   }
 
   public SolrSearchResultSet getSearchResultSet(SlingHttpServletRequest request, Query query) throws SolrSearchException {
-    return searchServiceFactory.getSearchResultSet(request, query);
+    return this.searchServiceFactory.getSearchResultSet(request, query);
   }
 
   /**

@@ -68,16 +68,16 @@ public class SendNotificationsScheduler {
     Map<String, Serializable> config = new HashMap<String, Serializable>();
     final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider);
     try {
-      LOGGER.debug("Activating SendNotificationsJob...");
+      this.LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);
     } catch (Exception e) {
-      LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
+      this.LOGGER.error("Failed to add periodic job for SendNotificationsScheduler", e);
     }
   }
 
   @SuppressWarnings({"UnusedParameters"})
   protected void deactivate(ComponentContext componentContext) throws Exception {
-    LOGGER.debug("Removing SendNotificationsJob...");
+    this.LOGGER.debug("Removing SendNotificationsJob...");
     this.scheduler.removeJob(JOB_NAME);
   }
 

@@ -69,15 +69,15 @@ public class CreateNotificationServletTest extends NotificationTests {
 
   @Test
   public void badParam() throws ServletException, IOException {
-    this.servlet.doPost(request, response);
-    verify(response).sendError(Mockito.eq(HttpServletResponse.SC_BAD_REQUEST),
+    this.servlet.doPost(this.request, this.response);
+    verify(this.response).sendError(Mockito.eq(HttpServletResponse.SC_BAD_REQUEST),
             Mockito.anyString());
   }
 
   @Test
   public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
     String json = readNotificationFromFile();
-    when(request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
+    when(this.request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
             new ContainerRequestParameter(json, "utf-8"));
 
     // sparse store
@@ -85,11 +85,11 @@ public class CreateNotificationServletTest extends NotificationTests {
     ContentManager contentManager = mock(ContentManager.class);
     when(session.getContentManager()).thenReturn(contentManager);
     ResourceResolver resolver = mock(ResourceResolver.class);
-    when(request.getResourceResolver()).thenReturn(resolver);
+    when(this.request.getResourceResolver()).thenReturn(resolver);
 
     // user's home dir
     Resource resource = mock(Resource.class);
-    when(request.getResource()).thenReturn(resource);
+    when(this.request.getResource()).thenReturn(resource);
     when(resource.adaptTo(Content.class)).thenReturn(new Content("/_user/home", new HashMap<String, Object>()));
 
     javax.jcr.Session jcrSession = mock(javax.jcr.Session.class, Mockito.withSettings().extraInterfaces(SessionAdaptable.class));
@@ -107,7 +107,7 @@ public class CreateNotificationServletTest extends NotificationTests {
     when(contentManager.get(notificationPath)).thenReturn(
             new Content(notificationPath, new HashMap<String, Object>()));
 
-    this.servlet.doPost(request, response);
+    this.servlet.doPost(this.request, this.response);
 
   }
 }

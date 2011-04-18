@@ -102,7 +102,7 @@ public class Notification {
   public Notification(JSONObject json) throws JSONException, CalDavException {
     this.id = getNotificationID(json);
     this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
-    this.wrapper = CalendarWrapper.fromJSON(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
+    this.wrapper = new CalendarWrapper(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
     this.sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
     this.category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
@@ -145,7 +145,7 @@ public class Notification {
   public Notification(Content content) throws JSONException, CalDavException {
     this.id = UUID.fromString((String) content.getProperty(JSON_PROPERTIES.id.toString()));
     this.senderID = (String) content.getProperty(JSON_PROPERTIES.senderID.toString());
-    this.wrapper = CalendarWrapper.fromJSON(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
+    this.wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
     this.sendDate = new ISO8601Date((String) content.getProperty(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = (String) content.getProperty(JSON_PROPERTIES.dynamicListID.toString());
     this.category = CATEGORY.valueOf((String) content.getProperty(JSON_PROPERTIES.category.toString()));
@@ -172,47 +172,47 @@ public class Notification {
   }
 
   public UUID getId() {
-    return id;
+    return this.id;
   }
 
   public String getSenderID() {
-    return senderID;
+    return this.senderID;
   }
 
   public ISO8601Date getSendDate() {
-    return sendDate;
+    return this.sendDate;
   }
 
   public SEND_STATE getSendState() {
-    return sendState;
+    return this.sendState;
   }
 
   public MESSAGEBOX getMessageBox() {
-    return messageBox;
+    return this.messageBox;
   }
 
   public String getDynamicListID() {
-    return dynamicListID;
+    return this.dynamicListID;
   }
 
   public CalendarWrapper getWrapper() {
-    return wrapper;
+    return this.wrapper;
   }
 
   public CATEGORY getCategory() {
-    return category;
+    return this.category;
   }
 
   public JSONObject getUXState() {
-    return uxState;
+    return this.uxState;
   }
 
   public String getEmailMessageID() {
-    return emailMessageID;
+    return this.emailMessageID;
   }
 
   public JSONObject getRecipientToCalendarURIMap() {
-    return recipientToCalendarURIMap;
+    return this.recipientToCalendarURIMap;
   }
 
   public void toContent(String storePath, Content content) throws JSONException {
@@ -249,33 +249,33 @@ public class Notification {
 
     Notification that = (Notification) o;
 
-    if (category != that.category) return false;
-    if (dynamicListID != null ? !dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null) return false;
-    if (id != null ? !id.equals(that.id) : that.id != null) return false;
-    if (senderID != null ? !senderID.equals(that.senderID) : that.senderID != null) return false;
-    if (messageBox != that.messageBox) return false;
-    if (sendDate != null ? !sendDate.equals(that.sendDate) : that.sendDate != null) return false;
-    if (sendState != that.sendState) return false;
-    if (wrapper != null ? !wrapper.equals(that.wrapper) : that.wrapper != null) return false;
-    if (uxState != null ? !uxState.toString().equals(that.uxState.toString()) : that.uxState != null) return false;
-    if (emailMessageID != null ? !emailMessageID.equals(that.emailMessageID) : that.emailMessageID != null) return false;
-    if (recipientToCalendarURIMap != null ? !recipientToCalendarURIMap.toString().equals(that.recipientToCalendarURIMap.toString()) : that.recipientToCalendarURIMap != null) return false;
+    if (this.category != that.category) return false;
+    if (this.dynamicListID != null ? !this.dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null) return false;
+    if (this.id != null ? !this.id.equals(that.id) : that.id != null) return false;
+    if (this.senderID != null ? !this.senderID.equals(that.senderID) : that.senderID != null) return false;
+    if (this.messageBox != that.messageBox) return false;
+    if (this.sendDate != null ? !this.sendDate.equals(that.sendDate) : that.sendDate != null) return false;
+    if (this.sendState != that.sendState) return false;
+    if (this.wrapper != null ? !this.wrapper.equals(that.wrapper) : that.wrapper != null) return false;
+    if (this.uxState != null ? !this.uxState.toString().equals(that.uxState.toString()) : that.uxState != null) return false;
+    if (this.emailMessageID != null ? !this.emailMessageID.equals(that.emailMessageID) : that.emailMessageID != null) return false;
+    if (this.recipientToCalendarURIMap != null ? !this.recipientToCalendarURIMap.toString().equals(that.recipientToCalendarURIMap.toString()) : that.recipientToCalendarURIMap != null) return false;
     return true;
   }
 
   @Override
   public int hashCode() {
-    int result = id != null ? id.hashCode() : 0;
-    result = 31 * result + (senderID != null ? senderID.hashCode() : 0);
-    result = 31 * result + (sendDate != null ? sendDate.hashCode() : 0);
-    result = 31 * result + (sendState != null ? sendState.hashCode() : 0);
-    result = 31 * result + (messageBox != null ? messageBox.hashCode() : 0);
-    result = 31 * result + (dynamicListID != null ? dynamicListID.hashCode() : 0);
-    result = 31 * result + (wrapper != null ? wrapper.hashCode() : 0);
-    result = 31 * result + (category != null ? category.hashCode() : 0);
-    result = 31 * result + (uxState != null ? uxState.hashCode() : 0);
-    result = 31 * result + (emailMessageID != null ? emailMessageID.hashCode() : 0);
-    result = 31 * result + (recipientToCalendarURIMap != null ? recipientToCalendarURIMap.hashCode() : 0);
+    int result = this.id != null ? this.id.hashCode() : 0;
+    result = 31 * result + (this.senderID != null ? this.senderID.hashCode() : 0);
+    result = 31 * result + (this.sendDate != null ? this.sendDate.hashCode() : 0);
+    result = 31 * result + (this.sendState != null ? this.sendState.hashCode() : 0);
+    result = 31 * result + (this.messageBox != null ? this.messageBox.hashCode() : 0);
+    result = 31 * result + (this.dynamicListID != null ? this.dynamicListID.hashCode() : 0);
+    result = 31 * result + (this.wrapper != null ? this.wrapper.hashCode() : 0);
+    result = 31 * result + (this.category != null ? this.category.hashCode() : 0);
+    result = 31 * result + (this.uxState != null ? this.uxState.hashCode() : 0);
+    result = 31 * result + (this.emailMessageID != null ? this.emailMessageID.hashCode() : 0);
+    result = 31 * result + (this.recipientToCalendarURIMap != null ? this.recipientToCalendarURIMap.hashCode() : 0);
     return result;
   }
 }

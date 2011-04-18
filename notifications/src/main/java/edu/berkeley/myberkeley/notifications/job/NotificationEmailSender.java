@@ -93,6 +93,7 @@ public class NotificationEmailSender {
     this.sendEmail = (Boolean) props.get(SEND_EMAIL);
   }
 
+  @SuppressWarnings({"UnusedParameters"})
   protected void deactivate(ComponentContext componentContext) throws Exception {
     // nothing to do
   }
@@ -107,25 +108,25 @@ public class NotificationEmailSender {
       MultiPartEmail email = buildEmail(notification, recipAddresses, contentManager);
       if ( this.sendEmail ) {
         messageID = email.sendMimeMessage();
-        LOGGER.info("Sent real email with outgoing message ID = " + messageID);
+        this.LOGGER.info("Sent real email with outgoing message ID = " + messageID);
       } else {
         messageID = "sendEmail is false, email not sent";
-        LOGGER.info("sendEmail is false, not sending mail");
+        this.LOGGER.info("sendEmail is false, not sending mail");
       }
     } catch (AccessDeniedException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      this.LOGGER.error("NotificationEmailSender failed", e);
     } catch (StorageClientException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      this.LOGGER.error("NotificationEmailSender failed", e);
     } catch (EmailException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      this.LOGGER.error("NotificationEmailSender failed", e);
     } catch (MessagingException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      this.LOGGER.error("NotificationEmailSender failed", e);
     }finally {
       if (adminSession != null) {
         try {
           adminSession.logout();
         } catch (ClientPoolException e) {
-          LOGGER.error("NotificationEmailSender failed to log out of admin session", e);
+          this.LOGGER.error("NotificationEmailSender failed to log out of admin session", e);
         }
       }
     }
@@ -137,7 +138,7 @@ public class NotificationEmailSender {
     for (String id : recipientIDs) {
       emails.add(userIDToEmail(id, contentManager));
     }
-    LOGGER.info("Recipient email addresses: " + emails);
+    this.LOGGER.info("Recipient email addresses: " + emails);
     return emails;
   }
 
@@ -159,7 +160,7 @@ public class NotificationEmailSender {
     try {
       email.setFrom(userIDToEmail(notification.getSenderID(), contentManager));
     } catch (EmailException e) {
-      LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
+      this.LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
       throw e;
     }
 
@@ -169,7 +170,7 @@ public class NotificationEmailSender {
         email.addBcc(recipient);
       } catch (EmailException e) {
         // just skip invalid email addrs
-        LOGGER.warn("Invalid recipient email address [" + recipient + "] :" + e);
+        this.LOGGER.warn("Invalid recipient email address [" + recipient + "] :" + e);
       }
     }
 
@@ -207,15 +208,15 @@ public class NotificationEmailSender {
   }
 
   private void logEmail(MimeMessage mimeMessage) {
-    if (LOGGER.isInfoEnabled() && mimeMessage != null) {
+    if (this.LOGGER.isInfoEnabled() && mimeMessage != null) {
       try {
         ByteArrayOutputStream mout = new ByteArrayOutputStream();
         mimeMessage.writeTo(new FilterOutputStream(mout));
-        LOGGER.info("Email content = " + mout.toString());
+        this.LOGGER.info("Email content = " + mout.toString());
       } catch (IOException e) {
-        LOGGER.error("failed to log email", e);
+        this.LOGGER.error("failed to log email", e);
       } catch (MessagingException e) {
-        LOGGER.error("failed to log email", e);
+        this.LOGGER.error("failed to log email", e);
       }
     }
   }

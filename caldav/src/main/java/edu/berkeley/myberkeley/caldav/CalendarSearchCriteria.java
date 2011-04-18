@@ -61,7 +61,7 @@ public class CalendarSearchCriteria {
     }
 
     public Comparator<CalendarWrapper> getComparator() {
-      return comparator;
+      return this.comparator;
     }
 
     private static class DateComparator implements Comparator<CalendarWrapper> {
@@ -176,7 +176,7 @@ public class CalendarSearchCriteria {
   private Date end = new DateTime();
 
   public TYPE getType() {
-    return type;
+    return this.type;
   }
 
   public void setType(TYPE type) {
@@ -184,7 +184,7 @@ public class CalendarSearchCriteria {
   }
 
   public Date getStart() {
-    return start;
+    return this.start;
   }
 
   public void setStart(Date start) {
@@ -192,7 +192,7 @@ public class CalendarSearchCriteria {
   }
 
   public Date getEnd() {
-    return end;
+    return this.end;
   }
 
   public void setEnd(Date end) {
@@ -200,7 +200,7 @@ public class CalendarSearchCriteria {
   }
 
   public MODE getMode() {
-    return mode;
+    return this.mode;
   }
 
   public void setMode(MODE mode) {
@@ -208,7 +208,7 @@ public class CalendarSearchCriteria {
   }
 
   public SORT getSort() {
-    return sort;
+    return this.sort;
   }
 
   public void setSort(SORT sort) {
@@ -218,11 +218,11 @@ public class CalendarSearchCriteria {
   @Override
   public String toString() {
     return "CalendarSearchCriteria{" +
-            "type=" + type +
-            ", mode=" + mode +
-            ", sort=" + sort +
-            ", start=" + start +
-            ", end=" + end +
+            "type=" + this.type +
+            ", mode=" + this.mode +
+            ", sort=" + this.sort +
+            ", start=" + this.start +
+            ", end=" + this.end +
             '}';
   }
 

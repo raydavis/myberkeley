@@ -74,7 +74,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
     SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
     when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
-    servlet.doGet(request, response);
+    this.servlet.doGet(request, response);
 
     verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
             Mockito.anyString());
@@ -91,7 +91,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     when(response.getWriter()).thenReturn(new PrintWriter(responseStream));
 
     try {
-      servlet.doGet(request, response);
+      this.servlet.doGet(request, response);
       JSONObject json = new JSONObject(responseStream.toString("utf-8"));
       JSONArray results = (JSONArray) json.get("results");
       assertNotNull(results);
@@ -125,7 +125,7 @@ public class CalDavProxyServletTest extends CalDavTests {
 
     CalendarSearchCriteria criteria = new CalendarSearchCriteria();
     when(connector.searchByDate(criteria)).thenReturn(calendars);
-    servlet.handleGet(response, connector, criteria);
+    this.servlet.handleGet(response, connector, criteria);
 
   }
 
@@ -141,7 +141,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
             new ContainerRequestParameter(MONTH_AFTER_RANDOM_ETAG, "utf-8"));
 
-    CalendarSearchCriteria criteria = servlet.getCalendarSearchCriteria(request);
+    CalendarSearchCriteria criteria = this.servlet.getCalendarSearchCriteria(request);
     assertEquals(CalendarSearchCriteria.TYPE.VTODO, criteria.getType());
     assertEquals(CalendarSearchCriteria.MODE.ALL_ARCHIVED, criteria.getMode());
     assertEquals(new DateTime(RANDOM_ETAG, "yyyyMMdd'T'HHmmss", true), criteria.getStart());
@@ -151,7 +151,7 @@ public class CalDavProxyServletTest extends CalDavTests {
   @Test
   public void getDefaultSearchCriteria() throws ServletException {
     SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
-    servlet.getCalendarSearchCriteria(request);
+    this.servlet.getCalendarSearchCriteria(request);
   }
 
   @Test(expected = ServletException.class)
@@ -160,7 +160,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.start_date.toString())).thenReturn(
             new ContainerRequestParameter("not a date", "utf-8"));
 
-    servlet.getCalendarSearchCriteria(request);
+    this.servlet.getCalendarSearchCriteria(request);
   }
 
   @Test(expected = ServletException.class)
@@ -169,7 +169,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     when(request.getRequestParameter(CalDavProxyServlet.REQUEST_PARAMS.end_date.toString())).thenReturn(
             new ContainerRequestParameter("not a date either", "utf-8"));
 
-    servlet.getCalendarSearchCriteria(request);
+    this.servlet.getCalendarSearchCriteria(request);
   }
 
   @Test
@@ -177,7 +177,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     SlingHttpServletRequest request = mock(SlingHttpServletRequest.class);
     SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
     when(request.getRemoteUser()).thenReturn(UserConstants.ANON_USERID);
-    servlet.doPost(request, response);
+    this.servlet.doPost(request, response);
 
     verify(response).sendError(Mockito.eq(HttpServletResponse.SC_UNAUTHORIZED),
             Mockito.anyString());
@@ -191,7 +191,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     when(request.getRequestParameter(CalDavProxyServlet.POST_PARAMS.calendars.toString())).thenReturn(
             new ContainerRequestParameter(json, "utf-8"));
 
-    JSONArray batch = servlet.getCalendars(request);
+    JSONArray batch = this.servlet.getCalendars(request);
     assertNotNull(batch);
 
     CalDavConnector connector = mock(CalDavConnector.class);
@@ -201,7 +201,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal3", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal4", false), RANDOM_ETAG));
     when(connector.getCalendars(Matchers.<List<CalendarURI>>any())).thenReturn(calendars);
-    servlet.updateCalendars(request, connector);
+    this.servlet.updateCalendars(request, connector);
 
   }
 }

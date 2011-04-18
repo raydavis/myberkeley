@@ -47,7 +47,7 @@ public class NotificationSearchPropertyProviderTest extends NotificationTests {
     when(request.getRemoteUser()).thenReturn("joe");
     Map<String, String> props = new HashMap<String, String>();
 
-    provider.loadUserProperties(request, props);
+    this.provider.loadUserProperties(request, props);
     assertEquals(ClientUtils.escapeQueryChars(LitePersonalUtils.PATH_AUTHORIZABLE + "joe/" +
             Notification.STORE_NAME), props.get(Notification.SEARCH_PROP_NOTIFICATIONSTORE));
 

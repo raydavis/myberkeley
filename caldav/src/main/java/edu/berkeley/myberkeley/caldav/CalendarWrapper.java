@@ -101,6 +101,97 @@ public class CalendarWrapper implements Serializable {
     }
   }
 
+  public CalendarWrapper(JSONObject json) throws CalDavException {
+    try {
+      String uri = json.getString(JSON_PROPERTY_NAMES.uri.toString());
+      String etag = json.getString(JSON_PROPERTY_NAMES.etag.toString());
+      String componentName = json.getString(JSON_PROPERTY_NAMES.component.toString());
+
+      try {
+        this.calendarUri = new CalendarURI(new URI(uri, false), etag);
+      } catch (ParseException pe) {
+        throw new CalDavException("Exception parsing date '" + etag + "'", pe);
+      } catch (URIException uie) {
+        throw new CalDavException("Exception parsing uri '" + uri + "'", uie);
+      }
+
+      // build the ical Calendar object itself
+      CalendarBuilder builder = new CalendarBuilder();
+      this.calendar = new Calendar();
+      this.calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+      this.calendar.getProperties().add(Version.VERSION_2_0);
+      this.calendar.getProperties().add(CalScale.GREGORIAN);
+      TimeZoneRegistry registry = builder.getRegistry();
+      VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+      this.calendar.getComponents().add(tz);
+
+      JSONObject icalData = json.getJSONObject(JSON_PROPERTY_NAMES.icalData.toString());
+      if (icalData == null) {
+        throw new CalDavException("No valid icalData found in JSON", null);
+      }
+      String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
+      DateTime startDate = new DateTime();
+      try {
+        startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
+      } catch (JSONException ignored) {
+      }
+
+      if (Component.VEVENT.equals(componentName)) {
+        this.component = new VEvent(startDate, summary);
+      } else if (Component.VTODO.equals(componentName)) {
+        DateTime due = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString())).getTime());
+        this.component = new VToDo(startDate, due, summary);
+      } else {
+        throw new CalDavException("Unsupported component type " + componentName, null);
+      }
+
+      String uid = UUID.randomUUID().toString();
+      try {
+        uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
+      } catch (JSONException ignored) {
+      }
+
+      this.component.getProperties().add(new Uid(uid));
+
+      // handle optional props
+      try {
+        JSONArray categories = icalData.getJSONArray(ICAL_DATA_PROPERTY_NAMES.CATEGORIES.toString());
+        for (int i = 0; i < categories.length(); i++) {
+          String cat = categories.getString(i);
+          this.component.getProperties().add(new Categories(cat));
+        }
+      } catch (JSONException ignored) {
+
+      }
+
+      try {
+        String description = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DESCRIPTION.toString());
+        this.component.getProperties().add(new Description(description));
+      } catch (JSONException ignored) {
+
+      }
+
+      try {
+        String status = icalData.getString(ICAL_DATA_PROPERTY_NAMES.STATUS.toString());
+        this.component.getProperties().add(new Status(status));
+      } catch (JSONException ignored) {
+
+      }
+
+      try {
+        String loc = icalData.getString(ICAL_DATA_PROPERTY_NAMES.LOCATION.toString());
+        this.component.getProperties().add(new Location(loc));
+      } catch (JSONException ignored) {
+
+      }
+
+      this.calendar.getComponents().add(this.component);
+
+    } catch (JSONException je) {
+      throw new CalDavException("Invalid json data passed", je);
+    }
+  }
+
   public Calendar getCalendar() {
     return this.calendar;
   }
@@ -137,7 +228,7 @@ public class CalendarWrapper implements Serializable {
     return "CalendarWrapper{" +
             "uri='" + getUri().toString() + '\'' +
             "etag=" + getUri().getEtag() +
-            ",calendar=" + calendar +
+            ",calendar=" + this.calendar +
             '}';
   }
 
@@ -185,95 +276,6 @@ public class CalendarWrapper implements Serializable {
     return json;
   }
 
-  public static CalendarWrapper fromJSON(JSONObject json) throws CalDavException {
-    try {
-      String uri = json.getString(JSON_PROPERTY_NAMES.uri.toString());
-      String etag = json.getString(JSON_PROPERTY_NAMES.etag.toString());
-      String componentName = json.getString(JSON_PROPERTY_NAMES.component.toString());
-
-      // build the ical Calendar object itself
-      CalendarBuilder builder = new CalendarBuilder();
-      Calendar calendar = new Calendar();
-      calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-      calendar.getProperties().add(Version.VERSION_2_0);
-      calendar.getProperties().add(CalScale.GREGORIAN);
-      TimeZoneRegistry registry = builder.getRegistry();
-      VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
-      calendar.getComponents().add(tz);
-
-      JSONObject icalData = json.getJSONObject(JSON_PROPERTY_NAMES.icalData.toString());
-      if (icalData == null) {
-        throw new CalDavException("No valid icalData found in JSON", null);
-      }
-      String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
-      DateTime startDate = new DateTime();
-      try {
-        startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
-      } catch (JSONException ignored) {
-      }
-
-      Component component;
-      if (Component.VEVENT.equals(componentName)) {
-        component = new VEvent(startDate, summary);
-      } else if (Component.VTODO.equals(componentName)) {
-        DateTime due = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString())).getTime());
-        component = new VToDo(startDate, due, summary);
-      } else {
-        throw new CalDavException("Unsupported component type " + componentName, null);
-      }
-
-
-      String uid = UUID.randomUUID().toString();
-      try {
-        uid = icalData.getString(ICAL_DATA_PROPERTY_NAMES.UID.toString());
-      } catch (JSONException ignored) {
-      }
-
-      component.getProperties().add(new Uid(uid));
-
-      // handle optional props
-      try {
-        JSONArray categories = icalData.getJSONArray(ICAL_DATA_PROPERTY_NAMES.CATEGORIES.toString());
-        for (int i = 0; i < categories.length(); i++) {
-          String cat = categories.getString(i);
-          component.getProperties().add(new Categories(cat));
-        }
-      } catch (JSONException ignored) {
-
-      }
-
-      try {
-        String description = icalData.getString(ICAL_DATA_PROPERTY_NAMES.DESCRIPTION.toString());
-        component.getProperties().add(new Description(description));
-      } catch (JSONException ignored) {
-
-      }
-
-      try {
-        String status = icalData.getString(ICAL_DATA_PROPERTY_NAMES.STATUS.toString());
-        component.getProperties().add(new Status(status));
-      } catch (JSONException ignored) {
-
-      }
-
-      try {
-        String loc = icalData.getString(ICAL_DATA_PROPERTY_NAMES.LOCATION.toString());
-        component.getProperties().add(new Location(loc));
-      } catch (JSONException ignored) {
-
-      }
-
-      calendar.getComponents().add(component);
-
-      return new CalendarWrapper(calendar, new URI(uri, false), etag);
-
-    } catch (JSONException je) {
-      throw new CalDavException("Invalid json data passed", je);
-    } catch (URIException uie) {
-      throw new CalDavException("Invalid URI passed", uie);
-    }
-  }
-
   public void generateNewUID() {
     // give component a new UID so it will be unique in Bedework
     ((Uid) this.getComponent().getProperties().getProperty(Property.UID)).setValue(UUID.randomUUID().toString());
@@ -284,16 +286,16 @@ public class CalendarWrapper implements Serializable {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CalendarWrapper that = (CalendarWrapper) o;
-    return !(calendar != null ? !calendar.equals(that.calendar) : that.calendar != null)
-            && !(calendarUri != null ? !calendarUri.equals(that.calendarUri) : that.calendarUri != null)
-            && !(component != null ? !component.equals(that.component) : that.component != null);
+    return !(this.calendar != null ? !this.calendar.equals(that.calendar) : that.calendar != null)
+            && !(this.calendarUri != null ? !this.calendarUri.equals(that.calendarUri) : that.calendarUri != null)
+            && !(this.component != null ? !this.component.equals(that.component) : that.component != null);
   }
 
   @Override
   public int hashCode() {
-    int result = calendar != null ? calendar.hashCode() : 0;
-    result = 31 * result + (calendarUri != null ? calendarUri.hashCode() : 0);
-    result = 31 * result + (component != null ? component.hashCode() : 0);
+    int result = this.calendar != null ? this.calendar.hashCode() : 0;
+    result = 31 * result + (this.calendarUri != null ? this.calendarUri.hashCode() : 0);
+    result = 31 * result + (this.component != null ? this.component.hashCode() : 0);
     return result;
   }
 }

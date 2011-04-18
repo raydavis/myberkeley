@@ -51,7 +51,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
   @Before
   public void setup() {
     this.processor = new NotificationSearchResultProcessor();
-    processor.searchServiceFactory = mock(SolrSearchServiceFactory.class);
+    this.processor.searchServiceFactory = mock(SolrSearchServiceFactory.class);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
 
     when(cm.get("/note/a")).thenReturn(contentA);
 
-    processor.writeResult(request, writer, mockResult(contentA));
+    this.processor.writeResult(request, writer, mockResult(contentA));
     w.flush();
 
     String s = baos.toString("UTF-8");
@@ -94,7 +94,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
     // make sure some key parts of the notification made it into json
     JSONObject json = new JSONObject(s);
     assertEquals("reminder", json.getString("category"));
-    CalendarWrapper wrapper = CalendarWrapper.fromJSON(json.getJSONObject("calendarWrapper"));
+    CalendarWrapper wrapper = new CalendarWrapper(json.getJSONObject("calendarWrapper"));
     assertNotNull(wrapper);
     assertTrue(json.getJSONObject("uxState").getBoolean("validated"));
   }

@@ -72,7 +72,7 @@ public class CalendarURI extends URI implements Serializable {
   }
 
   public Date getEtag() {
-    return etag;
+    return this.etag;
   }
 
 }

@@ -80,8 +80,8 @@ public class SendNotificationsJobTest extends NotificationTests {
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     this.job = new SendNotificationsJob(repo, emailSender, provider);
 
-    when(this.job.repository.loginAdministrative()).thenReturn(adminSession);
-    when(adminSession.getContentManager()).thenReturn(cm);
+    when(this.job.repository.loginAdministrative()).thenReturn(this.adminSession);
+    when(this.adminSession.getContentManager()).thenReturn(this.cm);
 
   }
 
@@ -95,20 +95,20 @@ public class SendNotificationsJobTest extends NotificationTests {
     notification.toContent("/notice1", content);
     List<Content> results = new ArrayList<Content>();
     results.add(content);
-    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+    when(this.cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
 
-    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
     when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
-    this.job.execute(context);
+    this.job.execute(this.context);
 
     verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
-    verify(cm).update(Matchers.<Content>any());
-    verify(adminSession).logout();
+    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.adminSession).logout();
     verify(this.job.emailSender).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }
 
@@ -126,20 +126,20 @@ public class SendNotificationsJobTest extends NotificationTests {
     notification.toContent("/notice1", content);
     List<Content> results = new ArrayList<Content>();
     results.add(content);
-    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+    when(this.cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
 
-    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
 
-    this.job.execute(context);
+    this.job.execute(this.context);
 
     verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
-    verify(cm).update(Matchers.<Content>any());
-    verify(adminSession).logout();
+    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.adminSession).logout();
     verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }
 
@@ -159,20 +159,20 @@ public class SendNotificationsJobTest extends NotificationTests {
     notification.toContent("/notice1", content);
     List<Content> results = new ArrayList<Content>();
     results.add(content);
-    when(cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+    when(this.cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
 
-    when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
 
-    this.job.execute(context);
+    this.job.execute(this.context);
 
     verify(connector, times(0)).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
-    verify(cm).update(Matchers.<Content>any());
-    verify(adminSession).logout();
+    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.adminSession).logout();
     verify(this.job.emailSender, times(1)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }
 

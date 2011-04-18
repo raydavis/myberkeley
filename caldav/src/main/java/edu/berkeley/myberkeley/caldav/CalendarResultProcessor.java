@@ -46,7 +46,7 @@ public class CalendarResultProcessor {
   private void filter() {
     List<CalendarWrapper> filteredResults = new ArrayList<CalendarWrapper>(this.results.size());
     for (CalendarWrapper wrapper : this.results) {
-      switch (criteria.getMode()) {
+      switch (this.criteria.getMode()) {
         case REQUIRED:
           if (wrapper.isRequired() && !wrapper.isArchived()) {
             filteredResults.add(wrapper);
@@ -73,7 +73,7 @@ public class CalendarResultProcessor {
   }
 
   private void sort() {
-    Collections.sort(this.results, criteria.getSort().getComparator());
+    Collections.sort(this.results, this.criteria.getSort().getComparator());
   }
 
 }

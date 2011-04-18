@@ -61,15 +61,15 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
   public void activate() throws Exception {
     Dictionary<String, Long> dictionary = new Hashtable<String, Long>();
     dictionary.put(SendNotificationsScheduler.PROP_POLL_INTERVAL_SECONDS, 60L);
-    when(context.getProperties()).thenReturn(dictionary);
-    this.sender.activate(context);
+    when(this.context.getProperties()).thenReturn(dictionary);
+    this.sender.activate(this.context);
     verify(this.sender.scheduler).addPeriodicJob(Matchers.<String>any(), Matchers.<SendNotificationsJob>any(),
             Matchers.<Map<String, Serializable>>any(), Matchers.anyLong(), Matchers.anyBoolean());
   }
 
   @Test
   public void deactivate() throws Exception {
-    this.sender.deactivate(context);
+    this.sender.deactivate(this.context);
     verify(this.sender.scheduler).removeJob(SendNotificationsScheduler.JOB_NAME);
   }
 

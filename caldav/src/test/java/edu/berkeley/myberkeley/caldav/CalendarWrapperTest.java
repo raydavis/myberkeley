@@ -81,7 +81,7 @@ public class CalendarWrapperTest extends CalDavTests {
   public void badCallToFromJSON() throws CalDavException, JSONException {
     JSONObject bogus = new JSONObject();
     bogus.put("foo", "bar");
-    CalendarWrapper.fromJSON(bogus);
+    new CalendarWrapper(bogus);
   }
 
   @Test
@@ -90,12 +90,12 @@ public class CalendarWrapperTest extends CalDavTests {
     String json = IOUtils.readFully(in, "utf-8");
     JSONObject jsonObject = new JSONObject(json);
 
-    CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
+    CalendarWrapper wrapper = new CalendarWrapper(jsonObject);
     assertNotNull(wrapper);
     assertEquals(wrapper.getComponent().getName(), Component.VTODO);
 
     // check for nondestructive deserialization
-    assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
+    assertEquals(wrapper, new CalendarWrapper(wrapper.toJSON()));
   }
 
   @Test
@@ -104,19 +104,19 @@ public class CalendarWrapperTest extends CalDavTests {
     String json = IOUtils.readFully(in, "utf-8");
     JSONObject jsonObject = new JSONObject(json);
 
-    CalendarWrapper wrapper = CalendarWrapper.fromJSON(jsonObject);
+    CalendarWrapper wrapper = new CalendarWrapper(jsonObject);
     assertNotNull(wrapper);
     assertEquals(wrapper.getComponent().getName(), Component.VEVENT);
     assertNotNull(wrapper.getComponent().getProperty(Property.LOCATION));
     // check for nondestructive deserialization
-    assertEquals(wrapper, CalendarWrapper.fromJSON(wrapper.toJSON()));
+    assertEquals(wrapper, new CalendarWrapper(wrapper.toJSON()));
   }
 
   @Test
   public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException {
     CalendarWrapper original = getWrapper();
     JSONObject json = original.toJSON();
-    CalendarWrapper deserialized = CalendarWrapper.fromJSON(json);
+    CalendarWrapper deserialized = new CalendarWrapper(json);
     assertEquals(original, deserialized);
     assertEquals(original.hashCode(), deserialized.hashCode());
   }

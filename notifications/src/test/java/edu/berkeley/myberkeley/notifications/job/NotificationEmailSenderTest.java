@@ -89,8 +89,8 @@ public class NotificationEmailSenderTest extends NotificationTests {
     dictionary.put(NotificationEmailSender.SEND_EMAIL, true);
     dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
     dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
-    when(componentContext.getProperties()).thenReturn(dictionary);
-    this.sender.activate(componentContext);
+    when(this.componentContext.getProperties()).thenReturn(dictionary);
+    this.sender.activate(this.componentContext);
 
     assertEquals(this.sender.maxRetries, (Integer) 10);
     assertEquals(this.sender.retryInterval, (Integer) 5);
@@ -101,7 +101,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
   @Test
   public void deactivate() throws Exception {
-    this.sender.deactivate(componentContext);
+    this.sender.deactivate(this.componentContext);
   }
 
   @Test
