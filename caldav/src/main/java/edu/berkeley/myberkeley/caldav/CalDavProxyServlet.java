@@ -26,6 +26,7 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -58,6 +59,9 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
   private static final long serialVersionUID = 5522248522595237407L;
 
+  @Reference
+  CalDavConnectorProvider calDavConnectorProvider;
+
   public enum REQUEST_PARAMS {
     type,
     mode,
@@ -80,10 +84,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     try {
-      // TODO set the correct username instead of hardcoding vbede
-      CalDavConnector connector = new CalDavConnector("admin", "bedework",
-              new URI("http://test.media.berkeley.edu:8080", false),
-              new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
+      CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
       updateCalendars(request, connector);
     } catch (Exception e) {
       LOGGER.error("Exception fetching calendar", e);
@@ -106,9 +107,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     // TODO set the correct username instead of hardcoding vbede
-    CalDavConnector connector = new CalDavConnector("vbede", "bedework",
-            new URI("http://test.media.berkeley.edu:8080", false),
-            new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
+    CalDavConnector connector = this.calDavConnectorProvider.getConnector("vbede", "bedework");
 
     CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 

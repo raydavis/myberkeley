@@ -100,7 +100,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
-    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
     when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
@@ -131,7 +131,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
-    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
 
@@ -164,7 +164,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnector.class);
-    when(this.job.calDavConnectorProvider.getCalDavConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
 

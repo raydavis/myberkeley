@@ -20,7 +20,6 @@
 
 package edu.berkeley.myberkeley.caldav;
 
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +37,7 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.sakaiproject.nakamura.util.IOUtils;
@@ -63,6 +63,10 @@ public class CalDavProxyServletTest extends CalDavTests {
   @Before
   public void setUp() throws Exception {
     this.servlet = new CalDavProxyServlet();
+    this.servlet.calDavConnectorProvider = new CalDavConnectorProvider();
+    this.servlet.calDavConnectorProvider.adminUsername = "admin";
+    this.servlet.calDavConnectorProvider.adminPassword = "bedework";
+    this.servlet.calDavConnectorProvider.calDavServerRoot = "http://test.media.berkeley.edu:8080";
   }
 
   @Test
@@ -196,7 +200,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal2", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal3", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal4", false), RANDOM_ETAG));
-    when(connector.getCalendars(anyList())).thenReturn(calendars);
+    when(connector.getCalendars(Matchers.<List<CalendarURI>>any())).thenReturn(calendars);
     servlet.updateCalendars(request, connector);
 
   }

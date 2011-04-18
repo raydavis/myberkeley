@@ -25,9 +25,7 @@ import edu.berkeley.myberkeley.caldav.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.CalDavException;
 import edu.berkeley.myberkeley.caldav.CalendarURI;
-import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
-import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
@@ -155,7 +153,7 @@ public class SendNotificationsJob implements Job {
       }
 
       if (needsCalendarEntry) {
-        CalDavConnector connector = this.calDavConnectorProvider.getCalDavConnector();
+        CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
         notification.getWrapper().generateNewUID();
         CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar(), userID);
         recipientToCalendarURIMap.put(userID, uri.toJSON());

@@ -43,12 +43,13 @@ public class CalDavConnectorProvider {
   @org.apache.felix.scr.annotations.Property(value = "http://test.media.berkeley.edu:8080", label = "CalDav Server Root")
   protected static final String PROP_SERVER_ROOT = "caldavconnectorprovider.serverroot";
 
-  private String adminUsername;
+  String adminUsername;
 
-  private String adminPassword;
+  String adminPassword;
 
-  private String calDavServerRoot;
+  String calDavServerRoot;
 
+  @SuppressWarnings({"UnusedDeclaration"})
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
     this.adminUsername = (String) props.get(PROP_ADMIN_USERNAME);
@@ -57,13 +58,13 @@ public class CalDavConnectorProvider {
 
   }
 
-  public CalDavConnector getCalDavConnector() throws URIException {
-    // TODO get connector appropriate for recipient user
-    // TODO make admin password configurable
-
-    return new CalDavConnector(this.adminUsername, this.adminPassword,
-            new URI(this.calDavServerRoot, false),
-            new URI(this.calDavServerRoot + "/ucaldav/user/vbede/calendar/", false));
+  public CalDavConnector getAdminConnector() throws URIException {
+    return getConnector(this.adminUsername, this.adminPassword);
   }
 
+  public CalDavConnector getConnector(String username, String password) throws URIException {
+    return new CalDavConnector(username, password,
+            new URI(this.calDavServerRoot, false),
+            new URI(this.calDavServerRoot + "/ucaldav/user/" + username + "/calendar/", false));
+  }
 }
