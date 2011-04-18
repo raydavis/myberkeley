@@ -192,46 +192,6 @@ public class CalendarWrapper implements Serializable {
     }
   }
 
-  public Calendar getCalendar() {
-    return this.calendar;
-  }
-
-  public Component getComponent() {
-    return this.component;
-  }
-
-  public CalendarURI getUri() {
-    return this.calendarUri;
-  }
-
-  public Date getEtag() {
-    return this.calendarUri.getEtag();
-  }
-
-  public boolean isCompleted() {
-    PropertyList propList = this.component.getProperties(Property.STATUS);
-    return propList != null && propList.contains(Status.VTODO_COMPLETED);
-  }
-
-  public boolean isRequired() {
-    PropertyList propList = this.component.getProperties(Property.CATEGORIES);
-    return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
-  }
-
-  public boolean isArchived() {
-    PropertyList propList = this.component.getProperties(Property.CATEGORIES);
-    return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
-  }
-
-  @Override
-  public String toString() {
-    return "CalendarWrapper{" +
-            "uri='" + getUri().toString() + '\'' +
-            "etag=" + getUri().getEtag() +
-            ",calendar=" + this.calendar +
-            '}';
-  }
-
   public JSONObject toJSON() throws JSONException {
     JSONObject icalData = new JSONObject();
     JSONArray categoriesArray = new JSONArray();
@@ -279,6 +239,46 @@ public class CalendarWrapper implements Serializable {
   public void generateNewUID() {
     // give component a new UID so it will be unique in Bedework
     ((Uid) this.getComponent().getProperties().getProperty(Property.UID)).setValue(UUID.randomUUID().toString());
+  }
+
+  public Calendar getCalendar() {
+    return this.calendar;
+  }
+
+  public Component getComponent() {
+    return this.component;
+  }
+
+  public CalendarURI getUri() {
+    return this.calendarUri;
+  }
+
+  public Date getEtag() {
+    return this.calendarUri.getEtag();
+  }
+
+  public boolean isCompleted() {
+    PropertyList propList = this.component.getProperties(Property.STATUS);
+    return propList != null && propList.contains(Status.VTODO_COMPLETED);
+  }
+
+  public boolean isRequired() {
+    PropertyList propList = this.component.getProperties(Property.CATEGORIES);
+    return propList != null && propList.contains(CalDavConnector.MYBERKELEY_REQUIRED);
+  }
+
+  public boolean isArchived() {
+    PropertyList propList = this.component.getProperties(Property.CATEGORIES);
+    return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
+  }
+
+  @Override
+  public String toString() {
+    return "CalendarWrapper{" +
+            "uri='" + getUri().toString() + '\'' +
+            "etag=" + getUri().getEtag() +
+            ",calendar=" + this.calendar +
+            '}';
   }
 
   @Override
