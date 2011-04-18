@@ -21,14 +21,12 @@
 package edu.berkeley.myberkeley.notifications;
 
 import edu.berkeley.myberkeley.caldav.CalDavException;
-import edu.berkeley.myberkeley.caldav.CalendarURI;
 import edu.berkeley.myberkeley.caldav.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 
-import java.util.Map;
 import java.util.UUID;
 
 public class Notification {
@@ -44,6 +42,7 @@ public class Notification {
     sent
   }
 
+  @SuppressWarnings({"UnusedDeclaration"})
   public enum MESSAGEBOX {
     drafts,
     queue,
@@ -51,11 +50,13 @@ public class Notification {
     trash
   }
 
+  @SuppressWarnings({"UnusedDeclaration"})
   public enum CATEGORY {
     reminder,           // a task or event stored in Bedework
     message             // a Sakai message (possibly also emailed out)
   }
 
+  @SuppressWarnings({"UnusedDeclaration"})
   public enum JSON_PROPERTIES {
     id,
     senderID,
@@ -240,6 +241,7 @@ public class Notification {
     }
   }
 
+  @SuppressWarnings({"RedundantIfStatement"})
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

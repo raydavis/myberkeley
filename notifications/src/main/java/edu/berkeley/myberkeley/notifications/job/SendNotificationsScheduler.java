@@ -75,6 +75,7 @@ public class SendNotificationsScheduler {
     }
   }
 
+  @SuppressWarnings({"UnusedParameters"})
   protected void deactivate(ComponentContext componentContext) throws Exception {
     LOGGER.debug("Removing SendNotificationsJob...");
     this.scheduler.removeJob(JOB_NAME);
