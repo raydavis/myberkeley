@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
@@ -42,6 +43,9 @@ import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
+import org.apache.sling.commons.testing.jcr.MockNode;
+import org.apache.sling.commons.testing.jcr.MockProperty;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +64,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 public class SendNotificationsJobTest extends NotificationTests {
 
@@ -79,16 +85,24 @@ public class SendNotificationsJobTest extends NotificationTests {
   }
 
   @Before
-  public void setup() throws StorageClientException, AccessDeniedException, IOException {
+  public void setup() throws StorageClientException, AccessDeniedException, IOException, RepositoryException {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     DynamicListService dynamicListService = mock(DynamicListService.class);
+    SlingRepository slingRepository = mock(SlingRepository.class);
 
-    this.job = new SendNotificationsJob(repo, emailSender, provider, dynamicListService);
+    this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService);
 
-    when(this.job.repository.loginAdministrative()).thenReturn(this.adminSession);
+    when(this.job.sparseRepository.loginAdministrative()).thenReturn(this.adminSession);
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
+
+    javax.jcr.Session jcrSession = mock(javax.jcr.Session.class);
+    Node node = mock(Node.class);
+    when(node.getProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP)).thenReturn(new MockProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP));
+    when(this.job.slingRepository.loginAdministrative(null)).thenReturn(jcrSession);
+    when(jcrSession.getNode(anyString())).thenReturn(node);
+
     when(this.job.dynamicListService.getUserIdsForCriteria(Matchers.<DynamicListContext>any(), Matchers.anyString())).thenReturn(
             Arrays.asList("300847"));
   }
@@ -108,13 +122,13 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
-    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+    when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
     when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
     this.job.execute(this.context);
 
-    verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(connector).putCalendar(Matchers.<Calendar>any());
     verify(this.cm).update(Matchers.<Content>any());
     verify(this.adminSession).logout();
     verify(this.job.emailSender).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
@@ -139,13 +153,13 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
-    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+    when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
     this.job.execute(this.context);
 
-    verify(connector).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(connector).putCalendar(Matchers.<Calendar>any());
     verify(this.cm).update(Matchers.<Content>any());
     verify(this.adminSession).logout();
     verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
@@ -172,13 +186,13 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector()).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
-    when(connector.putCalendar(Matchers.<Calendar>any(), Matchers.anyString())).thenReturn(uri);
+    when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
     this.job.execute(this.context);
 
-    verify(connector, times(0)).putCalendar(Matchers.<Calendar>any(), Matchers.anyString());
+    verify(connector, times(0)).putCalendar(Matchers.<Calendar>any());
     verify(this.cm).update(Matchers.<Content>any());
     verify(this.adminSession).logout();
     verify(this.job.emailSender, times(1)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());

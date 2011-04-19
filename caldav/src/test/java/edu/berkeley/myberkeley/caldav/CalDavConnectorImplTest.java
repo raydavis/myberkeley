@@ -65,8 +65,8 @@ public class CalDavConnectorImplTest extends CalDavTests {
 
   @Before
   public void setup() throws CalDavException, URIException {
-    this.adminConnector = new CalDavConnectorImpl("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
-    this.userConnector = new CalDavConnectorImpl(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false));
+    this.adminConnector = new CalDavConnectorImpl("admin", "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false), OWNER);
+    this.userConnector = new CalDavConnectorImpl(OWNER, "bedework", new URI(SERVER_ROOT, false), new URI(USER_HOME, false), OWNER);
     deleteAll();
   }
 
@@ -79,7 +79,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void putCalendar() throws CalDavException {
     try {
       Calendar calendar = buildVevent("Created by CalDavTests");
-      URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+      URI uri = this.adminConnector.putCalendar(calendar);
       boolean found = doesEntryExist(uri);
       assertTrue(found);
     } catch (IOException ioe) {
@@ -91,7 +91,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void delete() throws CalDavException {
     try {
       Calendar calendar = buildVevent("Created by CalDavTests");
-      CalendarURI uri = this.adminConnector.putCalendar(calendar, OWNER);
+      CalendarURI uri = this.adminConnector.putCalendar(calendar);
       assertTrue(doesEntryExist(uri));
       this.adminConnector.deleteCalendar(uri);
       assertFalse(doesEntryExist(uri));
@@ -114,7 +114,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void putThenGetCalendarEntry() throws CalDavException, ParseException, URIException {
     try {
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      URI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+      URI uri = this.adminConnector.putCalendar(originalCalendar);
 
       List<CalendarURI> uris = new ArrayList<CalendarURI>();
       uris.add(new CalendarURI(uri, RANDOM_ETAG));
@@ -142,7 +142,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       deleteAll();
 
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      this.adminConnector.putCalendar(originalCalendar, OWNER);
+      this.adminConnector.putCalendar(originalCalendar);
 
       DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
       DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
@@ -184,7 +184,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       deleteAll();
 
       Calendar vtodo = buildVTodo("Archived VTODO");
-      CalendarURI todoURI = this.adminConnector.putCalendar(vtodo, OWNER);
+      CalendarURI todoURI = this.adminConnector.putCalendar(vtodo);
       DateTime monthAgo = new DateTime(DateUtils.addDays(new Date(), -30));
       DateTime fourWeeksHence = new DateTime(DateUtils.addDays(new Date(), 28));
 
@@ -201,7 +201,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       // now archive the vtodo and search for it again
       Component vtodoComp = vtodo.getComponent(Component.VTODO);
       vtodoComp.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
-      this.adminConnector.modifyCalendar(todoURI, vtodo, OWNER);
+      this.adminConnector.modifyCalendar(todoURI, vtodo);
 
       assertTrue(this.adminConnector.searchByDate(criteria).isEmpty());
 
@@ -217,8 +217,8 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void verifyUserUnableToPutAnAdminCreatedEvent() throws CalDavException {
     try {
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      this.adminConnector.putCalendar(originalCalendar, OWNER);
-      this.userConnector.putCalendar(originalCalendar, OWNER);
+      this.adminConnector.putCalendar(originalCalendar);
+      this.userConnector.putCalendar(originalCalendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
       throw new BadRequestException("");
@@ -229,7 +229,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void verifyUserUnableToDelete() throws CalDavException {
     try {
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      CalendarURI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+      CalendarURI uri = this.adminConnector.putCalendar(originalCalendar);
       this.userConnector.deleteCalendar(uri);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
@@ -241,7 +241,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void verifyUserAbleToPutOwnEvent() throws CalDavException {
     try {
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      this.userConnector.putCalendar(originalCalendar, OWNER);
+      this.userConnector.putCalendar(originalCalendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
       throw new BadRequestException("");
@@ -252,7 +252,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void putThenModify() throws CalDavException, ParseException, URIException {
     try {
       Calendar originalCalendar = buildVevent("Created by CalDavTests");
-      CalendarURI uri = this.adminConnector.putCalendar(originalCalendar, OWNER);
+      CalendarURI uri = this.adminConnector.putCalendar(originalCalendar);
 
       long newStart = System.currentTimeMillis() + (1000 * 60 * 60 * 24 * 2);
       VEvent vevent = (VEvent) originalCalendar.getComponent(Component.VEVENT);
@@ -263,7 +263,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       originalCalendar.getComponents().remove(vevent);
       originalCalendar.getComponents().add(newVevent);
 
-      this.adminConnector.modifyCalendar(uri, originalCalendar, OWNER);
+      this.adminConnector.modifyCalendar(uri, originalCalendar);
 
       List<CalendarURI> uris = new ArrayList<CalendarURI>();
       uris.add(new CalendarURI(uri, RANDOM_ETAG));
@@ -287,7 +287,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
               new URI(new URI(USER_HOME, false), "random-" + System.currentTimeMillis() + ".ics", false),
               new DateTime());
 
-      this.adminConnector.modifyCalendar(uri, calendar, OWNER);
+      this.adminConnector.modifyCalendar(uri, calendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
       throw new BadRequestException("");
@@ -298,7 +298,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void putTodo() throws CalDavException, ParseException, URIException {
     try {
       Calendar calendar = buildVTodo("Todo created by CalDavTests");
-      URI uri = this.adminConnector.putCalendar(calendar, OWNER);
+      URI uri = this.adminConnector.putCalendar(calendar);
 
       List<CalendarURI> uris = new ArrayList<CalendarURI>(1);
       uris.add(new CalendarURI(uri, RANDOM_ETAG));
@@ -333,7 +333,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
   public void hasAnOverdueTask() throws CalDavException {
     Calendar calendar = buildOverdueTask("Overdue test task");
     try {
-      this.adminConnector.putCalendar(calendar, OWNER);
+      this.adminConnector.putCalendar(calendar);
       assertTrue(this.adminConnector.hasOverdueTasks());
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);

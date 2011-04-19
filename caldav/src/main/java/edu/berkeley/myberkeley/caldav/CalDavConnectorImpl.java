@@ -95,7 +95,9 @@ public class CalDavConnectorImpl implements CalDavConnector {
 
   private final String username;
 
-  public CalDavConnectorImpl(String username, String password, URI serverRoot, URI userHome) {
+  private final String owner;
+
+  public CalDavConnectorImpl(String username, String password, URI serverRoot, URI userHome, String owner) {
     HttpState httpState = new HttpState();
     Credentials credentials = new UsernamePasswordCredentials(username, password);
     httpState.setCredentials(AuthScope.ANY, credentials);
@@ -103,6 +105,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
     this.serverRoot = serverRoot;
     this.userHome = userHome;
     this.username = username;
+    this.owner = owner;
   }
 
   /**
@@ -143,8 +146,8 @@ public class CalDavConnectorImpl implements CalDavConnector {
    *
    * @return The URI of the newly created calendar entry.
    */
-  public CalendarURI putCalendar(Calendar calendar, String ownerID) throws CalDavException, IOException {
-    return modifyCalendar(null, calendar, ownerID);
+  public CalendarURI putCalendar(Calendar calendar) throws CalDavException, IOException {
+    return modifyCalendar(null, calendar);
   }
 
   /**
@@ -152,7 +155,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
    *
    * @return The URI of the calendar entry.
    */
-  public CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar, String ownerID) throws CalDavException, IOException {
+  public CalendarURI modifyCalendar(CalendarURI uri, Calendar calendar) throws CalDavException, IOException {
     if (uri == null) {
       try {
         uri = new CalendarURI(
@@ -173,7 +176,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
       LOGGER.error("Got unsupported encoding exception", uee);
     }
     executeMethod(put);
-    restrictPermissions(uri, ownerID);
+    restrictPermissions(uri);
     return uri;
   }
 
@@ -334,9 +337,9 @@ public class CalDavConnectorImpl implements CalDavConnector {
     }
   }
 
-  private void restrictPermissions(CalendarURI uri, String ownerID) throws CalDavException {
+  private void restrictPermissions(CalendarURI uri) throws CalDavException {
     // owner can only read and write, admin can do anything
-    Principal owner = Principal.getHrefPrincipal("/principals/users/" + ownerID);
+    Principal owner = Principal.getHrefPrincipal("/principals/users/" + this.owner);
     Principal admin = Principal.getHrefPrincipal("/principals/users/" + this.username);
     Privilege[] adminPrivs = new Privilege[]{Privilege.PRIVILEGE_ALL};
     Privilege[] ownerPrivs = new Privilege[]{Privilege.PRIVILEGE_READ, Privilege.PRIVILEGE_READ_ACL,

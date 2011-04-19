@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.api.BadRequestException;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
@@ -31,6 +32,7 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
@@ -48,12 +50,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 public class SendNotificationsJob implements Job {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsJob.class);
 
-  final Repository repository;
+  final Repository sparseRepository;
 
   final NotificationEmailSender emailSender;
 
@@ -61,9 +65,12 @@ public class SendNotificationsJob implements Job {
 
   final DynamicListService dynamicListService;
 
-  public SendNotificationsJob(Repository repository, NotificationEmailSender emailSender,
+  final SlingRepository slingRepository;
+
+  public SendNotificationsJob(Repository sparseRepository, SlingRepository slingRepository, NotificationEmailSender emailSender,
                               CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService) {
-    this.repository = repository;
+    this.sparseRepository = sparseRepository;
+    this.slingRepository = slingRepository;
     this.emailSender = emailSender;
     this.calDavConnectorProvider = calDavConnectorProvider;
     this.dynamicListService = dynamicListService;
@@ -75,7 +82,7 @@ public class SendNotificationsJob implements Job {
     Session adminSession = null;
 
     try {
-      adminSession = this.repository.loginAdministrative();
+      adminSession = this.sparseRepository.loginAdministrative();
       Iterable<Content> results = getQueuedNotifications(adminSession);
       processResults(results, adminSession.getContentManager());
     } catch (AccessDeniedException e) {
@@ -146,17 +153,21 @@ public class SendNotificationsJob implements Job {
     JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
 
     try {
-
+      javax.jcr.Session jcrSession = this.slingRepository.loginAdministrative(null);
+      Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/g-ced-students");
+      DynamicListContext context = new DynamicListContext(listContextNode);
 
       // TODO get dynlistcontext and criteria from notification by looking up the dyn list
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(null, "{\n" +
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(context, "{\n" +
               "    \"AND\": [\n" +
               "        \"/colleges/CED/standings/undergrad\"\n" +
               "    ]\n" +
               "}");
 
-      // save notification in bedework server
+      // TODO remove this hardcoding hack
+      userIDs = Arrays.asList("300847");
 
+      // save notification in bedework server
       for ( String userID : userIDs ) {
         boolean needsCalendarEntry;
         try {
@@ -166,9 +177,9 @@ public class SendNotificationsJob implements Job {
         }
 
         if (needsCalendarEntry) {
-          CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
+          CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(userID);
           notification.getWrapper().generateNewUID();
-          CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar(), userID);
+          CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
           recipientToCalendarURIMap.put(userID, uri.toJSON());
         }
       }
@@ -192,6 +203,8 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
     } catch (CalDavException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
+    } catch (RepositoryException e ) {
+      LOGGER.error("Got repo exception processing notification at path " + result.getPath(), e);
     }
 
     result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());

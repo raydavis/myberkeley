@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import org.apache.sling.commons.scheduler.Scheduler;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -54,7 +55,8 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
   @Before
   public void setup() {
     this.sender = new SendNotificationsScheduler();
-    this.sender.repository = mock(Repository.class);
+    this.sender.sparseRepository = mock(Repository.class);
+    this.sender.slingRepository = mock(SlingRepository.class);
     this.sender.scheduler = mock(Scheduler.class);
     this.sender.dynamicListService = mock(DynamicListService.class);
   }

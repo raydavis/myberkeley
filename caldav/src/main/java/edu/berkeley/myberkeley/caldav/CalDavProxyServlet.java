@@ -89,7 +89,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     }
 
     try {
-      CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
+      CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(request.getRemoteUser());
       updateCalendars(request, connector);
     } catch (Exception e) {
       LOGGER.error("Exception fetching calendar", e);
@@ -111,8 +111,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
       return;
     }
 
-    // TODO set the correct username instead of hardcoding vbede
-    CalDavConnectorImpl connector = this.calDavConnectorProvider.getConnector("vbede", "bedework");
+    CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(request.getRemoteUser());
 
     CalendarSearchCriteria criteria = getCalendarSearchCriteria(request);
 
@@ -161,7 +160,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
     return criteria;
   }
 
-  protected void handleGet(SlingHttpServletResponse response, CalDavConnectorImpl connector,
+  protected void handleGet(SlingHttpServletResponse response, CalDavConnector connector,
                            CalendarSearchCriteria criteria) throws IOException {
     List<CalendarWrapper> calendars;
     boolean hasOverdue = false;
@@ -254,8 +253,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         component.getProperties().add(new Status(Status.COMPLETED));
       }
 
-      // TODO set the correct owner of this calendar instead of hardcoding vbede
-      connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar(), "vbede");
+      connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar());
     }
   }
 }

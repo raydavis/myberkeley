@@ -24,7 +24,7 @@ import edu.berkeley.myberkeley.caldav.CalDavConnectorImpl;
 import org.apache.commons.httpclient.URIException;
 
 public interface CalDavConnectorProvider {
-  CalDavConnector getAdminConnector() throws URIException;
+  CalDavConnector getAdminConnector(String owner) throws URIException;
 
   CalDavConnectorImpl getConnector(String username, String password) throws URIException;
 }

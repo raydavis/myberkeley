@@ -60,13 +60,15 @@ public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
 
   }
 
-  public CalDavConnector getAdminConnector() throws URIException {
-    return getConnector(this.adminUsername, this.adminPassword);
+  public CalDavConnector getAdminConnector(String owner) throws URIException {
+    return new CalDavConnectorImpl(this.adminUsername, this.adminPassword,
+            new URI(this.calDavServerRoot, false),
+            new URI(this.calDavServerRoot + "/ucaldav/user/" + owner + "/calendar/", false), owner);
   }
 
   public CalDavConnectorImpl getConnector(String username, String password) throws URIException {
     return new CalDavConnectorImpl(username, password,
             new URI(this.calDavServerRoot, false),
-            new URI(this.calDavServerRoot + "/ucaldav/user/" + username + "/calendar/", false));
+            new URI(this.calDavServerRoot + "/ucaldav/user/" + username + "/calendar/", false), username);
   }
 }

@@ -27,6 +27,7 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.Scheduler;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.slf4j.Logger;
@@ -46,7 +47,10 @@ public class SendNotificationsScheduler {
   private static final Logger LOGGER = LoggerFactory.getLogger(SendNotificationsScheduler.class);
 
   @Reference
-  protected Repository repository;
+  protected Repository sparseRepository;
+
+  @Reference
+  protected SlingRepository slingRepository;
 
   @Reference
   protected Scheduler scheduler;
@@ -70,7 +74,7 @@ public class SendNotificationsScheduler {
     Dictionary<?, ?> props = componentContext.getProperties();
     Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
-    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider,
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.slingRepository, this.emailSender, this.provider,
             this.dynamicListService);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");
