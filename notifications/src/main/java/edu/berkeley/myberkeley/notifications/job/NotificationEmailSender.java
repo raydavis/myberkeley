@@ -44,6 +44,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
 import javax.mail.MessagingException;
@@ -98,7 +99,7 @@ public class NotificationEmailSender {
     // nothing to do
   }
 
-  public String send(Notification notification, List<String> recipientIDs) {
+  public String send(Notification notification, Collection<String> recipientIDs) {
     Session adminSession = null;
     String messageID = null;
     try {
@@ -133,7 +134,7 @@ public class NotificationEmailSender {
     return messageID;
   }
 
-  private List<String> getRecipientEmails(List<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
+  private List<String> getRecipientEmails(Collection<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
     List<String> emails = new ArrayList<String>();
     for (String id : recipientIDs) {
       emails.add(userIDToEmail(id, contentManager));

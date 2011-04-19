@@ -207,6 +207,13 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+      <groupId>edu.berkeley.myberkeley</groupId>
+      <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
+      <version>0.10-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+
     <!-- sling -->
     <dependency>
       <groupId>org.apache.sling</groupId>

@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.api.BadRequestException;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,10 +59,14 @@ public class SendNotificationsJob implements Job {
 
   final CalDavConnectorProvider calDavConnectorProvider;
 
-  public SendNotificationsJob(Repository repository, NotificationEmailSender emailSender, CalDavConnectorProvider calDavConnectorProvider) {
+  final DynamicListService dynamicListService;
+
+  public SendNotificationsJob(Repository repository, NotificationEmailSender emailSender,
+                              CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService) {
     this.repository = repository;
     this.emailSender = emailSender;
     this.calDavConnectorProvider = calDavConnectorProvider;
+    this.dynamicListService = dynamicListService;
   }
 
   public void execute(JobContext jobContext) {
@@ -140,28 +146,37 @@ public class SendNotificationsJob implements Job {
     JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
 
     try {
+
+
+      // TODO get dynlistcontext and criteria from notification by looking up the dyn list
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(null, "{\n" +
+              "    \"AND\": [\n" +
+              "        \"/colleges/CED/standings/undergrad\"\n" +
+              "    ]\n" +
+              "}");
+
       // save notification in bedework server
-      // TODO get list of users based on dynamicListID and loop over them -- one connector per user
-      String userID = "vbede";
 
-      boolean needsCalendarEntry;
-      boolean needsEmail = notification.getEmailMessageID() == null;
-      try {
-        needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
-      } catch (JSONException ignored) {
-        needsCalendarEntry = true;
-      }
+      for ( String userID : userIDs ) {
+        boolean needsCalendarEntry;
+        try {
+          needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
+        } catch (JSONException ignored) {
+          needsCalendarEntry = true;
+        }
 
-      if (needsCalendarEntry) {
-        CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
-        notification.getWrapper().generateNewUID();
-        CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar(), userID);
-        recipientToCalendarURIMap.put(userID, uri.toJSON());
+        if (needsCalendarEntry) {
+          CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector();
+          notification.getWrapper().generateNewUID();
+          CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar(), userID);
+          recipientToCalendarURIMap.put(userID, uri.toJSON());
+        }
       }
 
       // send email
+      boolean needsEmail = notification.getEmailMessageID() == null;
       if (needsEmail) {
-        String messageID = this.emailSender.send(notification, Arrays.asList("904715"));
+        String messageID = this.emailSender.send(notification, userIDs);
         if (messageID != null) {
           result.setProperty(Notification.JSON_PROPERTIES.emailMessageID.toString(), messageID);
         }

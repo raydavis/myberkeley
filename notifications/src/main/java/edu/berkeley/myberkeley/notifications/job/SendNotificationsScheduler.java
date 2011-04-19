@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
@@ -56,6 +57,9 @@ public class SendNotificationsScheduler {
   @Reference
   protected CalDavConnectorProvider provider;
 
+  @Reference
+  protected DynamicListService dynamicListService;
+
   @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds",
           description = "How often to wake up and check for outgoing notifications")
   protected static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
@@ -66,7 +70,8 @@ public class SendNotificationsScheduler {
     Dictionary<?, ?> props = componentContext.getProperties();
     Long pollInterval = (Long) props.get(PROP_POLL_INTERVAL_SECONDS);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
-    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider);
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.repository, this.emailSender, this.provider,
+            this.dynamicListService);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);

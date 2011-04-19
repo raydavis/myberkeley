@@ -26,6 +26,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
 import com.google.common.collect.ImmutableMap;
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorImpl;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorProviderImpl;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
@@ -55,6 +57,7 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -80,11 +83,14 @@ public class SendNotificationsJobTest extends NotificationTests {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
-    this.job = new SendNotificationsJob(repo, emailSender, provider);
+    DynamicListService dynamicListService = mock(DynamicListService.class);
+
+    this.job = new SendNotificationsJob(repo, emailSender, provider, dynamicListService);
 
     when(this.job.repository.loginAdministrative()).thenReturn(this.adminSession);
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
-
+    when(this.job.dynamicListService.getUserIdsForCriteria(Matchers.<DynamicListContext>any(), Matchers.anyString())).thenReturn(
+            Arrays.asList("300847"));
   }
 
   @Test
@@ -151,7 +157,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     JSONObject json = new JSONObject(readNotificationFromFile());
     JSONObject recipMap = new JSONObject();
-    recipMap.put("vbede", new CalendarURI(new URI("foo", false), new Date()).toJSON());
+    recipMap.put("300847", new CalendarURI(new URI("foo", false), new Date()).toJSON());
     json.put(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap);
     Notification notification = new Notification(json);
 
