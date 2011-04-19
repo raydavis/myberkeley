@@ -37,6 +37,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
+import edu.berkeley.myberkeley.notifications.RecipientLog;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Date;
 import org.apache.commons.httpclient.URI;
@@ -55,6 +56,7 @@ import org.mockito.MockitoAnnotations;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
@@ -78,6 +80,9 @@ public class SendNotificationsJobTest extends NotificationTests {
   private Session adminSession;
 
   @Mock
+  private AccessControlManager accessControlManager;
+
+  @Mock
   private ContentManager cm;
 
   public SendNotificationsJobTest() {
@@ -96,6 +101,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.job.sparseRepository.loginAdministrative()).thenReturn(this.adminSession);
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
+    when(this.adminSession.getAccessControlManager()).thenReturn(this.accessControlManager);
 
     javax.jcr.Session jcrSession = mock(javax.jcr.Session.class);
     Node node = mock(Node.class);
@@ -126,10 +132,16 @@ public class SendNotificationsJobTest extends NotificationTests {
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
     when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
+
+    when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
+    Content logContent = mock(Content.class);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
+
     this.job.execute(this.context);
 
     verify(connector).putCalendar(Matchers.<Calendar>any());
-    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.cm).update(content);
+    verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
     verify(this.job.emailSender).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }
@@ -157,10 +169,15 @@ public class SendNotificationsJobTest extends NotificationTests {
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
+    when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
+    Content logContent = mock(Content.class);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
+
     this.job.execute(this.context);
 
     verify(connector).putCalendar(Matchers.<Calendar>any());
-    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.cm).update(content);
+    verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
     verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }
@@ -170,9 +187,6 @@ public class SendNotificationsJobTest extends NotificationTests {
           JSONException, CalDavException {
 
     JSONObject json = new JSONObject(readNotificationFromFile());
-    JSONObject recipMap = new JSONObject();
-    recipMap.put("300847", new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    json.put(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap);
     Notification notification = new Notification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
@@ -190,10 +204,20 @@ public class SendNotificationsJobTest extends NotificationTests {
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
+    when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(true);
+    Content logContent = new Content("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME,
+            ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) RecipientLog.RESOURCETYPE));
+    JSONObject recipMap = new JSONObject();
+    recipMap.put("300847", new CalendarURI(new URI("foo", false), new Date()).toJSON());
+    logContent.setProperty(RecipientLog.PROP_RECIPIENT_TO_CALENDAR_URI, recipMap.toString());
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
+
     this.job.execute(this.context);
 
     verify(connector, times(0)).putCalendar(Matchers.<Calendar>any());
-    verify(this.cm).update(Matchers.<Content>any());
+    verify(this.cm).update(content);
+    verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
     verify(this.job.emailSender, times(1)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
   }

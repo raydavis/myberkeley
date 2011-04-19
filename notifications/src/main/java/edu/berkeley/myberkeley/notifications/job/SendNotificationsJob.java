@@ -28,6 +28,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
+import edu.berkeley.myberkeley.notifications.RecipientLog;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
@@ -84,7 +85,7 @@ public class SendNotificationsJob implements Job {
     try {
       adminSession = this.sparseRepository.loginAdministrative();
       Iterable<Content> results = getQueuedNotifications(adminSession);
-      processResults(results, adminSession.getContentManager());
+      processResults(results, adminSession);
     } catch (AccessDeniedException e) {
       LOGGER.error("SendNotificationsJob failed", e);
     } catch (StorageClientException e) {
@@ -112,7 +113,7 @@ public class SendNotificationsJob implements Job {
     return cm.find(props);
   }
 
-  private void processResults(Iterable<Content> results, ContentManager contentManager) throws IOException {
+  private void processResults(Iterable<Content> results, Session session) throws IOException {
     Date now = new Date();
     int resultCount = 0;
     int eligibleCount = 0;
@@ -121,7 +122,7 @@ public class SendNotificationsJob implements Job {
       if (eligibleForSending(result, now)) {
         eligibleCount++;
         LOGGER.debug("The time has come to send notification at path " + result.getPath());
-        sendNotification(result, contentManager);
+        sendNotification(result, session);
       }
     }
     LOGGER.info("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
@@ -135,22 +136,30 @@ public class SendNotificationsJob implements Job {
     return Notification.MESSAGEBOX.queue.equals(box) && Notification.SEND_STATE.pending.equals(sendState) && now.compareTo(sendDate) >= 0;
   }
 
-  private void sendNotification(Content result, ContentManager contentManager) throws IOException {
+  private void sendNotification(Content result, Session session) throws IOException {
 
     boolean success = false;
     Notification notification;
+    RecipientLog recipientLog;
 
     try {
       notification = new Notification(result);
+      recipientLog = new RecipientLog(result.getPath(), session);
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
       return;
     } catch (CalDavException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
       return;
+    } catch (AccessDeniedException e) {
+      LOGGER.error("Got error fetching log for notification at path " + result.getPath(), e);
+      return;
+    } catch (StorageClientException e) {
+      LOGGER.error("Got error fetching log for notification at path " + result.getPath(), e);
+      return;
     }
 
-    JSONObject recipientToCalendarURIMap = notification.getRecipientToCalendarURIMap();
+    JSONObject recipientToCalendarURIMap = recipientLog.getRecipientToCalendarURIMap();
 
     try {
       javax.jcr.Session jcrSession = this.slingRepository.loginAdministrative(null);
@@ -207,8 +216,6 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got repo exception processing notification at path " + result.getPath(), e);
     }
 
-    result.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipientToCalendarURIMap.toString());
-
     // mark the notification as archived in our repo if all went well
     if (success) {
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
@@ -216,7 +223,8 @@ public class SendNotificationsJob implements Job {
     }
 
     try {
-      contentManager.update(result);
+      recipientLog.update(session.getContentManager());
+      session.getContentManager().update(result);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
     } catch (StorageClientException e) {
