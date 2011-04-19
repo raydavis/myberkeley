@@ -194,11 +194,11 @@ public class SendNotificationsJob implements Job {
       }
 
       // send email
-      boolean needsEmail = notification.getEmailMessageID() == null;
+      boolean needsEmail = recipientLog.getEmailMessageID() == null;
       if (needsEmail) {
         String messageID = this.emailSender.send(notification, userIDs);
         if (messageID != null) {
-          result.setProperty(Notification.JSON_PROPERTIES.emailMessageID.toString(), messageID);
+          recipientLog.setEmailMessageID(messageID);
         }
       }
 

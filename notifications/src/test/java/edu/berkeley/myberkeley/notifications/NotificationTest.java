@@ -44,7 +44,6 @@ public class NotificationTest extends NotificationTests {
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
     assertNotNull(notification.getSenderID());
-    assertNotNull(notification.getRecipientToCalendarURIMap());
   }
 
   @Test
@@ -60,8 +59,6 @@ public class NotificationTest extends NotificationTests {
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.reminder.toString());
     assertNotNull(notification.getUXState());
     assertNotNull(notification.getUXState().get("eventHour"));
-    assertNotNull(notification.getRecipientToCalendarURIMap());
-    assertFalse(notification.getRecipientToCalendarURIMap().keys().hasNext());
     CalendarWrapper wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
     assertNotNull(wrapper);
     assertTrue(wrapper.isRequired());
@@ -72,18 +69,13 @@ public class NotificationTest extends NotificationTests {
     JSONObject originalJSON = new JSONObject(readNotificationFromFile());
     JSONObject recipMap = new JSONObject();
     recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    originalJSON.put(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap);
     Notification notification = new Notification(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
-    content.setProperty(Notification.JSON_PROPERTIES.recipientToCalendarURIMap.toString(), recipMap.toString());
     Notification notificationFromContent = new Notification(content);
     assertEquals(notification, notificationFromContent);
-    assertNotNull(notification.getRecipientToCalendarURIMap().get("904715"));
-    CalendarURI uri = new CalendarURI(notification.getRecipientToCalendarURIMap().getJSONObject("904715"));
-    assertNotNull(uri);
-    assertEquals("foo", uri.getURI());
+
   }
 }

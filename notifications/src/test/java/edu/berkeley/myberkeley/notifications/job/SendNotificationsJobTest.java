@@ -44,7 +44,6 @@ import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
-import org.apache.sling.commons.testing.jcr.MockNode;
 import org.apache.sling.commons.testing.jcr.MockProperty;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
@@ -151,7 +150,6 @@ public class SendNotificationsJobTest extends NotificationTests {
           JSONException, CalDavException {
 
     JSONObject json = new JSONObject(readNotificationFromFile());
-    json.put(Notification.JSON_PROPERTIES.emailMessageID.toString(), "some message id");
     Notification notification = new Notification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
@@ -170,7 +168,10 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
-    Content logContent = mock(Content.class);
+    Content logContent = new Content("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME,
+            ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+                    (Object) RecipientLog.RESOURCETYPE));
+    logContent.setProperty(RecipientLog.PROP_EMAIL_MESSAGE_ID, "messageID12345");
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
 
     this.job.execute(this.context);
@@ -207,7 +208,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(true);
     Content logContent = new Content("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME,
             ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-            (Object) RecipientLog.RESOURCETYPE));
+                    (Object) RecipientLog.RESOURCETYPE));
     JSONObject recipMap = new JSONObject();
     recipMap.put("300847", new CalendarURI(new URI("foo", false), new Date()).toJSON());
     logContent.setProperty(RecipientLog.PROP_RECIPIENT_TO_CALENDAR_URI, recipMap.toString());

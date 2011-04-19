@@ -72,9 +72,7 @@ public class Notification {
     calendarWrapper,
     category,
     uxState,
-    calendarURIs,
-    emailMessageID,
-    recipientToCalendarURIMap
+    calendarURIs
   }
 
   private UUID id;
@@ -95,10 +93,6 @@ public class Notification {
 
   private JSONObject uxState;
 
-  private String emailMessageID;
-
-  private JSONObject recipientToCalendarURIMap;
-
   public Notification(JSONObject json) throws JSONException, CalDavException {
     this.id = getNotificationID(json);
     this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
@@ -111,8 +105,6 @@ public class Notification {
     SEND_STATE sendState = SEND_STATE.pending;
     MESSAGEBOX messageBox = MESSAGEBOX.drafts;
     JSONObject uxState = new JSONObject();
-    JSONObject recipientToCalendarURIMap = new JSONObject();
-    String emailMessageID = null;
 
     // set optional properties
     try {
@@ -127,19 +119,9 @@ public class Notification {
       messageBox = MESSAGEBOX.valueOf(json.getString(JSON_PROPERTIES.messageBox.toString()));
     } catch (JSONException ignored) {
     }
-    try {
-      emailMessageID = json.getString(JSON_PROPERTIES.emailMessageID.toString());
-    } catch ( JSONException ignored ) {
-    }
-    try {
-      recipientToCalendarURIMap = json.getJSONObject(JSON_PROPERTIES.recipientToCalendarURIMap.toString());
-    } catch ( JSONException ignored ) {
-    }
     this.sendState = sendState;
     this.messageBox = messageBox;
     this.uxState = uxState;
-    this.emailMessageID = emailMessageID;
-    this.recipientToCalendarURIMap = recipientToCalendarURIMap;
   }
 
   public Notification(Content content) throws JSONException, CalDavException {
@@ -152,23 +134,14 @@ public class Notification {
 
     // set defaults for optional properties
     JSONObject uxState = new JSONObject();
-    JSONObject recipientToCalendarURIMap = new JSONObject();
     // set optional properties
     try {
       uxState = new JSONObject((String) content.getProperty(JSON_PROPERTIES.uxState.toString()));
     } catch (JSONException ignored) {
     }
-    try {
-      recipientToCalendarURIMap = new JSONObject((String) content.getProperty(JSON_PROPERTIES.recipientToCalendarURIMap.toString()));
-    }catch (JSONException ignored) {
-    }
-    if ( content.hasProperty(JSON_PROPERTIES.emailMessageID.toString())) {
-      this.emailMessageID = (String) content.getProperty(JSON_PROPERTIES.emailMessageID.toString());
-    }
     this.sendState = SEND_STATE.valueOf((String) content.getProperty(JSON_PROPERTIES.sendState.toString()));
     this.messageBox = MESSAGEBOX.valueOf((String) content.getProperty(JSON_PROPERTIES.messageBox.toString()));
     this.uxState = uxState;
-    this.recipientToCalendarURIMap = recipientToCalendarURIMap;
   }
 
   public UUID getId() {
@@ -207,14 +180,6 @@ public class Notification {
     return this.uxState;
   }
 
-  public String getEmailMessageID() {
-    return this.emailMessageID;
-  }
-
-  public JSONObject getRecipientToCalendarURIMap() {
-    return this.recipientToCalendarURIMap;
-  }
-
   public void toContent(String storePath, Content content) throws JSONException {
     content.setProperty("sakai:messagestore", storePath);
     content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
@@ -226,10 +191,6 @@ public class Notification {
     content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
     content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
     content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
-    content.setProperty(JSON_PROPERTIES.recipientToCalendarURIMap.toString(), this.getRecipientToCalendarURIMap().toString());
-    if ( this.getEmailMessageID() != null ) {
-      content.setProperty(JSON_PROPERTIES.emailMessageID.toString(), this.getEmailMessageID());
-    }
   }
 
   private static UUID getNotificationID(JSONObject notificationJSON) {
@@ -250,16 +211,16 @@ public class Notification {
     Notification that = (Notification) o;
 
     if (this.category != that.category) return false;
-    if (this.dynamicListID != null ? !this.dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null) return false;
+    if (this.dynamicListID != null ? !this.dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null)
+      return false;
     if (this.id != null ? !this.id.equals(that.id) : that.id != null) return false;
     if (this.senderID != null ? !this.senderID.equals(that.senderID) : that.senderID != null) return false;
     if (this.messageBox != that.messageBox) return false;
     if (this.sendDate != null ? !this.sendDate.equals(that.sendDate) : that.sendDate != null) return false;
     if (this.sendState != that.sendState) return false;
     if (this.wrapper != null ? !this.wrapper.equals(that.wrapper) : that.wrapper != null) return false;
-    if (this.uxState != null ? !this.uxState.toString().equals(that.uxState.toString()) : that.uxState != null) return false;
-    if (this.emailMessageID != null ? !this.emailMessageID.equals(that.emailMessageID) : that.emailMessageID != null) return false;
-    if (this.recipientToCalendarURIMap != null ? !this.recipientToCalendarURIMap.toString().equals(that.recipientToCalendarURIMap.toString()) : that.recipientToCalendarURIMap != null) return false;
+    if (this.uxState != null ? !this.uxState.toString().equals(that.uxState.toString()) : that.uxState != null)
+      return false;
     return true;
   }
 
@@ -274,8 +235,6 @@ public class Notification {
     result = 31 * result + (this.wrapper != null ? this.wrapper.hashCode() : 0);
     result = 31 * result + (this.category != null ? this.category.hashCode() : 0);
     result = 31 * result + (this.uxState != null ? this.uxState.hashCode() : 0);
-    result = 31 * result + (this.emailMessageID != null ? this.emailMessageID.hashCode() : 0);
-    result = 31 * result + (this.recipientToCalendarURIMap != null ? this.recipientToCalendarURIMap.hashCode() : 0);
     return result;
   }
 }

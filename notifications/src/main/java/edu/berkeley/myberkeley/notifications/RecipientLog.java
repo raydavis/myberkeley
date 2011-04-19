@@ -44,13 +44,17 @@ public class RecipientLog {
 
   public static final String RESOURCETYPE = "myberkeley/notificationrecipientlog";
 
-  public static final String STORE_NAME = "_myberkeley/recipientlog";
+  public static final String STORE_NAME = "recipientlog";
 
   public static final String PROP_RECIPIENT_TO_CALENDAR_URI = "recipientToCalendarURI";
+
+  public static final String PROP_EMAIL_MESSAGE_ID = "emailMessageID";
 
   Content content;
 
   private JSONObject recipientToCalendarURIMap;
+
+  private String emailMessageID;
 
   public RecipientLog(String path, Session session)
           throws AccessDeniedException, StorageClientException {
@@ -75,14 +79,28 @@ public class RecipientLog {
     } else {
       this.recipientToCalendarURIMap = new JSONObject();
     }
+    if (this.content.hasProperty(PROP_EMAIL_MESSAGE_ID)) {
+      this.emailMessageID = (String) this.content.getProperty(PROP_EMAIL_MESSAGE_ID);
+    }
   }
 
   public JSONObject getRecipientToCalendarURIMap() {
     return this.recipientToCalendarURIMap;
   }
 
+  public String getEmailMessageID() {
+    return this.emailMessageID;
+  }
+
+  public void setEmailMessageID(String emailMessageID) {
+    this.emailMessageID = emailMessageID;
+  }
+
   public void update(ContentManager contentManager) throws AccessDeniedException, StorageClientException {
     this.content.setProperty(PROP_RECIPIENT_TO_CALENDAR_URI, this.recipientToCalendarURIMap.toString());
+    if (this.emailMessageID != null) {
+      this.content.setProperty(PROP_EMAIL_MESSAGE_ID, this.emailMessageID);
+    }
     contentManager.update(this.content);
   }
 

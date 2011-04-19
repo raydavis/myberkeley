@@ -72,6 +72,7 @@ public class RecipientLogTest extends NotificationTests {
     RecipientLog log = new RecipientLog("/notification/path", this.session);
     assertNotNull(log);
     assertNotNull(log.getRecipientToCalendarURIMap());
+    assertNull(log.getEmailMessageID());
     verify(this.accessControlManager, times(1)).setAcl(anyString(), anyString(), Matchers.<AclModification[]>any());
   }
 
@@ -79,9 +80,13 @@ public class RecipientLogTest extends NotificationTests {
   public void update() throws IOException, JSONException, CalDavException, AccessDeniedException, StorageClientException {
     RecipientLog log = new RecipientLog("/notification/path", this.session);
     verify(this.accessControlManager, times(1)).setAcl(anyString(), anyString(), Matchers.<AclModification[]>any());
+    assertNull(log.getEmailMessageID());
+
+    log.setEmailMessageID("foo");
     log.getRecipientToCalendarURIMap().put("key1", "val1");
     log.update(this.contentManager);
     assertNotNull(log.getRecipientToCalendarURIMap().get("key1"));
+    assertEquals("foo", log.getEmailMessageID());
   }
 
 }
