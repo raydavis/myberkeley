@@ -78,24 +78,17 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
     this.sender.smtpServer = "localhost";
     this.sender.smtpPort = 25;
-    this.sender.maxRetries = 1;
-    this.sender.retryInterval = 60;
     this.sender.sendEmail = false;
   }
 
   @Test
   public void activate() throws Exception {
     Dictionary<String, Object> dictionary = new Hashtable<String, Object>();
-    dictionary.put(NotificationEmailSender.MAX_RETRIES, 10);
-    dictionary.put(NotificationEmailSender.RETRY_INTERVAL, 5);
     dictionary.put(NotificationEmailSender.SEND_EMAIL, true);
     dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
     dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
     when(this.componentContext.getProperties()).thenReturn(dictionary);
     this.sender.activate(this.componentContext);
-
-    assertEquals(this.sender.maxRetries, (Integer) 10);
-    assertEquals(this.sender.retryInterval, (Integer) 5);
     assertTrue(this.sender.sendEmail);
     assertEquals(this.sender.smtpPort, (Integer) 27);
     assertEquals(this.sender.smtpServer, "anotherhost");

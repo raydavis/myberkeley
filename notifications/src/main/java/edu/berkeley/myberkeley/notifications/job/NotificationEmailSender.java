@@ -23,7 +23,6 @@ package edu.berkeley.myberkeley.notifications.job;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
 import net.fortuna.ical4j.data.CalendarOutputter;
-import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.mail.EmailException;
@@ -50,7 +49,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
@@ -79,17 +77,11 @@ public class NotificationEmailSender {
   static final String SMTP_SERVER = "smtp.server";
   @Property(intValue = 25, label = "SMTP Port")
   static final String SMTP_PORT = "smtp.port";
-  @Property(intValue = 240, label = "Maximum number of retries")
-  static final String MAX_RETRIES = "email.maxRetries";
-  @Property(intValue = 30, label = "Retry interval in minutes")
-  static final String RETRY_INTERVAL = "email.retryIntervalMinutes";
   @Property(boolValue = false, label = "Send email?", description = "Whether or not to actually send real email")
   static final String SEND_EMAIL = "email.sendEmailEnabled";
 
-  Integer maxRetries;
   Integer smtpPort;
   String smtpServer;
-  Integer retryInterval;
   boolean sendEmail;
 
   @Reference
@@ -99,8 +91,6 @@ public class NotificationEmailSender {
 
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
-    this.maxRetries = (Integer) props.get(MAX_RETRIES);
-    this.retryInterval = (Integer) props.get(RETRY_INTERVAL);
     this.smtpPort = (Integer) props.get(SMTP_PORT);
     this.smtpServer = (String) props.get(SMTP_SERVER);
     this.sendEmail = (Boolean) props.get(SEND_EMAIL);
