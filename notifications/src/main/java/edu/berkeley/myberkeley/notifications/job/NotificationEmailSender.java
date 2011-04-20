@@ -143,7 +143,7 @@ public class NotificationEmailSender {
         emails.add(userIDToEmail(id, contentManager));
       }
     }
-    LOGGER.info("Recipient email addresses: " + emails);
+    LOGGER.info("Sending email to the following recipients: " + emails);
     return emails;
   }
 
@@ -227,11 +227,11 @@ public class NotificationEmailSender {
   }
 
   private void logEmail(MimeMessage mimeMessage) {
-    if (LOGGER.isInfoEnabled() && mimeMessage != null) {
+    if (LOGGER.isDebugEnabled() && mimeMessage != null) {
       try {
-        ByteArrayOutputStream mout = new ByteArrayOutputStream();
-        mimeMessage.writeTo(new FilterOutputStream(mout));
-        LOGGER.info("Email content = " + mout.toString());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        mimeMessage.writeTo(new FilterOutputStream(baos));
+        LOGGER.debug("Email content = " + baos.toString());
       } catch (IOException e) {
         LOGGER.error("failed to log email", e);
       } catch (MessagingException e) {

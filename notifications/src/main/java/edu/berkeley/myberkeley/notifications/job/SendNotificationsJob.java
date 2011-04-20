@@ -101,7 +101,7 @@ public class SendNotificationsJob implements Job {
         }
       }
       long endMillis = System.currentTimeMillis();
-      LOGGER.info("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
+      LOGGER.debug("SendNotificationsJob executed in {} ms ", (endMillis - startMillis));
     }
   }
 
@@ -125,7 +125,7 @@ public class SendNotificationsJob implements Job {
         sendNotification(result, session);
       }
     }
-    LOGGER.info("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
+    LOGGER.debug("Found " + resultCount + " results, of which " + eligibleCount + " were eligible for sending");
   }
 
   private boolean eligibleForSending(Content result, Date now) {
@@ -203,7 +203,7 @@ public class SendNotificationsJob implements Job {
       }
 
       success = true;
-      LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+      LOGGER.debug("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
               + recipientToCalendarURIMap.toString(2));
 
     } catch (JSONException e) {

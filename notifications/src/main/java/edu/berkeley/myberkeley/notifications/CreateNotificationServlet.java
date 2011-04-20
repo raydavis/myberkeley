@@ -81,18 +81,17 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
     try {
       notificationJSON = new JSONObject(notificationParam.toString());
-      LOGGER.info("Notification = " + notificationJSON.toString(2));
+      LOGGER.debug("Notification JSON = " + notificationJSON.toString(2));
 
     } catch (JSONException je) {
       LOGGER.error("Failed to convert notification to JSON", je);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-              "GOt a JSONException parsing input");
+              "Got a JSONException parsing input");
       return;
     }
 
     Resource r = request.getResource();
     Content home = r.adaptTo(Content.class);
-    LOGGER.info("Home = {}", home);
 
     Session session = StorageClientUtils.adaptToSession(request.getResourceResolver().adaptTo(
             javax.jcr.Session.class));
@@ -100,15 +99,14 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
     try {
       ContentManager contentManager = session.getContentManager();
       String storePath = StorageClientUtils.newPath(home.getPath(), Notification.STORE_NAME);
-      Content store = createStoreIfNecessary(session, contentManager, storePath);
-      LOGGER.info("Content = {}", store);
+      createStoreIfNecessary(session, contentManager, storePath);
 
       Notification notification = new Notification(notificationJSON);
       String notificationPath = StorageClientUtils.newPath(storePath, notification.getId().toString());
       Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
       notification.toContent(storePath, notificationContent);
       contentManager.update(notificationContent);
-      LOGGER.info("Saved a Notification;  data = {}", notificationContent);
+      LOGGER.debug("Saved a Notification;  data = {}", notificationContent);
 
     } catch (StorageClientException e) {
       throw new ServletException(e.getMessage(), e);
@@ -123,7 +121,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
   private Content createNotificationIfNecessary(ContentManager contentManager, String notificationPath) throws AccessDeniedException, StorageClientException {
     if (!contentManager.exists(notificationPath)) {
-      LOGGER.info("Creating new notification at path " + notificationPath);
+      LOGGER.debug("Creating new notification at path " + notificationPath);
       contentManager.update(new Content(notificationPath, ImmutableMap.of(
               JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
               (Object) Notification.RESOURCETYPE)));
@@ -133,7 +131,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
 
   private Content createStoreIfNecessary(Session session, ContentManager contentManager, String storePath) throws AccessDeniedException, StorageClientException {
     if (!contentManager.exists(storePath)) {
-      LOGGER.info("Will create a new notification store for user at path " + storePath);
+      LOGGER.debug("Will create a new notification store for user at path " + storePath);
       contentManager.update(new Content(storePath, ImmutableMap.of(
               JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
               (Object) Notification.STORE_RESOURCETYPE)));

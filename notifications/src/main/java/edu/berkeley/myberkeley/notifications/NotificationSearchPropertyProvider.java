@@ -41,12 +41,6 @@ import java.util.Map;
         @Property(name = "sakai.search.provider", value = "Notification")})
 public class NotificationSearchPropertyProvider implements SolrSearchPropertyProvider {
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.sakaiproject.nakamura.api.search.SearchPropertyProvider#loadUserProperties(org.apache.sling.api.SlingHttpServletRequest,
-   *      java.util.Map)
-   */
   public void loadUserProperties(SlingHttpServletRequest request,
                                  Map<String, String> propertiesMap) {
     String user = request.getRemoteUser();
