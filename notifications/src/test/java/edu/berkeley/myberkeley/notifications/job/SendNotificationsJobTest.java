@@ -70,6 +70,8 @@ import javax.jcr.RepositoryException;
 
 public class SendNotificationsJobTest extends NotificationTests {
 
+  private static final String RECIPIENT_ID = "904715"; 
+  
   private SendNotificationsJob job;
 
   @Mock
@@ -109,7 +111,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(jcrSession.getNode(anyString())).thenReturn(node);
 
     when(this.job.dynamicListService.getUserIdsForCriteria(Matchers.<DynamicListContext>any(), Matchers.anyString())).thenReturn(
-            Arrays.asList("300847"));
+            Arrays.asList(RECIPIENT_ID));
   }
 
   @Test
@@ -127,7 +129,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
     when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
@@ -163,7 +165,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
@@ -201,7 +203,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
     CalDavConnector connector = mock(CalDavConnectorImpl.class);
-    when(this.job.calDavConnectorProvider.getAdminConnector("300847")).thenReturn(connector);
+    when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
@@ -210,7 +212,7 @@ public class SendNotificationsJobTest extends NotificationTests {
             ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
                     (Object) RecipientLog.RESOURCETYPE));
     JSONObject recipMap = new JSONObject();
-    recipMap.put("300847", new CalendarURI(new URI("foo", false), new Date()).toJSON());
+    recipMap.put(RECIPIENT_ID, new CalendarURI(new URI("foo", false), new Date()).toJSON());
     logContent.setProperty(RecipientLog.PROP_RECIPIENT_TO_CALENDAR_URI, recipMap.toString());
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
 

@@ -20,7 +20,11 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.Notification;
+import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
@@ -40,13 +44,18 @@ import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -192,10 +201,13 @@ public class NotificationEmailSender {
     }
 
     // body and subject
-    // TODO convert calendarWrapper to a nice email
     email.setMsg(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
     String subjectPrefix = getSubjectPrefix(notification);
     email.setSubject(subjectPrefix + " " + notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
+
+    // attach .ics file
+    CalendarDatasource datasource = new CalendarDatasource(notification.getWrapper());
+    email.attach(datasource, datasource.getName(), ".ics calendar file");
 
     email.setDebug(true);
     email.setSmtpPort(this.smtpPort);
@@ -238,5 +250,36 @@ public class NotificationEmailSender {
     }
   }
 
+  private class CalendarDatasource implements DataSource {
+
+    private CalendarWrapper calendarWrapper;
+
+    public CalendarDatasource(CalendarWrapper wrapper) {
+      this.calendarWrapper = wrapper;
+    }
+
+    public InputStream getInputStream() throws IOException {
+      CalendarOutputter outputter = new CalendarOutputter();
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+        outputter.output(this.calendarWrapper.getCalendar(), baos);
+        return new ByteArrayInputStream(baos.toByteArray());
+      } catch (ValidationException e) {
+        throw new IOException(e);
+      }
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+      throw new IOException("This class is read-only");
+    }
+
+    public String getContentType() {
+      return "text/calendar";
+    }
+
+    public String getName() {
+      return this.calendarWrapper.getComponent().getProperty(net.fortuna.ical4j.model.Property.UID).getValue() + ".ics";
+    }
+  }
 }
 

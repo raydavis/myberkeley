@@ -174,7 +174,7 @@ public class SendNotificationsJob implements Job {
               "}");
 
       // TODO remove this hardcoding hack
-      userIDs = Arrays.asList("300847");
+      userIDs = Arrays.asList("904715");
 
       // save notification in bedework server
       for ( String userID : userIDs ) {
