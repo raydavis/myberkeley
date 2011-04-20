@@ -63,6 +63,9 @@ public class NotificationEmailSender {
   private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
+  static final String EMAIL_NODE_PATH = "/basic/elements/email";
+  static final String MYBERKELEY_PARTICIPANT_NODE_PATH = "/myberkeley/elements/participant";
+
   @Property(value = "localhost", label = "SMTP Server")
   static final String SMTP_SERVER = "smtp.server";
   @Property(intValue = 25, label = "SMTP Port")
@@ -107,7 +110,7 @@ public class NotificationEmailSender {
       ContentManager contentManager = adminSession.getContentManager();
       List<String> recipAddresses = getRecipientEmails(recipientIDs, contentManager);
       MultiPartEmail email = buildEmail(notification, recipAddresses, contentManager);
-      if ( this.sendEmail ) {
+      if (this.sendEmail && !recipAddresses.isEmpty()) {
         messageID = email.sendMimeMessage();
         LOGGER.info("Sent real email with outgoing message ID = " + messageID);
       } else {
@@ -122,7 +125,7 @@ public class NotificationEmailSender {
       LOGGER.error("NotificationEmailSender failed", e);
     } catch (MessagingException e) {
       LOGGER.error("NotificationEmailSender failed", e);
-    }finally {
+    } finally {
       if (adminSession != null) {
         try {
           adminSession.logout();
@@ -137,16 +140,27 @@ public class NotificationEmailSender {
   private List<String> getRecipientEmails(Collection<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
     List<String> emails = new ArrayList<String>();
     for (String id : recipientIDs) {
-      emails.add(userIDToEmail(id, contentManager));
+      if (isParticipant(id, contentManager)) {
+        emails.add(userIDToEmail(id, contentManager));
+      }
     }
     LOGGER.info("Recipient email addresses: " + emails);
     return emails;
   }
 
+  private boolean isParticipant(String id, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
+    String participantPath = LitePersonalUtils.getProfilePath(id) + MYBERKELEY_PARTICIPANT_NODE_PATH;
+    Content content = contentManager.get(participantPath);
+    if (content != null) {
+      return Boolean.valueOf((String) content.getProperty("value"));
+    }
+    return false;
+  }
+
   private String userIDToEmail(String id, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
-    String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + "/basic/elements/email";
+    String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + EMAIL_NODE_PATH;
     Content content = contentManager.get(recipBasicProfilePath);
-    if ( content != null ) {
+    if (content != null) {
       // TODO is there a better way to get emails out of profiles?
       return (String) content.getProperty("value");
     }

@@ -50,7 +50,9 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import javax.mail.Address;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 
 public class NotificationEmailSenderTest extends NotificationTests {
 
@@ -113,7 +115,12 @@ public class NotificationEmailSenderTest extends NotificationTests {
     Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     firstRecip.setProperty("value", "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(firstRecip);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(firstRecip);
+
+    Content participant = new Content("/participant1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) "user"));
+    participant.setProperty("value", "true");
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
 
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);
@@ -126,22 +133,29 @@ public class NotificationEmailSenderTest extends NotificationTests {
     Content badSender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     badSender.setProperty("value", "not an email");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(badSender);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(badSender);
     this.sender.buildEmail(this.notification, recips, this.contentManager);
   }
 
   @Test
   public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException, MessagingException {
-    List<String> recips = Arrays.asList("chris@media.berkeley.edu", "not.an.email");
+    List<String> recips = Arrays.asList("joe@media.berkeley.edu", "not.an.email");
     Content sender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     sender.setProperty("value", "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + "/basic/elements/email")).thenReturn(sender);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(sender);
 
     MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
     assertNotNull(email);
     assertEquals("chris@media.berkeley.edu", email.getFromAddress().getAddress());
+    boolean senderInBCC = false;
+    for (Address address : email.getMimeMessage().getAllRecipients()) {
+      if ("chris@media.berkeley.edu".equals(((InternetAddress) address).getAddress())) {
+        senderInBCC = true;
+        break;
+      }
+    }
+    assertTrue(senderInBCC);
   }
-
 
 }
