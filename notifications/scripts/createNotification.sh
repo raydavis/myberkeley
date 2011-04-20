@@ -39,7 +39,7 @@ do
   # strip newlines
   JSON=`echo "${JSON}" | tr -d '\n' | tr Z ${a}`
 
-  echo curl -e "/dev/test" -u admin:admin "http://localhost:8080/~admin.myb-notificationstore.html" -F notification="$JSON"
+  curl -e "/dev/test" -u admin:admin "http://localhost:8080/~admin.myb-notificationstore.html" -F notification="$JSON"
   echo
 done
 
