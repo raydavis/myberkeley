@@ -140,7 +140,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
     MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
     assertNotNull(email);
-
+    assertEquals("chris@media.berkeley.edu", email.getFromAddress().getAddress());
   }
 
 

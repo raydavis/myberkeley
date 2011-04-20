@@ -159,7 +159,9 @@ public class NotificationEmailSender {
 
     // sender
     try {
-      email.setFrom(userIDToEmail(notification.getSenderID(), contentManager));
+      String senderEmail = userIDToEmail(notification.getSenderID(), contentManager);
+      email.setFrom(senderEmail);
+      email.addBcc(senderEmail); // advisors get a bcc of the email too
     } catch (EmailException e) {
       LOGGER.error("Fatal: Invalid sender email address for user id [" + notification.getSenderID() + "] :" + e);
       throw e;
