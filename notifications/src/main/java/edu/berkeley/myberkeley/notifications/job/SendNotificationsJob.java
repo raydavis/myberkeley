@@ -172,6 +172,7 @@ public class SendNotificationsJob implements Job {
               "        \"/colleges/CED/standings/undergrad\"\n" +
               "    ]\n" +
               "}");
+      LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       // TODO remove this hardcoding hack
       userIDs = Arrays.asList("904715");
