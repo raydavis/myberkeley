@@ -175,7 +175,7 @@ public class SendNotificationsJob implements Job {
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       // save notification in bedework server
-      for ( String userID : userIDs ) {
+      for (String userID : userIDs) {
         boolean needsCalendarEntry;
         try {
           needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
@@ -187,10 +187,10 @@ public class SendNotificationsJob implements Job {
           CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(userID);
           notification.getWrapper().generateNewUID();
           try {
-          CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
-          recipientToCalendarURIMap.put(userID, uri.toJSON());
-          } catch ( BadRequestException e ) {
-            if ( HttpStatus.SC_NOT_FOUND == e.getStatusCode() ) {
+            CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
+            recipientToCalendarURIMap.put(userID, uri.toJSON());
+          } catch (BadRequestException e) {
+            if (HttpStatus.SC_NOT_FOUND == e.getStatusCode()) {
               // 404 means user's not in Bedework, skip it and log
               // TODO revisit this logic when we get full authz to Bedework working correctly
               LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
@@ -220,7 +220,7 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
     } catch (CalDavException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
-    } catch (RepositoryException e ) {
+    } catch (RepositoryException e) {
       LOGGER.error("Got repo exception processing notification at path " + result.getPath(), e);
     }
 

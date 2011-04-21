@@ -173,7 +173,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
       }
       put.setRequestEntity(new StringRequestEntity(calendar.toString(), "text/calendar", "UTF-8"));
     } catch (UnsupportedEncodingException uee) {
-      LOGGER.error("Got unsupported encoding exception", uee);
+      throw new CalDavException("Got unsupported encoding exception, does this server not like UTF-8?", uee);
     }
     executeMethod(put);
     restrictPermissions(uri);
@@ -229,7 +229,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
 
       ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
       report.getRequestEntity().writeRequest(requestOut);
-      LOGGER.info("Doing calendar search for overdue tasks; Request body: " + requestOut.toString("utf-8"));
+      LOGGER.debug("Doing calendar search for overdue tasks; Request body: " + requestOut.toString("utf-8"));
 
       executeMethod(report);
 
@@ -263,7 +263,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
 
       ByteArrayOutputStream requestOut = new ByteArrayOutputStream();
       report.getRequestEntity().writeRequest(requestOut);
-      LOGGER.info("Doing calendar search; Request body: " + requestOut.toString("utf-8"));
+      LOGGER.debug("Doing calendar search; Request body: " + requestOut.toString("utf-8"));
 
       executeMethod(report);
 
@@ -313,7 +313,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
 
   private void checkStatus(DavMethod request) throws BadRequestException, URIException {
     if (!ALLOWABLE_HTTP_STATUS_CODES.contains(request.getStatusCode())) {
-      LOGGER.error(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
+      LOGGER.debug(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
               request.getStatusLine().toString());
       throw new BadRequestException("Bad request on uri " + request.getURI() + "; statusLine=" +
               request.getStatusLine().toString(), request.getStatusCode());
@@ -355,7 +355,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
       aclMethod = new AclMethod(uri.toString(), acl);
       executeMethod(aclMethod);
     } catch (IOException ioe) {
-      LOGGER.error("Got exception setting ACL", ioe);
+      throw new CalDavException("Got IO exception setting ACL", ioe);
     }
   }
 
