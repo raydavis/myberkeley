@@ -24,7 +24,15 @@ public class BadRequestException extends CalDavException {
 
   private static final long serialVersionUID = -4361376969555851017L;
 
-  public BadRequestException(String message) {
+  private int statusCode;
+
+  public BadRequestException(String message, int statusCode) {
     super(message, null);
+    this.statusCode = statusCode;
   }
+
+  public int getStatusCode() {
+    return this.statusCode;
+  }
+
 }

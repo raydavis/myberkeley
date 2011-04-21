@@ -316,7 +316,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
       LOGGER.error(request.getClass().getSimpleName() + " resulted in a bad request on uri " + request.getURI() + "; statusLine=" +
               request.getStatusLine().toString());
       throw new BadRequestException("Bad request on uri " + request.getURI() + "; statusLine=" +
-              request.getStatusLine().toString());
+              request.getStatusLine().toString(), request.getStatusCode());
     }
   }
 

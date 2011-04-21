@@ -29,6 +29,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
@@ -46,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -174,9 +174,6 @@ public class SendNotificationsJob implements Job {
               "}");
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
-      // TODO remove this hardcoding hack
-      userIDs = Arrays.asList("904715");
-
       // save notification in bedework server
       for ( String userID : userIDs ) {
         boolean needsCalendarEntry;
@@ -189,8 +186,18 @@ public class SendNotificationsJob implements Job {
         if (needsCalendarEntry) {
           CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(userID);
           notification.getWrapper().generateNewUID();
+          try {
           CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
           recipientToCalendarURIMap.put(userID, uri.toJSON());
+          } catch ( BadRequestException e ) {
+            if ( HttpStatus.SC_NOT_FOUND == e.getStatusCode() ) {
+              // 404 means user's not in Bedework, skip it and log
+              // TODO revisit this logic when we get full authz to Bedework working correctly
+              LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
+            } else {
+              throw e;
+            }
+          }
         }
       }
 
