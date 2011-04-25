@@ -5,3 +5,22 @@ To run the tests in this module, do:
 
 mvn -Dcaldav.skiptests=false test
 
+==============================================================================
+
+Loading students into Bedework:
+
+Proposal is to create fake accounts in the LDAP system that ships with Bedework (ApacheDS) so that we can log in
+as each user one time, which makes the user's rows in Bedework's MySQL database that are necessary.
+
+Creating a fake user acct in ApacheDS on the Bedework server:
+    cd /home/bedework/bedework/quickstart-3.7
+    bedework/build/quickstart/linux/adduser 300849 Fake 300849 300849@mysite.edu testuser
+
+Then doing an OPTIONS as that fake user is enough to make Bedework create its necessary rows for the user:
+    curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
+
+Once these 2 commands are run for all the students in the data load, we'll reset ApacheDS's database to the Bedework
+default, effectively making it impossible to authenticate as these fake users. How to reset is TBD.
+
+
+
