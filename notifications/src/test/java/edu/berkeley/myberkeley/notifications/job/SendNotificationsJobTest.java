@@ -29,7 +29,6 @@ import static org.mockito.Mockito.times;
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
-import edu.berkeley.myberkeley.caldav.CalDavConnectorImpl;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorProviderImpl;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
@@ -128,7 +127,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnectorImpl.class);
+    CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
@@ -164,7 +163,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnectorImpl.class);
+    CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
@@ -202,7 +201,7 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
 
-    CalDavConnector connector = mock(CalDavConnectorImpl.class);
+    CalDavConnector connector = mock(CalDavConnector.class);
     when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);

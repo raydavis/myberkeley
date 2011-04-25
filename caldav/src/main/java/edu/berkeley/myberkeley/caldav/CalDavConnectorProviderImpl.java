@@ -66,7 +66,7 @@ public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
             new URI(this.calDavServerRoot + "/ucaldav/user/" + owner + "/calendar/", false), owner);
   }
 
-  public CalDavConnectorImpl getConnector(String username, String password) throws URIException {
+  public CalDavConnector getConnector(String username, String password) throws URIException {
     return new CalDavConnectorImpl(username, password,
             new URI(this.calDavServerRoot, false),
             new URI(this.calDavServerRoot + "/ucaldav/user/" + username + "/calendar/", false), username);

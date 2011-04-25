@@ -55,7 +55,7 @@ public abstract class CalDavTests extends Assert {
 
   protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorImplTest.class);
 
-  protected CalDavConnectorImpl adminConnector;
+  protected CalDavConnector adminConnector;
 
   protected void deleteAll() throws CalDavException {
     try {

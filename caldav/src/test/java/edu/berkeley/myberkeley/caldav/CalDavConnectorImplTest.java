@@ -61,7 +61,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
 
   private static final String USER_HOME = SERVER_ROOT + "/ucaldav/user/" + OWNER + "/calendar/";
 
-  private CalDavConnectorImpl userConnector;
+  private CalDavConnector userConnector;
 
   @Before
   public void setup() throws CalDavException, URIException {
@@ -221,7 +221,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       this.userConnector.putCalendar(originalCalendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
-      throw new BadRequestException("");
+      throw new BadRequestException("", 500);
     }
   }
 
@@ -233,7 +233,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       this.userConnector.deleteCalendar(uri);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
-      throw new BadRequestException("");
+      throw new BadRequestException("", 500);
     }
   }
 
@@ -244,7 +244,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       this.userConnector.putCalendar(originalCalendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
-      throw new BadRequestException("");
+      throw new BadRequestException("", 500);
     }
   }
 
@@ -290,7 +290,7 @@ public class CalDavConnectorImplTest extends CalDavTests {
       this.adminConnector.modifyCalendar(uri, calendar);
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
-      throw new BadRequestException("");
+      throw new BadRequestException("", 500);
     }
   }
 

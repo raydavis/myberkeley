@@ -113,7 +113,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     SlingHttpServletResponse response = mock(SlingHttpServletResponse.class);
     when(request.getRemoteUser()).thenReturn(UserConstants.ADMIN_USERID);
     when(response.getWriter()).thenReturn(new PrintWriter(System.out));
-    CalDavConnectorImpl connector = mock(CalDavConnectorImpl.class);
+    CalDavConnector connector = mock(CalDavConnector.class);
     List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/url1", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 2"), new URI("/url2", false), RANDOM_ETAG));
@@ -199,7 +199,7 @@ public class CalDavProxyServletTest extends CalDavTests {
     JSONArray batch = this.servlet.getCalendars(request);
     assertNotNull(batch);
 
-    CalDavConnector connector = mock(CalDavConnectorImpl.class);
+    CalDavConnector connector = mock(CalDavConnector.class);
     List<CalendarWrapper> calendars = new ArrayList<CalendarWrapper>();
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal1", false), RANDOM_ETAG));
     calendars.add(new CalendarWrapper(buildVevent("Test 1"), new URI("/cal2", false), RANDOM_ETAG));

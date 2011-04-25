@@ -41,4 +41,8 @@ public interface CalDavConnector {
 
   boolean hasOverdueTasks() throws CalDavException, IOException;
 
+  List<CalendarURI> getCalendarUris() throws CalDavException, IOException;
+
+  void deleteCalendar(CalendarURI uri) throws CalDavException, IOException;
+
 }

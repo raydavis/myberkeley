@@ -26,5 +26,5 @@ import org.apache.commons.httpclient.URIException;
 public interface CalDavConnectorProvider {
   CalDavConnector getAdminConnector(String owner) throws URIException;
 
-  CalDavConnectorImpl getConnector(String username, String password) throws URIException;
+  CalDavConnector getConnector(String username, String password) throws URIException;
 }
