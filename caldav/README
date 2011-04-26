@@ -12,15 +12,31 @@ Loading students into Bedework:
 Proposal is to create fake accounts in the LDAP system that ships with Bedework (ApacheDS) so that we can log in
 as each user one time, which makes the user's rows in Bedework's MySQL database that are necessary.
 
-Creating a fake user acct in ApacheDS on the Bedework server:
-    cd /home/bedework/bedework/quickstart-3.7
-    bedework/build/quickstart/linux/adduser 300849 Fake 300849 300849@mysite.edu testuser
+First we'll enable file-based authentication in JBoss.
 
-Then doing an OPTIONS as that fake user is enough to make Bedework create its necessary rows for the user:
+~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf/users.properties stores usernames and passwords.
+Passwords are Base64-encoded MD5 hashes.
+
+On the Bedework server, as Bedework user:
+    cd ~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf
+    cp login-config.xml login-config.xml.orig
+    cp login-config.fileBasedAuth login-config.xml
+    cd ~/
+    ./killBedework.sh
+    ./buildBedework.sh
+    ./startBedework.sh
+
+Then doing an OPTIONS as each user is enough to make Bedework create its necessary rows for the user:
+
     curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
 
-Once these 2 commands are run for all the students in the data load, we'll reset ApacheDS's database to the Bedework
-default, effectively making it impossible to authenticate as these fake users. How to reset is TBD.
+Once the curl OPTIONS is run for all the students in the data load, reset the jboss login config to its original state:
+    cd ~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf
+    cp login-config.xml.orig login-config.xml
+    cd ~/
+    ./killBedework.sh
+    ./buildBedework.sh
+    ./startBedework.sh
 
 
 
