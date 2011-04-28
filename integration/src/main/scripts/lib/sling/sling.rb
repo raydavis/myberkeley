@@ -34,7 +34,16 @@ module Net::HTTPHeader
     self.body = params.map {|k, v| encode_kvpair(k, v) }.flatten.join(sep)
     self.content_type = 'application/x-www-form-urlencoded'
   end
-  
+
+  def initialize_http_header(initheader)
+      @header = { "Referer" => ["/dev/integrationtests"] }
+      return unless initheader
+      initheader.each do |key, value|
+        warn "net/http: warning: duplicated HTTP header: #{key}" if key?(key) and $VERBOSE
+        @header[key.downcase] = [value.strip]
+      end
+  end
+
   def encode_kvpair(k, vs)
     Array(vs).map {|v| "#{urlencode(k)}=#{urlencode(v.to_s)}" }
   end
