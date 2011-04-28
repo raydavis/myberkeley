@@ -84,7 +84,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         }
 
         // TODO set the correct username instead of hardcoding vbede
-        CalDavConnector connector = new CalDavConnector("vbede", "bedework",
+        CalDavConnector connector = new CalDavConnector("admin", "bedework",
                 new URI("http://test.media.berkeley.edu:8080", false),
                 new URI("http://test.media.berkeley.edu:8080/ucaldav/user/vbede/calendar/", false));
 
