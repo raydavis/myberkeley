@@ -20,6 +20,7 @@ mvn -Dsling.clean clean || { echo "Sling clean failed." ; stopAndExit ; }
 mvn clean install || { echo "mvn clean install failed." ; stopAndExit ; }
 
 # make the server think its port is safe
+mkdir -p working/load
 echo "trusted.hosts=http://localhost:$PORT" > working/load/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.cfg
 
 # start up 
