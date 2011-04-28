@@ -19,6 +19,9 @@ mvn -Dsling.clean clean || { echo "Sling clean failed." ; stopAndExit ; }
 # reinstall
 mvn clean install || { echo "mvn clean install failed." ; stopAndExit ; }
 
+# make the server think its port is safe
+echo "trusted.hosts=http://localhost:$PORT" > working/load/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.cfg
+
 # start up 
 mvn -P runner -Dsling.start -Dsling.port=$PORT verify || { echo "Failed to start sling." ; stopAndExit ; }
 
