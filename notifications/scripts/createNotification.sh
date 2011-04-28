@@ -22,15 +22,15 @@ do
           "uri":"",
           "etag":"2011-03-16T12:16:59-07:00",
           "component":"VEVENT",
-          "isRequired":true,
+          "isRequired":false,
           "isArchived":false,
           "isCompleted":false,
           "icalData":{
               "DTSTAMP":"2011-03-31T15:15:06-07:00",
-              "DTSTART":"2011-05-01T15:15:06-07:00",
-              "SUMMARY":"Test event Z",
-              "CATEGORIES":["MyBerkeley-Required"],
-              "DESCRIPTION":"This is our test description Z"
+              "DTSTART":"2011-05-05T15:15:06-07:00",
+              "SUMMARY":"Cinco de mayo Z",
+              "CATEGORIES":[],
+              "DESCRIPTION":"This is our test party description Z"
           }
       }
   }
