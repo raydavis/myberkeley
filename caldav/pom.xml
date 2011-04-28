@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
@@ -18,18 +19,18 @@
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
-       <artifactId>maven-bundle-plugin</artifactId>
+        <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
         <configuration>
           <instructions>
             <Bundle-Category>myberkeley</Bundle-Category>
             <Import-Package>!sun.misc,*</Import-Package>
             <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
-            <Export-Package>edu.berkeley.myberkeley.caldav.*</Export-Package>
+            <Export-Package>edu.berkeley.myberkeley.caldav.api.*,net.fortuna.ical4j.*,zoneinfo.*</Export-Package>
             <Embed-Transitive>true</Embed-Transitive>
-            <Embed-Dependency>ical4j,jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
+            <Embed-Dependency>jackrabbit-webdav,backport-util-concurrent</Embed-Dependency>
             <Include-Resource>{maven-resources}</Include-Resource>
-		</instructions>
+          </instructions>
         </configuration>
       </plugin>
       <plugin>
@@ -38,11 +39,12 @@
         <version>1.4.4</version>
       </plugin>
       <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <skip>${caldav.skiptests}</skip>
-          </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <skip>${caldav.skiptests}</skip>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -91,44 +93,44 @@
           <scope>provided</scope>
       </dependency>
 
-<!-- OSGi -->
+    <!-- OSGi -->
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.core</artifactId>
-        <version>1.2.0</version>
-        <scope>provided</scope>      
+      <version>1.2.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.compendium</artifactId>
       <version>1.2.0</version>
       <scope>provided</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>javax.servlet</artifactId>
-          </exclusion>
-        </exclusions>      
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>javax.servlet</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
       <artifactId>jackrabbit-webdav</artifactId>
-        <version>2.0.0</version>
-        <scope>provided</scope>
+      <version>2.0.0</version>
+      <scope>compile</scope>
     </dependency>
 
-<!-- jcr -->
+    <!-- jcr -->
     <dependency>
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
       <version>2.0</version>
-      <scope>provided</scope> 
+      <scope>provided</scope>
     </dependency>
 
-<!-- commons -->
+    <!-- commons -->
 
 
-<!-- logging -->
+    <!-- logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -139,12 +141,12 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>1.5.10</version>
-      <scope>provided</scope>      
+      <scope>provided</scope>
     </dependency>
 
-<!-- jms -->
-    
-<!-- testing -->
+    <!-- jms -->
+
+    <!-- testing -->
 
     <dependency>
       <groupId>junit</groupId>
@@ -153,7 +155,7 @@
       <scope>test</scope>
     </dependency>
 
-<!--  Tests -->
+    <!--  Tests -->
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.testutils</artifactId>
@@ -161,27 +163,27 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-       <groupId>org.apache.sling</groupId>
-       <artifactId>org.apache.sling.commons.testing</artifactId>
-       <version>2.0.5-20100823</version>
-       <scope>test</scope>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.testing</artifactId>
+      <version>2.0.5-20100823</version>
+      <scope>test</scope>
     </dependency>
 
-<!-- calendar -->
+    <!-- calendar -->
     <dependency>
       <groupId>net.fortuna.ical4j</groupId>
       <artifactId>ical4j</artifactId>
       <version>1.0-rc3</version>
       <scope>compile</scope>
     </dependency>
-<!-- ical4j requires this package -->
+    <!-- ical4j requires this package -->
     <dependency>
       <groupId>backport-util-concurrent</groupId>
       <artifactId>backport-util-concurrent</artifactId>
       <version>3.1</version>
     </dependency>
 
-<!-- java -->
+    <!-- java -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>

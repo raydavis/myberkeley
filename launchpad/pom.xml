@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <parent>
-    <artifactId>edu.berkeley.myberkeley.base</artifactId>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <artifactId>edu.berkeley.myberkeley.base</artifactId>
+        <groupId>edu.berkeley.myberkeley</groupId>
+        <version>0.10-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
     <groupId>edu.berkeley.myberkeley</groupId>
+    <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
+    <name>MyBerkeley executable</name>
     <version>0.10-SNAPSHOT</version>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>edu.berkeley.myberkeley</groupId>
-  <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-  <name>MyBerkeley executable</name>
-  <version>0.10-SNAPSHOT</version>
   <properties>
     <nakamura.version>0.10-20110426</nakamura.version>
   </properties>
@@ -61,18 +61,24 @@
               <version>0.6</version>
               <startLevel>30</startLevel>
             </bundle>
-            <bundle>
-              <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.notices</artifactId>
-              <version>0.10-SNAPSHOT</version>
-              <startLevel>30</startLevel>
-            </bundle>
-            <bundle>
-              <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-              <version>0.10-SNAPSHOT</version>
-              <startLevel>30</startLevel>
-            </bundle>
+                        <bundle>
+                            <groupId>edu.berkeley.myberkeley</groupId>
+                            <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
+                            <version>${nakamura.version}</version>
+                            <startLevel>30</startLevel>
+                        </bundle>
+                        <bundle>
+                            <groupId>edu.berkeley.myberkeley</groupId>
+                            <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
+                            <version>${nakamura.version}</version>
+                            <startLevel>30</startLevel>
+                        </bundle>
+                        <bundle>
+                            <groupId>edu.berkeley.myberkeley</groupId>
+                            <artifactId>edu.berkeley.myberkeley.notifications</artifactId>
+                            <version>${nakamura.version}</version>
+                            <startLevel>30</startLevel>
+                        </bundle>            
           </additionalBundles>
           <bundleExclusions>
             <bundle>

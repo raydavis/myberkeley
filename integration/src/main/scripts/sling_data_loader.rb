@@ -50,6 +50,7 @@ module MyBerkeleyData
       @sling.do_login
       @user_manager = UserManager.new(@sling)
       @authz = SlingAuthz::Authz.new(@sling)
+      @server = server
     end
       
     def get_or_create_groups
@@ -147,6 +148,7 @@ module MyBerkeleyData
         loaded_calnet_test_user = load_user uid, user_props
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
+        apply_student_demographic loaded_calnet_test_user, i, CALNET_TEST_USER_IDS.length
         i = i + 1
       end
     end
@@ -279,7 +281,23 @@ module MyBerkeleyData
       @authz.grant(home_path,"g-ced-students","jcr:read" => "granted") #needed so message search results can include sender's profile info
       @authz.grant(home_path,"g-ced-advisors","jcr:all" => "granted")
     end
-    
+
+    def apply_student_demographic(student, index, length)
+      isgrad = true
+      if ( index < length/2)
+          isgrad = false
+      end
+      standing = ""
+      program = ""
+      if ( isgrad )
+        standing = "/colleges/CED/standings/grad"
+        program = "/colleges/CED/standings/grad/programs/" + GRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
+      else
+        standing = "/colleges/CED/standings/undergrad"
+        program = "/colleges/CED/standings/undergrad/majors/" + UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
+      end
+      @sling.execute_post("#{@server}/~#{student.name}.myb-demographic.html", "myb-demographics" => [ program, standing ] )
+    end
   end
 end
 
