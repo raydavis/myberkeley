@@ -76,18 +76,18 @@
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-          <version>0.10-SNAPSHOT</version>
+          <version>0.10-20110426</version>
       </dependency>
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.core</artifactId>
-          <version>0.10-SNAPSHOT</version>
+          <version>0.10-20110426</version>
           <scope>provided</scope>
       </dependency>
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.user</artifactId>
-          <version>0.10-SNAPSHOT</version>
+          <version>0.10-20110426</version>
           <scope>provided</scope>
       </dependency>
 
@@ -157,7 +157,7 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.testutils</artifactId>
-      <version>0.10-SNAPSHOT</version>
+      <version>0.10-20110426</version>
       <scope>test</scope>
     </dependency>
     <dependency>
