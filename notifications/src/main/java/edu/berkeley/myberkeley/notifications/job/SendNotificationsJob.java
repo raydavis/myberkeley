@@ -192,7 +192,6 @@ public class SendNotificationsJob implements Job {
           } catch (BadRequestException e) {
             if (HttpStatus.SC_NOT_FOUND == e.getStatusCode()) {
               // 404 means user's not in Bedework, skip it and log
-              // TODO revisit this logic when we get full authz to Bedework working correctly
               LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
             } else {
               throw e;
