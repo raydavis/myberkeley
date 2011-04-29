@@ -20,7 +20,10 @@ Then doing an OPTIONS as each user is enough to make Bedework create its necessa
 
     curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
 
-The sling data loader script does this for every user it loads.
+If provided its optional 4th and 5th arguments, the sling data loader script will do an OPTIONS request
+for every user it loads. Example command line:
+
+sling_data_loader.rb http://localhost:8080/ admin 16 test.media.berkeley.edu 8080
 
 Once the sling data loader runs, reset the jboss login config to its original state:
 
