@@ -38,19 +38,24 @@ module MyBerkeleyData
     @ced_all_students_group = nil
     
     @env = nil
-    
+
+    @bedeworkServer = nil
+    @bedeworkPort = nil
+
     @user_manager = nil
     @sling = nil
     @authz = nil
     attr_reader :user_password_key, :num_students, :ced_advisors_group, :ced_all_students_group, :authz
   
-    def initialize(server, admin_password="admin", numusers="32")
+    def initialize(server, admin_password="admin", numusers="32", bedeworkServer=nil, bedeworkPort="8080" )
       @num_students = numusers.to_i
       @sling = Sling.new(server, admin_password, true)
       @sling.do_login
       @user_manager = UserManager.new(@sling)
       @authz = SlingAuthz::Authz.new(@sling)
       @server = server
+      @bedeworkServer = bedeworkServer
+      @bedeworkPort = bedeworkPort
     end
       
     def get_or_create_groups
@@ -251,6 +256,18 @@ module MyBerkeleyData
         end      
         target_user.update_profile_properties @sling, user_props
       end
+
+      # create users on the bedework server.
+      # this will only work if the server has been put into unsecure login mode.
+      if (@bedeworkServer)
+        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
+        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
+          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
+          req.basic_auth username, username
+          response = http.request(req)
+        }
+      end
+
       return target_user
     end
   
@@ -304,7 +321,7 @@ end
 if ($PROGRAM_NAME.include? 'sling_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   puts "will attempt to create or update #{ARGV[2]} users"
-  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2]
+  sdl = MyBerkeleyData::SlingDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3], ARGV[4]
   sdl.get_or_create_groups
   sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   sdl.load_calnet_test_users
