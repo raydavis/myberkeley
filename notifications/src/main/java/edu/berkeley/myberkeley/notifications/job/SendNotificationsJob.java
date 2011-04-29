@@ -110,6 +110,7 @@ public class SendNotificationsJob implements Job {
     Map<String, Object> props = new HashMap<String, Object>();
     props.put("sakai:messagebox", Notification.MESSAGEBOX.queue.toString());
     props.put("sling:resourceType", Notification.RESOURCETYPE);
+    props.put("_items", 50000); // make sure we get all our queued notifications
     return cm.find(props);
   }
 
