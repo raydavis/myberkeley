@@ -53,6 +53,10 @@ import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Create or update a hidden demographics profile beneath the targeted User home folder.
+ * This profile will then be indexed by Solr and later searched by the DynamicList service.
+ */
 @SlingServlet(selectors = { "myb-demographic" }, methods = { "POST" }, resourceTypes = { "sakai/user-home" },
     generateService = true, generateComponent = true)
 public class DynamicListSetPersonalDemographicServlet extends SlingAllMethodsServlet {
@@ -87,6 +91,7 @@ public class DynamicListSetPersonalDemographicServlet extends SlingAllMethodsSer
         contentManager.update(new Content(storePath, ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT)));
+        // Only administrative accounts can access the demographic profile directly.
         List<AclModification> modifications = new ArrayList<AclModification>();
         AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
         AclModification.addAcl(false, Permissions.ALL, Group.EVERYONE, modifications);

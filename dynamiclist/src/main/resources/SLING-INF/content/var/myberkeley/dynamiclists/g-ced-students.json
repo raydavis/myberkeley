@@ -16,6 +16,12 @@
     "/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN",
     "/colleges/CED/standings/grad/programs/URBAN DESIGN"
   ],
+  "security:principals" : [
+    {
+      "name" : "g-ced-advisors",
+      "isgroup" :"true"
+    }
+  ],
   "security:acl" : [
     {
       "principal" : "everyone",
@@ -28,6 +34,12 @@
       "denied" : [
         "jcr:all"
       ]
-    }
+    },
+    {
+      "principal" : "g-ced-advisors",
+      "granted" : [
+        "jcr:read"
+      ]
+    }    
   ]
 }

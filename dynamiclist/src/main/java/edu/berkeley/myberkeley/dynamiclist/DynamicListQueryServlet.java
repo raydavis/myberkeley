@@ -39,11 +39,6 @@ import javax.jcr.RepositoryException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * TODO This is just a temporary scratchpad to try out sample queries.
- * For security reasons, the real Dynamic List service must be locked down and
- * the matching IDs must <i>not</i> be returned to the current user.
- */
 @SlingServlet(extensions = { "json" }, methods = { "GET" },
     resourceTypes = { DynamicListService.DYNAMIC_LIST_CONTEXT_RT },
     generateComponent = true, generateService = true)

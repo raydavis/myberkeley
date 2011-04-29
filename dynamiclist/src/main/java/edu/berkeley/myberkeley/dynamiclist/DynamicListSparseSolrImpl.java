@@ -49,6 +49,13 @@ import java.util.List;
 public class DynamicListSparseSolrImpl implements DynamicListService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListSparseSolrImpl.class);
 
+  // Bump up the number of returns per query fetch to our anticipated maximum.
+  // This would normally be considered an extreme abuse of Solr / Lucene,
+  // but for our specific purposes it's an OK workaround to get us started.
+  // Eventually we'll likely replace this Solr implementation by a Sparse find
+  // or a straightforward SQL query against the source DB.
+  private static final Integer SOLR_PAGE_SIZE = new Integer(20000);
+
   @Reference
   private SolrServerService solrSearchService;
 
@@ -60,6 +67,7 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
       String solrQueryString = getSolrQueryForCriteria(context, criteriaJson);
       SolrServer solrServer = solrSearchService.getServer();
       SolrQuery solrQuery = new SolrQuery(solrQueryString);
+      solrQuery.setRows(SOLR_PAGE_SIZE);
       try {
         LOGGER.info("Performing Query {} ", URLDecoder.decode(solrQuery.toString(),"UTF-8"));
       } catch (UnsupportedEncodingException e) {

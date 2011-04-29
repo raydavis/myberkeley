@@ -50,28 +50,13 @@ DYNAMIC LIST CONTEXT
 A starting Dynamic List Context node is created at:
   /var/myberkeley/dynamiclists/g-ced-students
 
-Its ACL should include read-access for CED advisors, but we can't set that during the initial
-content load because the Authz Group may not yet be defined:
-    {
-      "principal" : "g-ced-advisors",
-      "granted" : [
-        "jcr:read"
-      ]
-    }
+Its ACL sets read-access for CED advisors.
 
 
 TO DO
 ====
 
-1. Create the "g-ced-advisors" Authz Group during initial content load and add the above
-ACL clause to "g-ced-students.json".
-
-2. Make sure the search is locked down to advisors. This may involve modifying the "readers"
-list in the Solr Document corresponding to students' myberkeley/personalDemographic.
-
-3. Add integration tests to check security.
-
-4. Add to Ruby integration scripts.
+1. Add integration tests to check security.
 
 
 TEST RUN
