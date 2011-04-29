@@ -15,10 +15,16 @@
   </properties>
   <packaging>jar</packaging>
   <build>
+    <resources>
+      <resource>
+        <directory>${project.build.directory}/generated-resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.sling</groupId>
         <artifactId>maven-launchpad-plugin</artifactId>
+        <version>2.0.10</version>
         <configuration>
           <defaultBundleList>
             <groupId>org.sakaiproject.nakamura</groupId>
@@ -57,6 +63,12 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
+              <version>${nakamura.version}</version>
+              <startLevel>15</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
               <version>0.6</version>
               <startLevel>30</startLevel>
@@ -89,6 +101,10 @@
               <groupId>org.apache.sling</groupId>
               <artifactId>org.apache.sling.launchpad.content</artifactId>
             </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.solr</artifactId>
+            </bundle>
           </bundleExclusions>
           <!-- Needs to be copied from nakamura.app -->
           <jarWebSupport>
@@ -107,7 +123,34 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Needs to be copied from nakamura.app -->
+
+      <!-- Copy property resources from Nakamura's app launchpad -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.sakaiproject.nakamura</groupId>
+                  <artifactId>org.sakaiproject.nakamura.app</artifactId>
+                  <version>${nakamura.version}</version>
+                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                  <includes>*.properties</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Needs to be copied from Nakamura's app/pom.xml -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -123,10 +166,11 @@
     </plugins>
   </build>
   <dependencies>
+    <!-- These dependencies should be copied from Nakamura's app/pom.xml -->
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.launchpad.base</artifactId>
-      <version>2.2.0</version>
+      <version>2.3.0</version>
       <classifier>webapp</classifier>
       <type>war</type>
       <scope>runtime</scope>
@@ -134,7 +178,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.launchpad.base</artifactId>
-      <version>2.2.0</version>
+      <version>2.3.0</version>
       <classifier>app</classifier>
       <scope>provided</scope>
     </dependency>
