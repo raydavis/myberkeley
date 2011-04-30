@@ -251,22 +251,41 @@ module MyBerkeleyData
     end
   
     def apply_student_aces(student)
-      home_path = student.home_path_for @sling
-      @authz.delete(home_path, "everyone")
-      @authz.grant(home_path,"everyone","jcr:read" => "denied","jcr:write" => "denied")
-      @authz.delete(home_path, "anonymous")
-      @authz.grant(home_path,"anonymous","jcr:read" => "denied","jcr:write" => "denied")
-      @authz.grant(home_path,CED_ADVISORS_GROUP_NAME,"jcr:read" => "granted")
+      home_url = @sling.url_for(student.home_path_for @sling)
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => "everyone",
+        "privilege@jcr:all" => "denied"
+      })
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => "anonymous",
+        "privilege@jcr:all" => "denied"
+      })
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => CED_ADVISORS_GROUP_NAME,
+        "privilege@jcr:read" => "granted"
+      })
     end
     
     def apply_advisor_aces(advisor)
-      home_path = advisor.home_path_for @sling
-      @authz.delete(home_path, "everyone")
-      @authz.grant(home_path,"everyone","jcr:read" => "denied","jcr:write" => "denied")
-      @authz.delete(home_path, "anonymous")
-      @authz.grant(home_path,"anonymous","jcr:read" => "denied","jcr:write" => "denied")
-      @authz.grant(home_path,CED_ALL_STUDENTS_GROUP_NAME,"jcr:read" => "granted") #needed so message search results can include sender's profile info
-      @authz.grant(home_path,CED_ADVISORS_GROUP_NAME,"jcr:all" => "granted")
+      home_url = @sling.url_for(advisor.home_path_for @sling)
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => "everyone",
+        "privilege@jcr:all" => "denied"
+      })
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => "anonymous",
+        "privilege@jcr:all" => "denied"
+      })
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => CED_ADVISORS_GROUP_NAME,
+        "privilege@jcr:read" => "granted"
+      })
+
+      #needed so message search results can include sender's profile info
+      @sling.execute_post("#{home_url}.modifyAce.html", {
+        "principalId" => CED_ALL_STUDENTS_GROUP_NAME,
+        "privilege@jcr:read" => "granted"
+      })
     end
 
     def apply_student_demographic(student, index, length)
