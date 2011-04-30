@@ -30,7 +30,7 @@ mvn -P runner -Dsling.start -Dsling.port=$PORT verify || { echo "Failed to start
 sleep 60;
 
 # run myberkeley dataloader
-mvn -Dsling.loaddata -Dsling.port=$PORT -Dloaddata.server=http://localhost:$PORT/ -Dloaddata.password=admin -Dloaddata.numusers=16 integration-test || { echo "Integration-test failed." ; stopAndExit ; }
+mvn -Dsling.loaddata -Dsling.port=$PORT -Dloaddata.server=http://localhost:$PORT/ -Dloaddata.password=admin integration-test || { echo "Integration-test failed." ; stopAndExit ; }
 
 # stop server
 mvn -P runner -Dsling.stop -Dsling.port=$PORT verify

@@ -30,7 +30,7 @@
       "email": "roman@berkeley.edu"
     },
     "3060": {
-      "lastName": "Mcgrath",
+      "lastName": "McGrath",
       "firstName": "Owen",
       "email": "owen@media.berkeley.edu"
     },

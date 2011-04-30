@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+
+# TODO This is currently broken, since it refers to the old "sling_data_loader"
+# (now called "ucb_data_loader").
+
 require 'rubygems'
 require 'optparse'
 require 'active_record'

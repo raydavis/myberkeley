@@ -18,7 +18,6 @@
     <sling.tmpdir>/tmp</sling.tmpdir>
     <loaddata.server>http://localhost:8080/</loaddata.server>
     <loaddata.password>admin</loaddata.password>
-    <loaddata.numusers>32</loaddata.numusers>
     <caldav.skiptests>false</caldav.skiptests>
   </properties>
   <profiles>
