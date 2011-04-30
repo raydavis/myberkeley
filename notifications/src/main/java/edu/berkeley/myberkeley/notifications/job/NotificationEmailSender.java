@@ -160,7 +160,6 @@ public class NotificationEmailSender {
     String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + EMAIL_NODE_PATH;
     Content content = contentManager.get(recipBasicProfilePath);
     if (content != null) {
-      // TODO is there a better way to get emails out of profiles?
       return (String) content.getProperty("value");
     }
     return null;

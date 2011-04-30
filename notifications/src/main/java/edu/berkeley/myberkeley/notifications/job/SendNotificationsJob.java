@@ -110,6 +110,7 @@ public class SendNotificationsJob implements Job {
     Map<String, Object> props = new HashMap<String, Object>();
     props.put("sakai:messagebox", Notification.MESSAGEBOX.queue.toString());
     props.put("sling:resourceType", Notification.RESOURCETYPE);
+    props.put("_items", 50000); // make sure we get all our queued notifications
     return cm.find(props);
   }
 
@@ -192,7 +193,6 @@ public class SendNotificationsJob implements Job {
           } catch (BadRequestException e) {
             if (HttpStatus.SC_NOT_FOUND == e.getStatusCode()) {
               // 404 means user's not in Bedework, skip it and log
-              // TODO revisit this logic when we get full authz to Bedework working correctly
               LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
             } else {
               throw e;

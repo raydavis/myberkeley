@@ -1,9 +1,3 @@
-In this module, by default, tests are skipped (because the tests are really integration tests
- and require a running Bedework server on test.media.berkeley.edu).
-
-To run the tests in this module, do:
-
-mvn -Dcaldav.skiptests=false test
 
 ==============================================================================
 
@@ -12,31 +6,30 @@ Loading students into Bedework:
 Proposal is to create fake accounts in the LDAP system that ships with Bedework (ApacheDS) so that we can log in
 as each user one time, which makes the user's rows in Bedework's MySQL database that are necessary.
 
-First we'll enable file-based authentication in JBoss.
-
-~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf/users.properties stores usernames and passwords.
-Passwords are Base64-encoded MD5 hashes.
+First we'll enable simple authentication in JBoss, which means you can log in as anyone by providing a username
+and the same value as the password.
 
 On the Bedework server, as Bedework user:
-    cd ~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf
+    cd ~/bedework/quickstart_3.7/jboss-5.1.0.GA/server/default/conf
     cp login-config.xml login-config.xml.orig
-    cp login-config.fileBasedAuth login-config.xml
-    cd ~/
-    ./killBedework.sh
-    ./buildBedework.sh
-    ./startBedework.sh
+    cp login-config.unsecureLogin login-config.xml
+    ~/killBedework.sh
+    ~/startBedework.sh
 
 Then doing an OPTIONS as each user is enough to make Bedework create its necessary rows for the user:
 
     curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
 
-Once the curl OPTIONS is run for all the students in the data load, reset the jboss login config to its original state:
-    cd ~/quickstart_customizations/jboss-5.1.0.GA/server/default/conf
+If provided its optional 4th and 5th arguments, the sling data loader script will do an OPTIONS request
+for every user it loads. Example command line:
+
+sling_data_loader.rb http://localhost:8080/ admin 16 test.media.berkeley.edu 8080
+
+Once the sling data loader runs, reset the jboss login config to its original state:
+
+    cd ~/bedework/quickstart_3.7/jboss-5.1.0.GA/server/default/conf
     cp login-config.xml.orig login-config.xml
-    cd ~/
-    ./killBedework.sh
-    ./buildBedework.sh
-    ./startBedework.sh
+    ~/killBedework.sh
+    ~/startBedework.sh
 
-
-
+==============================================================================
