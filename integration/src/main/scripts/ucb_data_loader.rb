@@ -225,18 +225,7 @@ module MyBerkeleyData
         puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
         target_user = update_user(username, user_props, password)
       end
-
-      # create users on the bedework server.
-      # this will only work if the server has been put into unsecure login mode.
-      if (@bedeworkServer)
-        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
-        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
-          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
-          req.basic_auth username, username
-          response = http.request(req)
-        }
-      end
-
+      create_bedework_acct(username)
       return target_user
     end
   
@@ -247,9 +236,23 @@ module MyBerkeleyData
           target_user = User.new username
         end      
       update_profile_properties @sling, target_user, user_props
+      create_bedework_acct(username)
       return target_user
     end
-  
+
+    def create_bedework_acct(username)
+      # create users on the bedework server.
+      # this will only work if the server has been put into unsecure login mode.
+      if (@bedeworkServer)
+        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
+        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
+          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
+          req.basic_auth username, username
+          response = http.request(req)
+        }
+      end
+    end
+
     def apply_student_aces(student)
       home_url = @sling.url_for(student.home_path_for @sling)
       @sling.execute_post("#{home_url}.modifyAce.html", {
@@ -309,7 +312,7 @@ end
 
 if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
-  sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2]
+  sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
   sdl.get_or_create_groups
   sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
   sdl.load_calnet_test_users
