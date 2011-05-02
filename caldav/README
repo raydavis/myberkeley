@@ -3,9 +3,6 @@
 
 Loading students into Bedework:
 
-Proposal is to create fake accounts in the LDAP system that ships with Bedework (ApacheDS) so that we can log in
-as each user one time, which makes the user's rows in Bedework's MySQL database that are necessary.
-
 First we'll enable simple authentication in JBoss, which means you can log in as anyone by providing a username
 and the same value as the password.
 
@@ -20,10 +17,10 @@ Then doing an OPTIONS as each user is enough to make Bedework create its necessa
 
     curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
 
-If provided its optional 4th and 5th arguments, the sling data loader script will do an OPTIONS request
+If provided its optional 3rd and 4th arguments, the sling data loader script will do an OPTIONS request
 for every user it loads. Example command line:
 
-sling_data_loader.rb http://localhost:8080/ admin 16 test.media.berkeley.edu 8080
+    sling_data_loader.rb http://localhost:8080/ admin test.media.berkeley.edu 8080
 
 Once the sling data loader runs, reset the jboss login config to its original state:
 
