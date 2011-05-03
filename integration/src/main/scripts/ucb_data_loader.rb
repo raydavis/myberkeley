@@ -173,7 +173,7 @@ module MyBerkeleyData
     end
 
     def create_user_with_props(username, user_props, password=nil)
-      @log.info "Creating user: #{username}"
+      @log.info "Creating user: #{username}, props: #{user_props.inspect}"
       if (password)
         user = User.new(username, password)
       else
