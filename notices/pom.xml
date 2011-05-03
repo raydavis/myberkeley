@@ -45,36 +45,36 @@
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.user</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.personal</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.events</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.email.outgoing</artifactId>
-            <version>0.10-20110426</version>
+            <version>0.11-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Sling -->

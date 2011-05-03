@@ -11,7 +11,8 @@
   <name>MyBerkeley executable</name>
   <version>0.10-SNAPSHOT</version>
   <properties>
-    <nakamura.version>0.10-20110426</nakamura.version>
+    <nakamura.version>0.11-SNAPSHOT</nakamura.version>
+    <ianproperty.version>1.0-SNAPSHOT</ianproperty.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -41,7 +42,7 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
-              <version>0.10-20110426</version>
+              <version>${nakamura.version}</version>
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
@@ -64,7 +65,7 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
-              <version>${nakamura.version}</version>
+              <version>${ianproperty.version}</version>
               <startLevel>15</startLevel>
             </bundle>
             <bundle>

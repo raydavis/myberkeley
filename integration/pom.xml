@@ -175,13 +175,7 @@
             <configuration>
               <skipCheckoutIfExists>true</skipCheckoutIfExists>
               <checkoutDirectory>${project.build.directory}/nakamura-testscripts</checkoutDirectory>
-              <!-- TODO Point this to a safer location once John's fixes have been merged! -->
-              <!--
               <connectionUrl>scm:git:git://github.com/sakaiproject/nakamura.git</connectionUrl>
-              <scmVersionType>tag</scmVersionType>
-              <scmVersion>0.10-RC2</scmVersion>
-              -->
-              <connectionUrl>scm:git:git://github.com/johnfking2/nakamura.git</connectionUrl>
               <scmVersionType>branch</scmVersionType>
               <scmVersion>master</scmVersion>
               <includes>testscripts/*,testscripts/*/*,testscripts/*/*/*,testscripts/*/*/*/*</includes>
