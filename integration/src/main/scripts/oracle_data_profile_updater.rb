@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
-# TODO This is currently broken, since it refers to the old "sling_data_loader"
-# (now called "ucb_data_loader").
+# TODO Need to bring up to date with dynamic lists.
 
 require 'oracle_data_loader'
 
@@ -19,7 +18,8 @@ module MyBerkeleyData
         props = make_user_props s
         if (props['current'] == true)
           student_ldap_uid = s.student_ldap_uid
-          user = @sling_data_loader.update_user student_ldap_uid, props
+          student_ldap_uid = s.student_ldap_uid
+          user = @ucb_data_loader.load_user student_ldap_uid, props
         end
       end
     end
@@ -38,8 +38,8 @@ module MyBerkeleyData
           user_props['firstName'] = first_name
           user_props['lastName'] = last_name
           user_props['email'] = email
-          @sling_data_loader.make_advisor_props user_props
-          updated_advisor = @sling_data_loader.update_user advisor_id, user_props
+          @ucb_data_loader.make_advisor_props user_props
+          updated_advisor = @ucb_data_loader.update_user advisor_id, user_props
         end
     end
   end
@@ -50,10 +50,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
   options = {}
   optparser = OptionParser.new do |opts|
     opts.banner = "Usage: oracle_data_loader.rb [options]"
-
-    opts.on("-h", "--oraclehost OHOST", "Oracle Host") do |oh|
-      options[:oraclehost] = oh
-    end
     
     opts.on("-u", "--oracleuser OUSER", "Oracle User") do |ou|
       options[:oracleuser] = ou
@@ -82,11 +78,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
     opts.on("-e", "--runenv [RUNENV]", "Runtime Environment") do |re|
       options[:runenv] = re
     end
-    
-    options[:numstudents] = 10
-    opts.on("-n", "--numstudents [NUMSTUDENTS]", Integer, "Number of Students to load") do |ns|
-      options[:numstudents] = ns
-    end  
 
     opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
       options[:userpwdkey] = pk
@@ -97,6 +88,5 @@ if ($PROGRAM_NAME.include? 'oracle_data_profile_updater.rb')
   
   odl = MyBerkeleyData::OracleDataProfileUpdater.new options
   
-  #odl.update_ced_students
   odl.update_ced_advisors
 end 

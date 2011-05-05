@@ -1,7 +1,12 @@
 #!/usr/bin/env ruby
 
-# TODO This is currently broken, since it refers to the old "sling_data_loader"
-# (now called "ucb_data_loader").
+# TODO Need to bring up to date with dynamic lists.
+
+# The Oracle server's host, port, and service name must be configured in:
+#   $TNS_ADMIN/tnsnames.ora
+
+# Add all files in testscripts\SlingRuby\lib directory to ruby "require" search path
+require 'ruby-lib-dir.rb'
 
 require 'rubygems'
 require 'optparse'
@@ -9,54 +14,48 @@ require 'active_record'
 require 'oci8'
 require 'json'
 require 'digest/sha1'
+require 'logger'
 require 'sling/sling'
-require 'lib/sling/users'
-require 'sling_data_loader'
-include SlingInterface
-include SlingUsers
+require 'sling/users'
+require 'ucb_data_loader'
 
 module MyBerkeleyData
   PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
   ROLE_CODES = {1 => "Undergraduate Student", 2 => "Graduate Student", 3 => "GSI", 4 => "Instructor", 5 => "Staff"}
-  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   class OracleDataLoader
 
     @env = nil
     
-    @user_manager = nil
     @sling = nil
-    @num_students = nil
     @user_password_key = nil
     
-    @oracle_host = nil
     @oracle_user = nil
     @oracle_password = nil
     @oracle_sid = nil
     
-    @sling_data_loader = nil
+    @ucb_data_loader = nil
     
-    attr_reader :oracle_host, :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :num_students, :sling_data_loader
+    attr_reader :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :ucb_data_loader
     
     def initialize(options)
-      @oracle_host = options[:oraclehost]
+      @log = Logger.new(STDOUT)
+      @log.level = Logger::DEBUG
       @oracle_user = options[:oracleuser]
       @oracle_password = options[:oraclepwd]
       @oracle_sid = options[:oraclesid]
       
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
-      @num_students = options[:numstudents]
-      @sling = Sling.new(options[:appserver], options[:adminpwd], true)
+      @sling = Sling.new(options[:appserver], true)
+      real_admin = User.new("admin", options[:adminpwd])
+      @sling.switch_user(real_admin)
       @sling.do_login
-      @user_manager = UserManager.new(@sling)
-      @sling_data_loader = MyBerkeleyData::SlingDataLoader.new(options[:appserver], options[:adminpwd], 0) # no random users, just real ones
+      @ucb_data_loader = MyBerkeleyData::UcbDataLoader.new(options[:appserver], options[:adminpwd])
       
       ActiveRecord::Base.logger = Logger.new(STDOUT)
       #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
       conn = ActiveRecord::Base.establish_connection(
           :adapter  => "oracle_enhanced",
-          #:host     => odl.oracle_host,
-          #:port     => 1523,
           :username => @oracle_user,
           :password => @oracle_password,
           :database => @oracle_sid
@@ -160,22 +159,20 @@ module MyBerkeleyData
     end
     
     def load_ced_students
-
       ced_students = select_ced_students
       i = 0
       ced_students.each do |s|
         props = make_user_props s
         if (@user_password_key)
-          user_password = sling_data_loader.make_password s.stu_name, @user_password_key
+          user_password = ucb_data_loader.make_password s.stu_name, @user_password_key
         else
           user_password = "testuser"
         end
         if (props['current'] == true)
           student_ldap_uid = s.student_ldap_uid
-          user = @sling_data_loader.load_user student_ldap_uid, props, user_password
-          @sling_data_loader.add_student_to_group user
-          @sling_data_loader.apply_student_aces user
-          #break if (i += 1) >= @num_students
+          user = @ucb_data_loader.load_user student_ldap_uid, props, user_password
+          @ucb_data_loader.add_student_to_group user
+          @ucb_data_loader.apply_student_aces user
         end
       end
     end
@@ -212,10 +209,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   options = {}
   optparser = OptionParser.new do |opts|
     opts.banner = "Usage: oracle_data_loader.rb [options]"
-
-    opts.on("-h", "--oraclehost OHOST", "Oracle Host") do |oh|
-      options[:oraclehost] = oh
-    end
     
     opts.on("-u", "--oracleuser OUSER", "Oracle User") do |ou|
       options[:oracleuser] = ou
@@ -259,9 +252,8 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   
   odl = MyBerkeleyData::OracleDataLoader.new options
   
-  
-  odl.sling_data_loader.get_or_create_groups
-  odl.sling_data_loader.load_defined_user_advisors
+  odl.ucb_data_loader.get_or_create_groups
+  odl.ucb_data_loader.load_defined_user_advisors
   odl.load_ced_students
   
 end 
