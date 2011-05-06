@@ -190,6 +190,24 @@
         <version>1.3</version>
         <executions>
           <execution>
+            <id>config-sling</id>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <tasks name="sling-config" if="myb.sling.config">
+                <mkdir dir="${sakai3.home}"/>
+                <copy verbose="true" file="${myb.sling.config}/repository.xml"
+                  todir="${sakai3.home}/sling" overwrite="false"/>
+                <copy verbose="true" file="${myb.sling.config}/nakamura.properties"
+                  todir="${sakai3.home}/sling" overwrite="false"/>
+                <copy verbose="true" file="${myb.sling.config}/JDBCStorageClientPool.config"
+                  todir="${sakai3.home}/sling/config/org/sakaiproject/nakamura/lite/storage/jdbc" overwrite="false"/>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
             <id>start-sling</id>
             <phase>pre-integration-test</phase>
             <configuration>
@@ -206,6 +224,7 @@
                   <jvmarg value="-Xmx1024m"/>
                   <jvmarg value="-XX:MaxPermSize=256m"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
+                  <sysproperty key="felix.fileinstall.noInitialDelay" value="true"/>
                   <sysproperty key="sling.home" value="sling"/>
 				  <sysproperty key="org.sakaiproject.nakamura.core.port" value="${sling.port}"/>
 				  <sysproperty key="org.mortbay.jetty.ajp.port" value="8010"/>
