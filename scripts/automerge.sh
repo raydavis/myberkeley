@@ -14,7 +14,6 @@ THEIR_REMOTE_NAME="theirRepo"
 OUR_REMOTE_NAME="ourRepo"
 
 fail() {
-  #git remote rm $THEIR_REMOTE_NAME
   git reset --hard HEAD
   exit 1;
 }
@@ -30,8 +29,11 @@ echo "Git branches:"
 git branch -v -v
 echo
 
-git checkout $OUR_REMOTE_NAME/$OUR_BRANCH
+git checkout -t -b $OUR_REMOTE_NAME/$OUR_BRANCH
+
+echo "Merging $THEIR_REMOTE_NAME/$THEIR_BRANCH..."
 git merge $THEIR_REMOTE_NAME/$THEIR_BRANCH || { echo "Automatic merge failed. Resetting to HEAD."; fail; }
 
-#git remote rm $THEIR_REMOTE_NAME
-#git remote rm $OUR_REMOTE_NAME
+echo
+git log -1
+echo
