@@ -39,6 +39,6 @@ echo
 git log -1
 echo
 
-echo "Pushing to $REMOTE_NAME $OUR_BRANCH:$OUR_BRANCH..."
-git push $REMOTE_NAME $OUR_BRANCH:$OUR_BRANCH || { echo "Git push failed."; fail; }
+echo "Pushing to $OUR_REMOTE_NAME $OUR_BRANCH:$OUR_BRANCH..."
+git push $OUR_REMOTE_NAME $OUR_BRANCH:$OUR_BRANCH || { echo "Git push failed."; fail; }
 
