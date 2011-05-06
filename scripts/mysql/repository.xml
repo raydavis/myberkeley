@@ -71,21 +71,15 @@
       <param name="user" value="sakaiuser" />
       <param name="password" value="ironchef" />
       <param name="schema" value="mysql" />
-      <param name="schemaObjectPrefix" value="versioning_" />
+      <param name="schemaObjectPrefix" value="${wsp.name}_"/>
       <param name="externalBLOBs" value="false" />
     </PersistenceManager>
 
         <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
             <param name="path" value="${wsp.home}/index"/>
-<!-- I think this is default for JR2
-             <param name="textFilterClasses" value="org.apache.jackrabbit.extractor.MsWordTextExtractor,org.apache.jackrabbit.extractor.MsExcelTextExtractor,org.apache.jackrabbit.extractor.MsPowerPointTextExtractor,org.apache.jackrabbit.extractor.PdfTextExtractor,org.apache.jackrabbit.extractor.OpenOfficeTextExtractor,org.apache.jackrabbit.extractor.RTFTextExtractor,org.apache.jackrabbit.extractor.HTMLTextExtractor,org.apache.jackrabbit.extractor.XMLTextExtractor,org.apache.jackrabbit.extractor.PlainTextExtractor"/>
-            <param name="extractorPoolSize" value="2"/>
- -->
             <!-- this is the batch size of the initial search get, we probably only want 100 items at any one time -->
             <!-- but we need to allow at least 2 more for pre-fetching by the iterators. -->
             <param name="resultFetchSize" value="102" />
-            <param name="supportHighlighting" value="true"/>
-            <param name="indexingConfiguration" value="${rep.home}/indexing_configuration.xml"/>
         </SearchIndex>
     </Workspace>
 
@@ -111,12 +105,6 @@
 
     <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
         <param name="path" value="${rep.home}/repository/index"/>
-        <!--
-        <param name="textFilterClasses" value="org.apache.jackrabbit.extractor.MsWordTextExtractor,org.apache.jackrabbit.extractor.MsExcelTextExtractor,org.apache.jackrabbit.extractor.MsPowerPointTextExtractor,org.apache.jackrabbit.extractor.PdfTextExtractor,org.apache.jackrabbit.extractor.OpenOfficeTextExtractor,org.apache.jackrabbit.extractor.RTFTextExtractor,org.apache.jackrabbit.extractor.HTMLTextExtractor,org.apache.jackrabbit.extractor.XMLTextExtractor,org.apache.jackrabbit.extractor.PlainTextExtractor"/>
-        <param name="extractorPoolSize " value="2"/>
-         -->
-        <param name="supportHighlighting" value="true"/>
-        <param name="indexingConfiguration" value="${rep.home}/indexing_configuration.xml"/>
     </SearchIndex>
 
 </Repository>
