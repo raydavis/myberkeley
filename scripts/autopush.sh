@@ -30,7 +30,7 @@ echo "Git branches:"
 git branch -v -v
 echo
 
-git checkout -t -b $OUR_REMOTE_NAME/$OUR_BRANCH
+git checkout -t -b $OUR_BRANCH $OUR_REMOTE_NAME/$OUR_BRANCH
 
 echo "Merging $THEIR_REMOTE_NAME/$THEIR_BRANCH..."
 git merge $THEIR_REMOTE_NAME/$THEIR_BRANCH || { echo "Automatic merge failed. Resetting to HEAD."; fail; }
