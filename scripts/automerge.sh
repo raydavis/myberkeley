@@ -18,6 +18,12 @@ fail() {
 git remote add $REMOTE_NAME $THEIR_GIT_URL
 git fetch $REMOTE_NAME
 
+echo "Git remotes:"
+git remote -v -v
+echo "Git branches:"
+git branch -v -v
+echo
+
 git merge $REMOTE_NAME/$THEIR_BRANCH || { echo "Automatic merge failed. Resetting to HEAD."; fail; }
 
 git remote rm $REMOTE_NAME
