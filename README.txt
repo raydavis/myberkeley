@@ -39,6 +39,26 @@ Then you can go to http://localhost:8080/.explorer.html to see JCR nodes.
 
 ===
 
+COOKBOOK - MYSQL
+
+By default, OAE's Jackrabbit and Sparsemapcontent both store their data in a
+Derby database. To use MySQL instead, do the following:
+
+1. Initialize your MySQL database. (See "scripts/mysql/JDBCStorageClientPool.config"
+for the default connection settings.)
+
+2. Clean out your old server environment (including the Derby-based repository):
+mvn -P runner -Dsling.clean clean
+
+3. Edit the "scripts/mysql" files to match your MySQL settings (if you're not
+using the defaults).
+
+4. Start the server with the MySQL settings:
+
+mvn -P runner -Dsling.start -Dmyb.sling.config=$PWD/scripts/mysql verify
+
+===
+
 COOKBOOK - DEVELOPMENT
 
 1. To build (or rebuild) sample code:
