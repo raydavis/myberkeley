@@ -20,35 +20,35 @@ module MyBerkeleyData
   MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH AND ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
 	GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
-  
+
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
                         "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
                         "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
                         "test-300873","test-300874","test-300875","test-300876","test-300877"]
-  
+
   CALNET_EMAIL_TEST_USER_IDS = []
-    
+
     TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
-    
+
     TEST_EMAIL_CONTEXT = "g-ced-students-testemail"
-    
+
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
-  
+
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
-    
-    @ced_advisors_group = nil                                                                               
+
+    @ced_advisors_group = nil
     @ced_all_students_group = nil
-    
+
     @env = nil
-    
+
     @bedeworkServer = nil
     @bedeworkPort = nil
 
     @user_manager = nil
     @sling = nil
     @authz = nil
-  
+
     def initialize(server, admin_password="admin", bedeworkServer=nil, bedeworkPort="8080")
       @log = Logger.new(STDOUT)
       @log.level = Logger::DEBUG
@@ -62,13 +62,13 @@ module MyBerkeleyData
       @bedeworkServer = bedeworkServer
       @bedeworkPort = bedeworkPort
     end
-      
+
     def get_or_create_groups
       @ced_advisors_group = get_or_create_group CED_ADVISORS_GROUP_NAME
       @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
     end
-  
-    
+
+
     def get_or_create_group(groupname)
       group = @user_manager.create_group groupname
       if(!group)
@@ -76,31 +76,31 @@ module MyBerkeleyData
       end
       return group
     end
-    
+
     def make_password(name, key)
       digest = Digest::SHA1.new
       digest.update(name).update(key)
       return digest.hexdigest
     end
-    
+
     def add_student_to_group user
       @ced_all_students_group.add_member @sling, user.name, "user"
       user_props = @user_manager.get_user_props user.name
     end
-    
+
     def add_advisor_to_group advisor
       @ced_advisors_group.add_member @sling, advisor.name, "user"
       user_props = @user_manager.get_user_props advisor.name
     end
-    
+
     def load_defined_user_advisors
       loaded_advisors = load_defined_users "json_data.js"
       loaded_advisors.each do |loaded_advisor|
         add_advisor_to_group loaded_advisor
         apply_advisor_aces loaded_advisor
-      end      
+      end
     end
-      
+
     def load_defined_users(json_file_name)
       all_data = JSON.load(File.open json_file_name, "r")
       users = all_data['users']
@@ -113,7 +113,7 @@ module MyBerkeleyData
       end
       return loaded_users
     end
-    
+
     def load_defined_user user
         username = user[0]
         user_props = user[1]
@@ -122,17 +122,17 @@ module MyBerkeleyData
         loaded_user = load_user username, user_props
         return loaded_user
     end
-  
+
     def make_advisor_props user_props #need to have firstName, lastName and email loaded already
-        user_props['context'] = [CED_ADVISORS_GROUP_NAME] 
-        user_props['standing'] = 'advisor'  
+        user_props['context'] = [CED_ADVISORS_GROUP_NAME]
+        user_props['standing'] = 'advisor'
         user_props['major'] = ["N/A"]
         user_props['current'] = true
         # user_props['department'] = '' empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']
-        user_props['role'] = ['Staff'] 
+        user_props['role'] = ['Staff']
     end
-    
+
     def load_calnet_test_users
       i = 0
       CALNET_TEST_USER_IDS.each do |id|
@@ -144,29 +144,41 @@ module MyBerkeleyData
         loaded_calnet_test_user = load_user uid, user_props
         add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
-        apply_student_demographic loaded_calnet_test_user, i, CALNET_TEST_USER_IDS.length
+        apply_student_demographic uid, user_props
         i = i + 1
       end
     end
-      
+
     def generate_user_props(username, first_name, last_name, index, length)
         user_props = {}
         user_props[':name'] = username
         user_props['firstName'] = first_name.chomp
-        user_props['lastName'] = last_name.chomp  
+        user_props['lastName'] = last_name.chomp
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
         user_props['context'] = [CED_ALL_STUDENTS_GROUP_NAME]
         #user_props['department'] = '' # empty string breaks trimpath
-        user_props['college'] = ['College of Environmental Design'] 
+        user_props['college'] = ['College of Environmental Design']
         user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
         if ( index < length/2)
           user_props['standing'] = 'undergrad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:U]
           user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
+          user_props['myb-demographics'] = [
+            "/colleges/CED/standings/undergrad",
+            "/colleges/CED/standings/undergrad/majors/" + UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length]
+          ]
         else
           user_props['standing'] = 'grad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
-          user_props['major'] = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')     
+          user_props['major'] = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
+          user_props['myb-demographics'] = [
+            "/colleges/CED/standings/grad",
+            "/colleges/CED/standings/grad/programs/" + GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
+          ]
+          if (index == length - 1)
+            user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/DOUBLE")
+            user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/PSYCHOLOGY")
+          end
         end
         user_props['current'] = true
         return user_props
@@ -211,15 +223,15 @@ module MyBerkeleyData
       post_data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value':'#{lastname}' }, 'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value':'#{major}' }, } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' },'current': { 'value': '#{current}' }, 'major': { 'value': '#{major}' } } } }"
       return post_data
     end
-      
+
     def update_profile_properties(sling, target_user, user_props)
       data = {}
       return target_user.update_properties(sling, add_profile_property(user_props, data))
     end
-      
+
     def load_user(username, user_props, password=nil)
       target_user = create_user_with_props username, user_props, password
-      
+
       # if user exists, they will not be (re)created but props may be updated
       if (target_user.nil?)
         puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
@@ -228,13 +240,13 @@ module MyBerkeleyData
       create_bedework_acct(username)
       return target_user
     end
-  
+
     def update_user(username, user_props, password=nil)
       if (password)
           target_user = User.new username, password
         else
           target_user = User.new username
-        end      
+        end
       update_profile_properties @sling, target_user, user_props
       create_bedework_acct(username)
       return target_user
@@ -268,7 +280,7 @@ module MyBerkeleyData
         "privilege@jcr:read" => "granted"
       })
     end
-    
+
     def apply_advisor_aces(advisor)
       home_url = @sling.url_for(advisor.home_path_for @sling)
       @sling.execute_post("#{home_url}.modifyAce.html", {
@@ -291,21 +303,8 @@ module MyBerkeleyData
       })
     end
 
-    def apply_student_demographic(student, index, length)
-      isgrad = true
-      if ( index < length/2)
-          isgrad = false
-      end
-      standing = ""
-      program = ""
-      if ( isgrad )
-        standing = "/colleges/CED/standings/grad"
-        program = "/colleges/CED/standings/grad/programs/" + GRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
-      else
-        standing = "/colleges/CED/standings/undergrad"
-        program = "/colleges/CED/standings/undergrad/majors/" + UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
-      end
-      @sling.execute_post("#{@server}~#{student.name}.myb-demographic.html", "myb-demographics" => [ program, standing ] )
+    def apply_student_demographic(studentuid, user_props)
+      @sling.execute_post("#{@server}~#{studentuid}.myb-demographic.html", "myb-demographics" => user_props["myb-demographics"] )
     end
   end
 end

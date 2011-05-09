@@ -8,13 +8,15 @@
     "/colleges/CED/standings/undergrad/majors/INDIVIDUAL",
     "/colleges/CED/standings/undergrad/majors/LIMITED",
     "/colleges/CED/standings/undergrad/majors/URBAN STUDIES",
+    "/colleges/CED/standings/undergrad/majors/DOUBLE",
     "/colleges/CED/standings/grad",
     "/colleges/CED/standings/grad/programs/ARCHITECTURE",
     "/colleges/CED/standings/grad/programs/CITY REGIONAL PLAN",
     "/colleges/CED/standings/grad/programs/DESIGN",
     "/colleges/CED/standings/grad/programs/LIMITED",
     "/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN",
-    "/colleges/CED/standings/grad/programs/URBAN DESIGN"
+    "/colleges/CED/standings/grad/programs/URBAN DESIGN",
+    "/colleges/CED/standings/grad/programs/DOUBLE"
   ],
   "security:principals" : [
     {
