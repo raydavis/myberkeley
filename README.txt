@@ -67,7 +67,7 @@ mvn clean install
 
 2. To start loading client-side files from your local copy of
 3akai-ux code rather than using the deployed version of 3akai-ux,
-copy the "configs/dev/*.cfg" files to your "working/load" directory and
+copy the "configs/localhost/load/*" files to your "working/load" directory and
 edit them to point to your local copy.
 
 3. To load sample user data, you will be running Ruby scripts via Maven.
