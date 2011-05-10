@@ -153,34 +153,27 @@
  </profiles>
   <build>
     <plugins>
-      <!-- TODO This would go a lot faster if a JAR somewhere held the required resources... -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-scm-plugin</artifactId>
-        <version>1.5</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-provider-gitexe</artifactId>
-            <version>1.5</version>
-          </dependency>
-        </dependencies>
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
-          <execution>
-            <id>export-testscripts</id>
-            <goals>
-              <goal>checkout</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <skipCheckoutIfExists>true</skipCheckoutIfExists>
-              <checkoutDirectory>${project.build.directory}/nakamura-testscripts</checkoutDirectory>
-              <connectionUrl>scm:git:git://github.com/sakaiproject/nakamura.git</connectionUrl>
-              <scmVersionType>branch</scmVersionType>
-              <scmVersion>master</scmVersion>
-              <includes>testscripts/*,testscripts/*/*,testscripts/*/*/*,testscripts/*/*/*/*</includes>
-            </configuration>
-          </execution>
+        <execution>
+          <id>unpack-testscripts</id>
+          <phase>generate-sources</phase>
+          <goals>
+          <goal>unpack</goal>
+          </goals>
+          <configuration>
+          <artifactItems>
+            <artifactItem>
+            <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.testscripts</artifactId>
+            <version>0.11-SNAPSHOT</version>
+            <outputDirectory>${project.build.directory}/nakamura-testscripts</outputDirectory>
+            </artifactItem>
+          </artifactItems>
+          </configuration>
+        </execution>
         </executions>
       </plugin>
       <plugin>
