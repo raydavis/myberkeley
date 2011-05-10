@@ -11,8 +11,8 @@ THEIR_BRANCH=$2
 OUR_GIT_URL=$3
 OUR_BRANCH=$4
 
-THEIR_REMOTE_NAME="theirRepo"
-OUR_REMOTE_NAME="ourRepo"
+THEIR_REMOTE_NAME="central"
+OUR_REMOTE_NAME="ets"
 
 fail() {
   git reset --hard HEAD
