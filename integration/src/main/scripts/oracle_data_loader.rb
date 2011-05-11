@@ -164,10 +164,8 @@ module MyBerkeleyData
       end
     end
 
-
     def determine_role(user_props, ced_student)
-      role = UG_GRAD_FLAG_MAP[ced_student.ug_grad_flag.to_sym]
-      return role
+      user_props['role'] = UG_GRAD_FLAG_MAP[ced_student.ug_grad_flag.to_sym]
     end
 
     def determine_department(user_props, ced_student)
@@ -293,7 +291,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl = MyBerkeleyData::OracleDataLoader.new options
 
   odl.ucb_data_loader.get_or_create_groups
-  odl.ucb_data_loader.load_defined_user_advisors
+  odl.ucb_data_loader.load_defined_advisors
   odl.load_ced_students
 
 end
