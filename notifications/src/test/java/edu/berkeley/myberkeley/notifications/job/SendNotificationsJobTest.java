@@ -99,6 +99,13 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService);
 
+    Content queryContent = new Content("/a/path/to/a/dynamic/list/query", ImmutableMap.of(
+      JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            (Object) Notification.RESOURCETYPE));
+    queryContent.setProperty("context", "g-ced-students");
+    queryContent.setProperty("filter", "mock filter");
+    when(this.cm.get("/a/path/to/a/dynamic/list/query")).thenReturn(queryContent);
+
     when(this.job.sparseRepository.loginAdministrative()).thenReturn(this.adminSession);
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
     when(this.adminSession.getAccessControlManager()).thenReturn(this.accessControlManager);
