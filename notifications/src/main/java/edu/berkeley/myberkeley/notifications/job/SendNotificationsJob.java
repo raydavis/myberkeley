@@ -161,6 +161,7 @@ public class SendNotificationsJob implements Job {
     }
 
     JSONObject recipientToCalendarURIMap = recipientLog.getRecipientToCalendarURIMap();
+    javax.jcr.Session jcrSession = null;
 
     try {
 
@@ -168,7 +169,7 @@ public class SendNotificationsJob implements Job {
       String criteria = (String) listQuery.getProperty("filter");
       String contextName = (String) listQuery.getProperty("context");
 
-      javax.jcr.Session jcrSession = this.slingRepository.loginAdministrative(null);
+      jcrSession = this.slingRepository.loginAdministrative(null);
       Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/" + contextName);
       DynamicListContext context = new DynamicListContext(listContextNode);
 
@@ -226,6 +227,10 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
+    } finally {
+      if ( jcrSession != null ) {
+        jcrSession.logout();
+      }
     }
 
     // mark the notification as archived in our repo if all went well
