@@ -163,16 +163,16 @@ public class SendNotificationsJob implements Job {
     JSONObject recipientToCalendarURIMap = recipientLog.getRecipientToCalendarURIMap();
 
     try {
+
+      Content listQuery = session.getContentManager().get(notification.getDynamicListID() + "/query");
+      String criteria = (String) listQuery.getProperty("filter");
+      String contextName = (String) listQuery.getProperty("context");
+
       javax.jcr.Session jcrSession = this.slingRepository.loginAdministrative(null);
-      Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/g-ced-students");
+      Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/" + contextName);
       DynamicListContext context = new DynamicListContext(listContextNode);
 
-      // TODO get dynlistcontext and criteria from notification by looking up the dyn list
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(context, "{\n" +
-              "    \"AND\": [\n" +
-              "        \"/colleges/CED/standings/undergrad\"\n" +
-              "    ]\n" +
-              "}");
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(context, criteria);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       // save notification in bedework server
@@ -222,6 +222,10 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
     } catch (RepositoryException e) {
       LOGGER.error("Got repo exception processing notification at path " + result.getPath(), e);
+    } catch (StorageClientException e) {
+      LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
+    } catch (AccessDeniedException e) {
+      LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
     }
 
     // mark the notification as archived in our repo if all went well
