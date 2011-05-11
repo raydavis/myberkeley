@@ -93,28 +93,22 @@ module MyBerkeleyData
       user_props = @user_manager.get_user_props advisor.name
     end
 
-    def load_defined_user_advisors
-      loaded_advisors = load_defined_users "json_data.js"
-      loaded_advisors.each do |loaded_advisor|
-        add_advisor_to_group loaded_advisor
-        apply_advisor_aces loaded_advisor
-      end
-    end
-
-    def load_defined_users(json_file_name)
-      all_data = JSON.load(File.open json_file_name, "r")
+    def load_defined_advisors
+      all_data = JSON.load(File.open "json_data.js", "r")
       users = all_data['users']
       loaded_users = Array.new
       users.each do |user|
         puts "creating user: #{user.inspect}"
-        loaded_user = load_defined_user user
+        loaded_user = load_defined_advisor user
         puts "loaded user: #{loaded_user.inspect}"
+        add_advisor_to_group loaded_user
+        apply_advisor_aces loaded_user
         loaded_users << loaded_user
       end
       return loaded_users
     end
 
-    def load_defined_user user
+    def load_defined_advisor user
         username = user[0]
         user_props = user[1]
         make_advisor_props user_props
@@ -314,6 +308,6 @@ if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
   sdl.get_or_create_groups
-  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  sdl.load_defined_advisors
   sdl.load_calnet_test_users
 end
