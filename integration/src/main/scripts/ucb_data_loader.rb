@@ -98,12 +98,13 @@ module MyBerkeleyData
       users = all_data['users']
       loaded_users = Array.new
       users.each do |user|
-        puts "creating user: #{user.inspect}"
         loaded_user = load_defined_advisor user
         puts "loaded user: #{loaded_user.inspect}"
-        add_advisor_to_group loaded_user
-        apply_advisor_aces loaded_user
-        loaded_users << loaded_user
+        if (loaded_user)
+          add_advisor_to_group loaded_user
+          apply_advisor_aces loaded_user
+          loaded_users << loaded_user
+        end
       end
       return loaded_users
     end
@@ -112,8 +113,8 @@ module MyBerkeleyData
         username = user[0]
         user_props = user[1]
         make_advisor_props user_props
-        puts "creating user: #{user.inspect}"
-        loaded_user = load_user username, user_props
+        # This will return nil if the user already exists.
+        loaded_user = create_user_with_props username, user_props
         return loaded_user
     end
 
@@ -200,20 +201,30 @@ module MyBerkeleyData
         @log.info "Error creating user"
         return nil
       end
+      create_bedework_acct(username)
       return user
+    end
+    
+    def clean_prop(theprop)
+      thestring = "#{theprop}"
+      if (thestring.nil?)
+        ''
+      else
+        thestring.gsub(/'/, "\\\\'")
+      end
     end
 
     def add_profile_property(user_props, post_data)
-      email = user_props['email'] || ""
-      firstname = user_props['firstName']  || ""
-      lastname = user_props['lastName'] || ""
-      role = user_props['role'] || ""
-      department = user_props['department'] || ""
-      college = user_props['college'] || ""
-      major = user_props['major'] || ""
-      context = user_props['context'] || ""
-      standing = user_props['standing'] || ""
-      current = user_props['current'] || ""
+      email = clean_prop user_props['email']
+      firstname = clean_prop user_props['firstName'] 
+      lastname = clean_prop user_props['lastName']
+      role = clean_prop user_props['role']
+      department = clean_prop user_props['department']
+      college = clean_prop user_props['college']
+      major = clean_prop user_props['major']
+      context = clean_prop user_props['context']
+      standing = clean_prop user_props['standing']
+      current = clean_prop user_props['current']
       post_data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value':'#{lastname}' }, 'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value':'#{major}' }, } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' },'current': { 'value': '#{current}' }, 'major': { 'value': '#{major}' } } } }"
       return post_data
     end
@@ -230,8 +241,6 @@ module MyBerkeleyData
       if (target_user.nil?)
         puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
         target_user = update_user(username, user_props)
-      else
-        create_bedework_acct(username)
       end
       return target_user
     end
@@ -242,7 +251,10 @@ module MyBerkeleyData
         else
           target_user = User.new username
         end
-      update_profile_properties @sling, target_user, user_props
+      response = update_profile_properties @sling, target_user, user_props
+      if (response.code.to_i > 299)
+        @log.error("Could not update user #{username}: #{response.code}, #{response.body}")
+      end
       create_bedework_acct(username)
       return target_user
     end
