@@ -235,7 +235,7 @@ module MyBerkeleyData
       # if user exists, they will not be (re)created but props may be updated
       if (target_user.nil?)
         puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
-        target_user = update_user(username, user_props, password)
+        target_user = update_user(username, user_props)
       else
         create_bedework_acct(username)
       end
