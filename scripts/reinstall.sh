@@ -53,7 +53,9 @@ mvn -B -e -Dsling.start -P runner verify >>$LOG 2>&1
 
 echo "`date`: Redeploying UX..." | $LOGIT
 cd ../3akai-ux
-mvn -B -e -P redeploy -Dsling.user=admin -Dsling.password=$SLING_PASSWORD verify >>$LOG 2>&1
+mvn clean install
+mvn -B -e -Dsling.user=admin -Dsling.password=$SLING_PASSWORD org.apache.sling:maven-sling-plugin:install-file \
+  -Dsling.file=./target/org.sakaiproject.nakamura.uxloader-myberkeley-0.7-SNAPSHOT.jar
 
 echo | $LOGIT
 echo "`date`: Reinstall complete." | $LOGIT
