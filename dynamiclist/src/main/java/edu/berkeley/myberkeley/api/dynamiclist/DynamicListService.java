@@ -24,6 +24,7 @@ import java.util.Collection;
  *
  */
 public interface DynamicListService {
+  public static final String DYNAMIC_LIST_RT = "myberkeley/dynamiclist";
   public static final String DYNAMIC_LIST_CONTEXT_RT = "myberkeley/dynamicListContext";
   public static final String DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT = "myberkeley/personalDemographic";
   public static final String DYNAMIC_LIST_CONTEXT_PROP = "myb-context";

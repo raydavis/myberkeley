@@ -1,14 +1,26 @@
 package edu.berkeley.myberkeley.dynamiclist;
 
+import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
+import org.apache.commons.lang.CharEncoding;
+import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.io.JSONWriter;
+import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.util.ExtendedJSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
+@SlingServlet(extensions = {"json"}, generateComponent = true, generateService = true,
+        methods = {"GET"}, resourceTypes = {DynamicListService.DYNAMIC_LIST_RT}
+)
 public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListGetServlet.class);
@@ -43,5 +55,26 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     }
 
     LOGGER.info("Get of dynamic list with depth=" + depth + " and tidy=" + tidy);
+
+    Resource resource = request.getResource();
+    Content listContent = resource.adaptTo(Content.class);
+
+    JSONWriter writer = new JSONWriter(response.getWriter());
+    writer.setTidy(tidy);
+
+    try {
+      writer.object();
+      writer.key("numusers");
+      writer.value(10);
+      ExtendedJSONWriter.writeContentTreeToWriter(writer, listContent, true, depth);
+      writer.endObject();
+    } catch (JSONException je) {
+      LOGGER.error(je.getLocalizedMessage(), je);
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    response.setContentType("application/json");
+    response.setCharacterEncoding(CharEncoding.UTF_8);
+
   }
 }
