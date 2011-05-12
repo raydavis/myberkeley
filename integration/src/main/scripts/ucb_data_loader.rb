@@ -14,6 +14,9 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
+  BASIC_PROFILE_PROPS = [
+    'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
+  ]
   ENV_PROD = 'prod'
   CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
   CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
@@ -204,28 +207,11 @@ module MyBerkeleyData
       create_bedework_acct(username)
       return user
     end
-    
-    def clean_prop(theprop)
-      thestring = "#{theprop}"
-      if (thestring.nil?)
-        ''
-      else
-        thestring.gsub(/'/, "\\\\'")
-      end
-    end
 
     def add_profile_property(user_props, post_data)
-      email = clean_prop user_props['email']
-      firstname = clean_prop user_props['firstName'] 
-      lastname = clean_prop user_props['lastName']
-      role = clean_prop user_props['role']
-      department = clean_prop user_props['department']
-      college = clean_prop user_props['college']
-      major = clean_prop user_props['major']
-      context = clean_prop user_props['context']
-      standing = clean_prop user_props['standing']
-      current = clean_prop user_props['current']
-      post_data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value':'#{lastname}' }, 'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value':'#{major}' }, } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' },'current': { 'value': '#{current}' }, 'major': { 'value': '#{major}' } } } }"
+      BASIC_PROFILE_PROPS.each do |prop|
+        post_data[prop] = user_props[prop]
+      end
       return post_data
     end
 
