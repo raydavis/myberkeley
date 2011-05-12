@@ -62,6 +62,9 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     JSONWriter writer = new JSONWriter(response.getWriter());
     writer.setTidy(tidy);
 
+    response.setContentType("application/json");
+    response.setCharacterEncoding(CharEncoding.UTF_8);
+
     try {
       writer.object();
       writer.key("numusers");
@@ -71,10 +74,9 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     } catch (JSONException je) {
       LOGGER.error(je.getLocalizedMessage(), je);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } finally {
+      response.getWriter().close();
     }
-
-    response.setContentType("application/json");
-    response.setCharacterEncoding(CharEncoding.UTF_8);
 
   }
 }
