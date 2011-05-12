@@ -65,10 +65,13 @@ COOKBOOK - DEVELOPMENT
 
 mvn clean install
 
-2. To start loading client-side files from your local copy of
+2a. Configure your server:
+  cp -R configs/localhost working/
+
+2b. To start loading client-side files from your local copy of
 3akai-ux code rather than using the deployed version of 3akai-ux,
-copy the "configs/localhost/load/*" files to your "working/load" directory and
-edit them to point to your local copy.
+edit working/load/*FsResourceProvider*.cfg files so they point at your
+local myberkeley directory (absolute paths).
 
 3. To load sample user data, you will be running Ruby scripts via Maven.
 You will need ruby and ruby gems installed. Ruby 1.8.7 is required.
