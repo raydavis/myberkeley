@@ -36,6 +36,9 @@ module MyBerkeleyData
 
     @ucb_data_loader = nil
 
+   @additional_user_ids_file = nil
+   @additional_user_ids = []
+
     attr_reader :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :ucb_data_loader
 
     def initialize(options)
@@ -46,7 +49,6 @@ module MyBerkeleyData
       @oracle_sid = options[:oraclesid]
 
       @additional_user_ids_file = options[:usersfile]
-      @additional_user_ids = []
 
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
@@ -216,6 +218,7 @@ module MyBerkeleyData
     end
 
     def load_additional_students
+      return if (@additional_user_ids_file.nil?)
       user_ids_file = File.open(@additional_user_ids_file, "r")
       @additional_user_ids = user_ids_file.readlines
       user_ids_file.close
@@ -223,7 +226,9 @@ module MyBerkeleyData
         # Skip non-numeric IDs.
         if (/^([\d]+)$/ =~ user_id)
           studentdata = select_single_student(user_id)
-          load_student(s)
+          if (!studentdata.empty?)
+            load_student(studentdata[0])
+          end
         end
       end
     end
@@ -290,5 +295,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl.ucb_data_loader.get_or_create_groups
   odl.ucb_data_loader.load_defined_advisors
   odl.load_ced_students
+  odl.load_additional_students
 
 end
