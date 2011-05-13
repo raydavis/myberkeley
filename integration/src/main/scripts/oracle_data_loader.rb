@@ -20,10 +20,9 @@ require 'sling/users'
 require 'ucb_data_loader'
 
 module MyBerkeleyData
-  PARTICIPANT_UIDS = ['308541','538733','772931','311120','561717','312951','761449','666227','772189','762641','313367','766739','766724','775123','727646','175303']
-  ROLE_CODES = {1 => "Undergraduate Student", 2 => "Graduate Student", 3 => "GSI", 4 => "Instructor", 5 => "Staff"}
   # TODO Can we eliminate this translation to slim the integration?
   COLLEGE_ABBR_TO_DEMOGRAPHIC = {"ENV DSGN" => "CED"}
+  COLLEGE_ABBR_TO_PROFILE = {'ENV DSGN' => 'College of Environmental Design'}
   class OracleDataLoader
 
     @env = nil
@@ -46,6 +45,9 @@ module MyBerkeleyData
       @oracle_password = options[:oraclepwd]
       @oracle_sid = options[:oraclesid]
 
+      @additional_user_ids_file = options[:usersfile]
+      @additional_user_ids = []
+
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
       @sling = Sling.new(options[:appserver], true)
@@ -64,16 +66,6 @@ module MyBerkeleyData
          )
     end
 
-      #email = user_props['email'] || ""
-      #firstname = user_props['firstName']  || ""
-      #lastname = user_props['lastName'] || ""
-      #role = user_props['role'] || ""
-      #department = user_props['department'] || ""
-      #college = user_props['college'] || ""
-      #major = user_props['major'] || ""
-      #context = user_props['context'] || ""
-      #standing = user_props['standing'] || ""
-      #participant = user_props['participant'] || ""
     def make_user_props(ced_student)
       user_props = {}
       user_props['firstName'] = ced_student.first_name.strip
@@ -84,7 +76,6 @@ module MyBerkeleyData
       determine_department user_props, ced_student
       determine_major user_props, ced_student
       determine_current_status user_props, ced_student
-      user_props['context'] = ['g-ced-students']
       determine_standing user_props, ced_student
       return user_props
     end
@@ -99,18 +90,25 @@ module MyBerkeleyData
       end
     end
 
-    # TODO This does not seem to handle double-majors correctly...
     def determine_major(user_props, ced_student)
-      if ('DOUBLE'.eql?ced_student.major_name.strip)
-        if ('ENV DSGN'.eql?ced_student.college_abbr2.strip)
-          user_props['major'] = [ced_student.major_name2.strip.sub(/&/, 'AND')]
+      profile_val =""
+      attributes_map = ced_student.attributes()
+      (1..4).each do |i|
+        major_field = "major_name"
+        if (i > 1)
+          major_field += i.to_s
         end
-        if (('ENV DSGN'.eql?ced_student.college_abbr3.strip))
-          user_props['major'] = [ced_student.major_name3.strip.sub(/&/, 'AND')]
+        major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
+        if (!major_val.empty?)
+          if (i == 2)
+            profile_val += " : "
+          elsif (i > 2)
+            profile_val += ", "
+          end
+          profile_val += major_val
         end
-      else
-        user_props['major'] = [ced_student.major_name.strip.sub(/&/, 'AND')]
       end
+      user_props['major'] = profile_val
     end
 
     def determine_demographics(user_props, ced_student)
@@ -147,21 +145,8 @@ module MyBerkeleyData
       user_props["myb-demographics"] = myb_demographics
     end
 
-    # STUDENT-TYPE-REGISTERED,EMPLOYEE-STATUS-EXPIRED
-    def is_current(ced_student)
-      if (ced_student.affiliations.include? "STUDENT-TYPE-REGISTERED")
-        return true
-      else
-        return false
-      end
-    end
-
     def determine_current_status(user_props, ced_student)
-      if (is_current ced_student )
-        user_props['current'] = true;
-      else
-        user_props['current'] = false
-      end
+      user_props['current'] = (ced_student.affiliations.include? "STUDENT-TYPE-REGISTERED")
     end
 
     def determine_role(user_props, ced_student)
@@ -173,7 +158,11 @@ module MyBerkeleyData
     end
 
     def determine_college(user_props, ced_student)
-      user_props['college'] = 'College of Environmental Design'
+      val = ced_student.college_abbr.strip
+      if (COLLEGE_ABBR_TO_PROFILE[val])
+        val = COLLEGE_ABBR_TO_PROFILE[val]
+      end
+      user_props['college'] = val
     end
 
     def make_email ced_student
@@ -193,47 +182,51 @@ module MyBerkeleyData
       return ced_students
     end
 
+    def select_single_student(studentuid)
+      # The ID must be numeric.
+      studentdata = MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
+                left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
+                where si.STUDENT_LDAP_UID = #{studentuid}"
+      return studentdata
+    end
+
+    def load_student(studentrow)
+      props = make_user_props(studentrow)
+      determine_demographics(props, studentrow)
+      if (@user_password_key)
+        user_password = ucb_data_loader.make_password studentrow.stu_name, @user_password_key
+      else
+        user_password = "testuser"
+      end
+      if (props['current'] == true)
+        student_ldap_uid = studentrow.student_ldap_uid
+        user = @ucb_data_loader.load_user student_ldap_uid, props, user_password
+        @ucb_data_loader.add_student_to_group user
+        @ucb_data_loader.apply_student_aces user
+        @ucb_data_loader.apply_student_demographic student_ldap_uid, props
+      end
+    end
+
     def load_ced_students
       ced_students = select_ced_students
       i = 0
       ced_students.each do |s|
-        props = make_user_props s
-        determine_demographics(props, s)
-        
-        if (@user_password_key)
-          user_password = ucb_data_loader.make_password s.stu_name, @user_password_key
-        else
-          user_password = "testuser"
-        end
-        if (props['current'] == true)
-          student_ldap_uid = s.student_ldap_uid
-          user = @ucb_data_loader.load_user student_ldap_uid, props, user_password
-          @ucb_data_loader.add_student_to_group user
-          @ucb_data_loader.apply_student_aces user
-          @ucb_data_loader.apply_student_demographic student_ldap_uid, props
+        load_student(s)
+      end
+    end
+
+    def load_additional_students
+      user_ids_file = File.open(@additional_user_ids_file, "r")
+      @additional_user_ids = user_ids_file.readlines
+      user_ids_file.close
+      @additional_user_ids.each do |user_id|
+        # Skip non-numeric IDs.
+        if (/^([\d]+)$/ =~ user_id)
+          studentdata = select_single_student(user_id)
+          load_student(s)
         end
       end
     end
-  end
-
-
-
-# STUDENT_LDAP_UID
-#UG_GRAD_FLAG
-#ROLE_CD
-#STU_NAME
-#STUDENT_EMAIL_ADDRESS
-#EMAIL_DISCLOS_CD
-#EDUC_LEVEL
-#FIRST_NAME
-#LAST_NAME
-#STUDENT_ID
-#AFFILIATIONS
-
-  class Major < ActiveRecord::Base
-    set_table_name "BSPACE_STUDENT_MAJOR_VW"
-    set_primary_key "ldap_uid"
-    belongs_to :student, :foreign_key => "student_ldap_uid"
   end
 
   class Student < ActiveRecord::Base
@@ -283,6 +276,10 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
 
     opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
       options[:userpwdkey] = pk
+    end
+
+    opts.on("-f", "--fileids USERIDS", "File of user_ids") do |nu|
+      options[:usersfile] = nu
     end
   end
 
