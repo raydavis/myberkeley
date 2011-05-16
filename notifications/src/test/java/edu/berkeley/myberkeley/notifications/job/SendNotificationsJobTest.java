@@ -110,13 +110,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
     when(this.adminSession.getAccessControlManager()).thenReturn(this.accessControlManager);
 
-    javax.jcr.Session jcrSession = mock(javax.jcr.Session.class);
-    Node node = mock(Node.class);
-    when(node.getProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP)).thenReturn(new MockProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP));
-    when(this.job.slingRepository.loginAdministrative(null)).thenReturn(jcrSession);
-    when(jcrSession.getNode(anyString())).thenReturn(node);
-
-    when(this.job.dynamicListService.getUserIdsForCriteria(Matchers.<DynamicListContext>any(), Matchers.anyString())).thenReturn(
+    when(this.job.dynamicListService.getUserIdsForNode(Matchers.<Content>any(), Matchers.<Session>any())).thenReturn(
             Arrays.asList(RECIPIENT_ID));
   }
 

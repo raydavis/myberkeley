@@ -20,7 +20,6 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
-import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.api.BadRequestException;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
@@ -51,7 +50,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 public class SendNotificationsJob implements Job {
@@ -161,19 +159,10 @@ public class SendNotificationsJob implements Job {
     }
 
     JSONObject recipientToCalendarURIMap = recipientLog.getRecipientToCalendarURIMap();
-    javax.jcr.Session jcrSession = null;
 
     try {
 
-      Content listQuery = session.getContentManager().get(notification.getDynamicListID() + "/query");
-      String criteria = (String) listQuery.getProperty("filter");
-      String contextName = (String) listQuery.getProperty("context");
-
-      jcrSession = this.slingRepository.loginAdministrative(null);
-      Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/" + contextName);
-      DynamicListContext context = new DynamicListContext(listContextNode);
-
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForCriteria(context, criteria);
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(result, session);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       // save notification in bedework server
@@ -227,10 +216,6 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
-    } finally {
-      if ( jcrSession != null ) {
-        jcrSession.logout();
-      }
     }
 
     // mark the notification as archived in our repo if all went well

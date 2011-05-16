@@ -2,6 +2,7 @@ package edu.berkeley.myberkeley.dynamiclist;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import org.apache.commons.lang.CharEncoding;
+import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -9,12 +10,18 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.util.ExtendedJSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
+import javax.jcr.RepositoryException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,6 +31,9 @@ import javax.servlet.http.HttpServletResponse;
 public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListGetServlet.class);
+
+  @Reference
+  transient DynamicListService dynamicListService;
 
   @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
@@ -64,14 +74,27 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     response.setContentType("application/json");
     response.setCharacterEncoding(CharEncoding.UTF_8);
 
+    Session session = StorageClientUtils.adaptToSession(request.getResourceResolver().adaptTo(
+            javax.jcr.Session.class));
+
     try {
       writer.object();
       writer.key("numusers");
-      writer.value(10);
+      Collection<String> users = this.dynamicListService.getUserIdsForNode(listContent, session);
+      writer.value(users.size());
       ExtendedJSONWriter.writeContentTreeToWriter(writer, listContent, true, depth);
       writer.endObject();
-    } catch (JSONException je) {
-      LOGGER.error(je.getLocalizedMessage(), je);
+    } catch (JSONException e) {
+      LOGGER.error(e.getLocalizedMessage(), e);
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } catch (StorageClientException e) {
+      LOGGER.error(e.getLocalizedMessage(), e);
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } catch (AccessDeniedException e) {
+      LOGGER.error(e.getLocalizedMessage(), e);
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    } catch (RepositoryException e) {
+      LOGGER.error(e.getLocalizedMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     } finally {
       response.getWriter().close();

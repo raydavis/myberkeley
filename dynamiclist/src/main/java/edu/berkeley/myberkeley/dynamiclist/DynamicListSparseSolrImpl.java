@@ -26,12 +26,17 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.solr.SolrServerService;
 import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
@@ -43,8 +48,10 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
-@Component(immediate=true)
+@Component(immediate = true)
 @Service
 public class DynamicListSparseSolrImpl implements DynamicListService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListSparseSolrImpl.class);
@@ -54,10 +61,13 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
   // but for our specific purposes it's an OK workaround to get us started.
   // Eventually we'll likely replace this Solr implementation by a Sparse find
   // or a straightforward SQL query against the source DB.
-  private static final Integer SOLR_PAGE_SIZE = new Integer(20000);
+  private static final Integer SOLR_PAGE_SIZE = 20000;
 
   @Reference
   private SolrServerService solrSearchService;
+
+  @Reference
+  SlingRepository slingRepository;
 
   public Collection<String> getUserIdsForCriteria(DynamicListContext context, String criteriaJson) {
     List<String> matchingIds = new ArrayList<String>();
@@ -69,12 +79,12 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
       SolrQuery solrQuery = new SolrQuery(solrQueryString);
       solrQuery.setRows(SOLR_PAGE_SIZE);
       try {
-        LOGGER.info("Performing Query {} ", URLDecoder.decode(solrQuery.toString(),"UTF-8"));
-      } catch (UnsupportedEncodingException e) {
+        LOGGER.info("Performing Query {} ", URLDecoder.decode(solrQuery.toString(), "UTF-8"));
+      } catch (UnsupportedEncodingException ignored) {
       }
       QueryResponse response = solrServer.query(solrQuery);
       SolrDocumentList resultList = response.getResults();
-      LOGGER.info("Got {} hits in {} ms", resultList.size() , response.getElapsedTime());
+      LOGGER.info("Got {} hits in {} ms", resultList.size(), response.getElapsedTime());
       for (SolrDocument solrDocument : resultList) {
         LOGGER.info("  solrDocument=" + solrDocument.getFieldValuesMap());
         String fullPath = (String) solrDocument.getFirstValue("path");
@@ -91,8 +101,27 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
     return matchingIds;
   }
 
+  public Collection<String> getUserIdsForNode(Content list, Session session) throws StorageClientException,
+          AccessDeniedException, RepositoryException {
+    Content listQuery = session.getContentManager().get(list.getPath() + "/query");
+    String criteria = (String) listQuery.getProperty("filter");
+    String contextName = (String) listQuery.getProperty("context");
+    javax.jcr.Session jcrSession = null;
+
+    try {
+      jcrSession = this.slingRepository.loginAdministrative(null);
+      Node listContextNode = jcrSession.getNode("/var/myberkeley/dynamiclists/" + contextName);
+      DynamicListContext context = new DynamicListContext(listContextNode);
+      return this.getUserIdsForCriteria(context, criteria);
+    } finally {
+      if (jcrSession != null) {
+        jcrSession.logout();
+      }
+    }
+  }
+
   private StringBuilder appendClause(DynamicListContext context, Object jsonVal, StringBuilder sb, String connector)
-      throws AccessControlException, JSONException {
+          throws AccessControlException, JSONException {
     if (jsonVal instanceof String) {
       String match = (String) jsonVal;
       if (!context.getAllowedClauses().contains(match)) {
@@ -131,7 +160,7 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
   }
 
   public String getSolrQueryForCriteria(DynamicListContext context, String criteriaJsonString)
-      throws AccessControlException, JSONException {
+          throws AccessControlException, JSONException {
     // The criteria must either be a single matching string, or a JSON Object of the
     // form "{OR: [match1, match2, ...]}" or {AND: [match1, match2, ...]}".
     Object parsedCriteria;

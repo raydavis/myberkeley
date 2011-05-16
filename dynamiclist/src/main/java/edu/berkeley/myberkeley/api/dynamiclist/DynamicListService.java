@@ -18,7 +18,13 @@
 package edu.berkeley.myberkeley.api.dynamiclist;
 
 
+import org.sakaiproject.nakamura.api.lite.Session;
+import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.content.Content;
+
 import java.util.Collection;
+import javax.jcr.RepositoryException;
 
 /**
  *
@@ -32,4 +38,8 @@ public interface DynamicListService {
   public static final String DYNAMIC_LIST_CONTEXT_CLAUSES_PROP = "myb-clauses";
 
   Collection<String> getUserIdsForCriteria(DynamicListContext context, String criteriaJson);
+
+  Collection<String> getUserIdsForNode(Content node, Session session) throws StorageClientException,
+          AccessDeniedException, RepositoryException;
+
 }
