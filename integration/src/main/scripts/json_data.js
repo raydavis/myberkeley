@@ -61,7 +61,7 @@
     },
     "271592": {
       "lastName": "King",
-      "firstName": "John f",
+      "firstName": "John F.",
       "email": "johnk@media.berkeley.edu"
     },
     "95509": {
@@ -81,7 +81,7 @@
     },
     "750152": {
       "lastName": "Voytek",
-      "firstName": "Jessica b"
+      "firstName": "Jessica B."
     },
     "764968": {
       "lastName": "Lai",
@@ -123,7 +123,7 @@
     },
     "12005": {
       "lastName": "Hagstrom",
-      "firstName": "Susan janan",
+      "firstName": "Susan Janan",
       "email": "hagstrom@berkeley.edu"
     },
     "760063": {

@@ -17,9 +17,16 @@ module MyBerkeleyData
   BASIC_PROFILE_PROPS = [
     'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
   ]
+  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   ENV_PROD = 'prod'
+  
+  # Currently these group names are misleading. They actually mean "all
+  # advisors in the pilot" and "all students in the pilot".
+  # TODO Generalize the name or add two more groups.
   CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
   CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
+  
+  # These only come into play when loading test data.
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
   GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
@@ -27,7 +34,6 @@ module MyBerkeleyData
     "test-300859","test-300860","test-300861","test-300862","test-300863","test-300864","test-300865",
     "test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
     "test-300873","test-300874","test-300875","test-300876","test-300877"]
-  UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
 
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
@@ -79,6 +85,15 @@ module MyBerkeleyData
 
     def add_student_to_group user
       @ced_all_students_group.add_member @sling, user.name, "user"
+    end
+    
+    def get_all_student_uids
+      return @ced_all_students_group.members(@sling)
+    end
+    
+    def remove_student_from_group(user_id)
+      result = @ced_all_students_group.remove_member(@sling, user_id, "user")
+      @log.info("Result of remove : #{result.code}, #{result.body}")
     end
 
     def add_advisor_to_group advisor
@@ -197,7 +212,7 @@ module MyBerkeleyData
 
     def add_profile_property(user_props, post_data)
       BASIC_PROFILE_PROPS.each do |prop|
-        post_data[prop] = user_props[prop]
+        post_data[prop] = user_props[prop] if (!user_props[prop].nil?)
       end
       return post_data
     end

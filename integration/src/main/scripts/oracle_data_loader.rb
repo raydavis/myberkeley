@@ -24,22 +24,7 @@ module MyBerkeleyData
   COLLEGE_ABBR_TO_DEMOGRAPHIC = {"ENV DSGN" => "CED"}
   COLLEGE_ABBR_TO_PROFILE = {'ENV DSGN' => 'College of Environmental Design'}
   class OracleDataLoader
-
-    @env = nil
-
-    @sling = nil
-    @user_password_key = nil
-
-    @oracle_user = nil
-    @oracle_password = nil
-    @oracle_sid = nil
-
-    @ucb_data_loader = nil
-
-   @additional_user_ids_file = nil
-   @additional_user_ids = []
-
-    attr_reader :oracle_user, :oracle_password, :oracle_sid, :user_password_key, :ucb_data_loader
+    attr_reader :ucb_data_loader
 
     def initialize(options)
       @log = Logger.new(STDOUT)
@@ -49,6 +34,7 @@ module MyBerkeleyData
       @oracle_sid = options[:oraclesid]
 
       @additional_user_ids_file = options[:usersfile]
+      @remaining_students = []
 
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
@@ -68,33 +54,39 @@ module MyBerkeleyData
          )
     end
 
-    def make_user_props(ced_student)
+    def collect_loaded_students
+      @ucb_data_loader.get_or_create_groups
+      @remaining_students = ucb_data_loader.get_all_student_uids
+    end
+
+    def make_user_props(student_row)
       user_props = {}
-      user_props['firstName'] = ced_student.first_name.strip
-      user_props['lastName'] = ced_student.last_name.strip
-      user_props['email'] = make_email ced_student
-      determine_role user_props, ced_student
-      determine_college user_props, ced_student
-      determine_department user_props, ced_student
-      determine_major user_props, ced_student
-      determine_current_status user_props, ced_student
-      determine_standing user_props, ced_student
+      user_props['firstName'] = student_row.first_name.strip
+      user_props['lastName'] = student_row.last_name.strip
+      user_props['email'] = make_email student_row
+      determine_role user_props, student_row
+      determine_current_status user_props, student_row
+      determine_standing user_props, student_row
+      determine_department user_props, student_row
+      determine_college user_props, student_row
+      determine_major user_props, student_row
+      determine_demographics(user_props, student_row)
       return user_props
     end
 
-    def determine_standing(user_props, ced_student)
-      if ('U'.eql?ced_student.ug_grad_flag.strip )
+    def determine_standing(user_props, student_row)
+      if ('U'.eql?student_row.ug_grad_flag.strip )
         user_props['standing'] = 'undergrad'
-      elsif ('G'.eql?ced_student.ug_grad_flag.strip)
+      elsif ('G'.eql?student_row.ug_grad_flag.strip)
         user_props['standing'] = 'grad'
       else
         user_props['standing'] = 'unknown'
       end
     end
 
-    def determine_major(user_props, ced_student)
-      profile_val =""
-      attributes_map = ced_student.attributes()
+    def determine_major(user_props, student_row)
+      profile_val = ''
+      attributes_map = student_row.attributes()
       (1..4).each do |i|
         major_field = "major_name"
         if (i > 1)
@@ -113,65 +105,75 @@ module MyBerkeleyData
       user_props['major'] = profile_val
     end
 
-    def determine_demographics(user_props, ced_student)
+    def determine_demographics(user_props, student_row)
       myb_demographics = []
-      case ced_student.ug_grad_flag.strip
-      when 'G'
-        standing_segment = '/standings/grad/programs/'
-      when 'U'
-        standing_segment = '/standings/undergrad/majors/'
-      else
-        @log.info("#{ced_student.student_ldap_uid} has unrecognized UG_GRAD_FLAG; no demographics")
-        return
+      if (is_current_student(student_row))
+        case student_row.ug_grad_flag.strip
+        when 'G'
+          standing_segment = '/standings/grad/programs/'
+        when 'U'
+          standing_segment = '/standings/undergrad/majors/'
+        else
+          @log.warn("#{student_row.student_ldap_uid} has unrecognized UG_GRAD_FLAG; no demographics")
+        end
+        if (!standing_segment.nil?)
+          attributes_map = student_row.attributes()
+          (1..4).each do |i|
+            college_field = "college_abbr"
+            major_field = "major_name"
+            if (i > 1)
+              college_field += i.to_s
+              major_field += i.to_s
+            end
+            college_val = attributes_map[college_field].to_s.strip.sub(/&/, 'AND')
+            if (COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val])
+              college_val = COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val]
+            end
+            major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
+            if (!major_val.empty?)
+              myb_demographics.push("/colleges/" + college_val)
+              myb_demographics.push("/colleges/" + college_val + standing_segment + major_val)
+            end
+          end
+          myb_demographics.uniq!
+        end
       end
-      attributes_map = ced_student.attributes()
-      (1..4).each do |i|
-        college_field = "college_abbr"
-        major_field = "major_name"
-        if (i > 1)
-          college_field += i.to_s
-          major_field += i.to_s
-        end
-        college_val = attributes_map[college_field].to_s.strip.sub(/&/, 'AND')
-        if (COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val])
-          college_val = COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val]
-        end
-        major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
-        if (!major_val.empty?)
-          myb_demographics.push("/colleges/" + college_val)
-          myb_demographics.push("/colleges/" + college_val + standing_segment + major_val)
-        end
-      end
-      myb_demographics.uniq!
-      @log.info("For student #{ced_student.student_ldap_uid}, demographics = #{myb_demographics.inspect}")
+      @log.info("For student #{student_row.student_ldap_uid}, demographics = #{myb_demographics.inspect}")
       user_props["myb-demographics"] = myb_demographics
     end
 
-    def determine_current_status(user_props, ced_student)
-      user_props['current'] = (ced_student.affiliations.include? "STUDENT-TYPE-REGISTERED")
+    def is_current_student(student_row)
+      return (student_row.affiliations.include? "STUDENT-TYPE-REGISTERED")
     end
 
-    def determine_role(user_props, ced_student)
-      user_props['role'] = UG_GRAD_FLAG_MAP[ced_student.ug_grad_flag.to_sym]
+    def determine_current_status(user_props, student_row)
+      user_props['current'] = is_current_student(student_row)
     end
 
-    def determine_department(user_props, ced_student)
+    def determine_role(user_props, student_row)
+      user_props['role'] = UG_GRAD_FLAG_MAP[student_row.ug_grad_flag.to_sym]
+    end
+
+    def determine_department(user_props, student_row)
       user_props['department'] = '' # need the empty string for profile page trimpath template handling
     end
 
-    def determine_college(user_props, ced_student)
-      val = ced_student.college_abbr.strip
-      if (COLLEGE_ABBR_TO_PROFILE[val])
-        val = COLLEGE_ABBR_TO_PROFILE[val]
+    def determine_college(user_props, student_row)
+      profile_val = ''
+      if (!student_row.college_abbr.nil?)
+        profile_val = student_row.college_abbr.strip
+        if (COLLEGE_ABBR_TO_PROFILE[profile_val])
+          profile_val = COLLEGE_ABBR_TO_PROFILE[profile_val]
+        end
       end
-      user_props['college'] = val
+      user_props['college'] = profile_val
     end
 
-    def make_email ced_student
+    def make_email student_row
       if (ENV_PROD.eql?@env)
-        email = ced_student.student_email_address
+        email = student_row.student_email_address
       else #obfuscate the email
-        email = "#{ced_student.first_name.gsub(/\s*/,'').downcase}.#{ced_student.last_name.gsub(/\s*/,'').downcase}@berkeley.edu"
+        email = "#{student_row.first_name.gsub(/\s*/,'').downcase}.#{student_row.last_name.gsub(/\s*/,'').downcase}@berkeley.edu"
       end
       return email
     end
@@ -184,33 +186,47 @@ module MyBerkeleyData
       return ced_students
     end
 
-    def select_single_student(studentuid)
+    def load_single_student(user_id)
       # The ID must be numeric.
-      studentdata = MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
-                left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-                where si.STUDENT_LDAP_UID = #{studentuid}"
-      return studentdata
+      if (/^([\d]+)$/ =~ user_id)
+        studentdata = MyBerkeleyData::Student.find_by_sql "select * from BSPACE_STUDENT_INFO_VW si
+                  left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
+                  where si.STUDENT_LDAP_UID = #{user_id}"
+        if (!studentdata.empty?)
+          load_student(studentdata[0])
+        else
+          @log.warn("Could not find DB record for user ID #{user_id} - RECONCILE MANUALLY")
+        end
+      else
+        @log.warn("Could not find DB record for user ID #{user_id} - RECONCILE MANUALLY")
+      end
     end
 
-    def load_student(studentrow)
-      props = make_user_props(studentrow)
-      determine_demographics(props, studentrow)
-      if (@user_password_key)
-        user_password = ucb_data_loader.make_password studentrow.stu_name, @user_password_key
-      else
-        user_password = "testuser"
-      end
+    def load_student(student_row)
+      props = make_user_props(student_row)
+      student_uid = student_row.student_ldap_uid.to_s
       if (props['current'] == true)
-        student_ldap_uid = studentrow.student_ldap_uid
-        user = @ucb_data_loader.load_user student_ldap_uid, props, user_password
+        if (@user_password_key)
+          user_password = ucb_data_loader.make_password student_row.stu_name, @user_password_key
+        else
+          user_password = "testuser"
+        end
+        user = @ucb_data_loader.load_user student_uid, props, user_password
         @ucb_data_loader.add_student_to_group user
         @ucb_data_loader.apply_student_aces user
-        @ucb_data_loader.apply_student_demographic student_ldap_uid, props
+        @ucb_data_loader.apply_student_demographic student_uid, props
+        if (@remaining_students.include?(student_uid))
+          @remaining_students.delete(student_uid)
+        end
+      elsif (@remaining_students.include?(student_uid))
+        @log.info("Removing non-current student #{student_uid}")
+        drop_student(student_uid)
       end
     end
 
     def load_ced_students
       ced_students = select_ced_students
+      @log.info("DB returned #{ced_students.length} target student records")
       i = 0
       ced_students.each do |s|
         load_student(s)
@@ -220,17 +236,30 @@ module MyBerkeleyData
     def load_additional_students
       return if (@additional_user_ids_file.nil?)
       user_ids_file = File.open(@additional_user_ids_file, "r")
-      @additional_user_ids = user_ids_file.readlines
+      additional_user_ids = user_ids_file.readlines
       user_ids_file.close
-      @additional_user_ids.each do |user_id|
-        # Skip non-numeric IDs.
-        if (/^([\d]+)$/ =~ user_id)
-          studentdata = select_single_student(user_id)
-          if (!studentdata.empty?)
-            load_student(studentdata[0])
-          end
-        end
+      @log.info("Additional students = #{additional_user_ids.inspect}")
+      additional_user_ids.each do |user_id|
+        user_id.chomp!
+        load_single_student(user_id)
       end
+    end
+    
+    def drop_stale_students
+      @log.info("Remaining students = #{@remaining_students.inspect}")
+      iterating_copy = Array.new(@remaining_students)
+      iterating_copy.each do |student_uid|
+        drop_student(student_uid)
+      end
+    end
+    
+    def drop_student(student_uid)
+      # Delete demographic.
+      user_props = {"myb-demographics"  => []}
+      @ucb_data_loader.apply_student_demographic student_uid, user_props
+      # TODO Change user's ACL?
+      @ucb_data_loader.remove_student_from_group(student_uid)
+      @remaining_students.delete(student_uid)
     end
   end
 
@@ -292,9 +321,10 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
 
   odl = MyBerkeleyData::OracleDataLoader.new options
 
-  odl.ucb_data_loader.get_or_create_groups
+  odl.collect_loaded_students
   odl.ucb_data_loader.load_defined_advisors
   odl.load_ced_students
   odl.load_additional_students
+  odl.drop_stale_students
 
 end
