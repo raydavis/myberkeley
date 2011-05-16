@@ -14,24 +14,19 @@ include SlingInterface
 include SlingUsers
 
 module MyBerkeleyData
+  BASIC_PROFILE_PROPS = [
+    'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
+  ]
   ENV_PROD = 'prod'
   CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
   CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
-  MAJORS = ["ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LANDSCAPE ARCH", "LAND ARCH AND ENV PLAN", "URBAN DESIGN", "URBAN STUDIES"]
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
-	GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
-
-  CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851","test-300852","test-300853","test-300854",
-                        "test-300855","test-300856","test-300857","test-300858","test-300859","test-300860","test-300861","test-300862","test-300863",
-                        "test-300864","test-300865","test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
-                        "test-300873","test-300874","test-300875","test-300876","test-300877"]
-
-  CALNET_EMAIL_TEST_USER_IDS = []
-
-    TEST_EMAIL_ADDRESSES = ["omcgrath@berkeley.edu", "johnk@media.berkeley.edu"]
-
-    TEST_EMAIL_CONTEXT = "g-ced-students-testemail"
-
+  GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
+  CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
+    "test-300852","test-300853","test-300854","test-300855","test-300856","test-300857","test-300858",
+    "test-300859","test-300860","test-300861","test-300862","test-300863","test-300864","test-300865",
+    "test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
+    "test-300873","test-300874","test-300875","test-300876","test-300877"]
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
 
   class UcbDataLoader
@@ -68,7 +63,6 @@ module MyBerkeleyData
       @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
     end
 
-
     def get_or_create_group(groupname)
       group = @user_manager.create_group groupname
       if(!group)
@@ -85,49 +79,40 @@ module MyBerkeleyData
 
     def add_student_to_group user
       @ced_all_students_group.add_member @sling, user.name, "user"
-      user_props = @user_manager.get_user_props user.name
     end
 
     def add_advisor_to_group advisor
       @ced_advisors_group.add_member @sling, advisor.name, "user"
-      user_props = @user_manager.get_user_props advisor.name
     end
 
-    def load_defined_user_advisors
-      loaded_advisors = load_defined_users "json_data.js"
-      loaded_advisors.each do |loaded_advisor|
-        add_advisor_to_group loaded_advisor
-        apply_advisor_aces loaded_advisor
-      end
-    end
-
-    def load_defined_users(json_file_name)
-      all_data = JSON.load(File.open json_file_name, "r")
+    def load_defined_advisors
+      all_data = JSON.load(File.open "json_data.js", "r")
       users = all_data['users']
       loaded_users = Array.new
       users.each do |user|
-        puts "creating user: #{user.inspect}"
-        loaded_user = load_defined_user user
+        loaded_user = load_defined_advisor user
         puts "loaded user: #{loaded_user.inspect}"
-        loaded_users << loaded_user
+        if (loaded_user)
+          add_advisor_to_group loaded_user
+          apply_advisor_aces loaded_user
+          loaded_users << loaded_user
+        end
       end
       return loaded_users
     end
 
-    def load_defined_user user
+    def load_defined_advisor user
         username = user[0]
         user_props = user[1]
         make_advisor_props user_props
-        puts "creating user: #{user.inspect}"
-        loaded_user = load_user username, user_props
+        # This will return nil if the user already exists.
+        loaded_user = create_user_with_props username, user_props
         return loaded_user
     end
 
     def make_advisor_props user_props #need to have firstName, lastName and email loaded already
-        user_props['context'] = [CED_ADVISORS_GROUP_NAME]
         user_props['standing'] = 'advisor'
-        user_props['major'] = ["N/A"]
-        user_props['current'] = true
+        user_props['major'] = "N/A"
         # user_props['department'] = '' empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']
         user_props['role'] = ['Staff']
@@ -155,32 +140,32 @@ module MyBerkeleyData
         user_props['firstName'] = first_name.chomp
         user_props['lastName'] = last_name.chomp
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
-        user_props['context'] = [CED_ALL_STUDENTS_GROUP_NAME]
         #user_props['department'] = '' # empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']
-        user_props['major'] = MAJORS[index % 8].sub(/&/, 'AND')
         if ( index < length/2)
           user_props['standing'] = 'undergrad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:U]
           user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
             "/colleges/CED/standings/undergrad",
-            "/colleges/CED/standings/undergrad/majors/" + UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length]
+            "/colleges/CED/standings/undergrad/majors/" + user_props['major']
           ]
         else
           user_props['standing'] = 'grad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
-          user_props['major'] = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
+          majorval = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
             "/colleges/CED/standings/grad",
-            "/colleges/CED/standings/grad/programs/" + GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
+            "/colleges/CED/standings/grad/programs/" + majorval
           ]
           if (index == length - 1)
             user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/DOUBLE")
             user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/PSYCHOLOGY")
+            # Basic Profile only handles single-valued string properties
+            majorval = "DOUBLE: " + majorval + "," + "PSYCHOLOGY"
           end
         end
-        user_props['current'] = true
+        user_props['major'] = majorval
         return user_props
     end
 
@@ -206,21 +191,14 @@ module MyBerkeleyData
         @log.info "Error creating user"
         return nil
       end
+      create_bedework_acct(username)
       return user
     end
 
     def add_profile_property(user_props, post_data)
-      email = user_props['email'] || ""
-      firstname = user_props['firstName']  || ""
-      lastname = user_props['lastName'] || ""
-      role = user_props['role'] || ""
-      department = user_props['department'] || ""
-      college = user_props['college'] || ""
-      major = user_props['major'] || ""
-      context = user_props['context'] || ""
-      standing = user_props['standing'] || ""
-      current = user_props['current'] || ""
-      post_data[":sakai:profile-import"] = "{ 'basic': { 'access': 'everybody', 'elements': { 'email': { 'value': '#{email}' }, 'firstName': { 'value': '#{firstname}' }, 'lastName': { 'value':'#{lastname}' }, 'role': { 'value': '#{role}' }, 'department': { 'value': '#{department}' }, 'college': { 'value': '#{college}' }, 'major': { 'value':'#{major}' }, } }, 'myberkeley': { 'access': 'principal', 'elements': { 'context': { 'value': '#{context}' }, 'standing': { 'value': '#{standing}' },'current': { 'value': '#{current}' }, 'major': { 'value': '#{major}' } } } }"
+      BASIC_PROFILE_PROPS.each do |prop|
+        post_data[prop] = user_props[prop]
+      end
       return post_data
     end
 
@@ -235,9 +213,8 @@ module MyBerkeleyData
       # if user exists, they will not be (re)created but props may be updated
       if (target_user.nil?)
         puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
-        target_user = update_user(username, user_props, password)
+        target_user = update_user(username, user_props)
       end
-      create_bedework_acct(username)
       return target_user
     end
 
@@ -247,7 +224,10 @@ module MyBerkeleyData
         else
           target_user = User.new username
         end
-      update_profile_properties @sling, target_user, user_props
+      response = update_profile_properties @sling, target_user, user_props
+      if (response.code.to_i > 299)
+        @log.error("Could not update user #{username}: #{response.code}, #{response.body}")
+      end
       create_bedework_acct(username)
       return target_user
     end
@@ -313,6 +293,6 @@ if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
   sdl.get_or_create_groups
-  sdl.load_defined_user_advisors #now loading all the project members as advisors same as load_defined_users except adding to g-ced-advisors
+  sdl.load_defined_advisors
   sdl.load_calnet_test_users
 end
