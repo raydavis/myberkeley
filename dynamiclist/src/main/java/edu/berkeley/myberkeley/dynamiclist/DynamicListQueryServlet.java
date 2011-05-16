@@ -25,7 +25,7 @@ import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
 import org.slf4j.Logger;
@@ -39,18 +39,27 @@ import javax.jcr.RepositoryException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-@SlingServlet(extensions = { "json" }, methods = { "GET" },
-    resourceTypes = { DynamicListService.DYNAMIC_LIST_CONTEXT_RT },
-    generateComponent = true, generateService = true)
-public class DynamicListQueryServlet extends SlingSafeMethodsServlet {
+@SlingServlet(extensions = {"json"}, methods = {"GET", "POST"},
+        resourceTypes = {DynamicListService.DYNAMIC_LIST_CONTEXT_RT},
+        generateComponent = true, generateService = true)
+public class DynamicListQueryServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = -4638092585830025716L;
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListQueryServlet.class);
   @Reference
   protected transient DynamicListService dynamicListService;
 
   @Override
+  protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws ServletException, IOException {
+    handleRequest(request, response);
+  }
+
+  @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
-      throws ServletException, IOException {
+          throws ServletException, IOException {
+    handleRequest(request, response);
+  }
+
+  private void handleRequest(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
     // Get the Dynamic List Context from the target resource.
     DynamicListContext context;
     Resource resource = request.getResource();
