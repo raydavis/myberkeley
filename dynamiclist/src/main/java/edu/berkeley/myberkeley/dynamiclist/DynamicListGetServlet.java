@@ -31,13 +31,13 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
     // digest the selectors to determine if we should send a tidy result
     // or if we need to traverse deeper into the tagged node.
-    boolean tidy = false;
+    boolean isTidy = false;
     int depth = 0;
     String[] selectors = request.getRequestPathInfo().getSelectors();
 
     for (String sel : selectors) {
       if ("tidy".equals(sel)) {
-        tidy = true;
+        isTidy = true;
       } else if ("infinity".equals(sel)) {
         depth = -1;
       } else {
@@ -54,14 +54,13 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
       }
     }
 
-    LOGGER.info("Get of dynamic list with depth=" + depth + " and tidy=" + tidy);
+    LOGGER.info("Get of dynamic list with depth=" + depth + " and tidy=" + isTidy);
 
     Resource resource = request.getResource();
     Content listContent = resource.adaptTo(Content.class);
 
     JSONWriter writer = new JSONWriter(response.getWriter());
-    writer.setTidy(tidy);
-
+    writer.setTidy(isTidy);
     response.setContentType("application/json");
     response.setCharacterEncoding(CharEncoding.UTF_8);
 

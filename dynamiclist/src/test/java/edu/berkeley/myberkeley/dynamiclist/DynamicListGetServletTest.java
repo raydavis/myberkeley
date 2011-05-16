@@ -26,7 +26,6 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.java2d.loops.GeneralRenderer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
