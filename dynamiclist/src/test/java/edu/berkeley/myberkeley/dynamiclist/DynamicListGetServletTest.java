@@ -1,7 +1,7 @@
 package edu.berkeley.myberkeley.dynamiclist;
 
 import static org.mockito.Mockito.when;
- import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
@@ -14,13 +14,18 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
+import org.sakaiproject.nakamura.lite.RepositoryImpl;
 import org.sakaiproject.nakamura.lite.content.ContentManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,41 +47,39 @@ public class DynamicListGetServletTest extends Assert {
   @Mock
   private SlingHttpServletResponse response;
 
-  public DynamicListGetServletTest() {
+  private ContentManager contentManager;
+
+  public DynamicListGetServletTest() throws AccessDeniedException, StorageClientException, ClassNotFoundException {
     MockitoAnnotations.initMocks(this);
+    BaseMemoryRepository baseMemoryRepository = new BaseMemoryRepository();
+    Repository repository = baseMemoryRepository.getRepository();
+    this.contentManager = repository.loginAdministrative().getContentManager();
   }
 
-  // commented out until someone fixes ExtendedJSONWriter.writeContentTreeToWriter()
-  // see https://jira.sakaiproject.org/browse/KERN-1863
-  /*
   @Test
-  public void infiniteGet() throws IOException, ServletException, StorageClientException, JSONException {
+  public void infiniteGet() throws IOException, ServletException, StorageClientException, JSONException, AccessDeniedException {
     DynamicListGetServlet servlet = new DynamicListGetServlet();
 
     RequestPathInfo pathInfo = mock(RequestPathInfo.class);
-    when(pathInfo.getSelectors()).thenReturn(new String[] { "tidy", "infinity" });
+    when(pathInfo.getSelectors()).thenReturn(new String[]{"tidy", "infinity"});
     when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
 
     Content content = new Content("/my/list/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) DynamicListService.DYNAMIC_LIST_RT));
-
-    ContentManagerImpl cm = mock(ContentManagerImpl.class);
-    content.internalize(cm, false);
+    this.contentManager.update(content);
 
     Content child1 = new Content("/my/list/path/child1", ImmutableMap.of(
             "child1prop1",
             (Object) "prop1val"));
-    child1.internalize(cm, false);
-    List<Content> children = new ArrayList<Content>();
-    children.add(child1);
+    this.contentManager.update(child1);
 
-    when(cm.listChildren("/my/list/path")).thenReturn(children.iterator());
-    when(cm.listChildren("/my/list/path/child1")).thenReturn(new ArrayList<Content>().iterator());
-
+    // we have to get the content via contentmanager so that it gets properly set up with internalize(),
+    // or else the ExtendedJSONWriter call will fail. Ian insists this is not a code smell.
+    Content contentFromCM = this.contentManager.get("/my/list/path");
     Resource resource = mock(Resource.class);
     when(request.getResource()).thenReturn(resource);
-    when(resource.adaptTo(Content.class)).thenReturn(content);
+    when(resource.adaptTo(Content.class)).thenReturn(contentFromCM);
 
     ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
     when(response.getWriter()).thenReturn(new PrintWriter(responseStream));
@@ -87,5 +90,5 @@ public class DynamicListGetServletTest extends Assert {
     assertNotNull(json);
     LOGGER.info(json.toString(2));
   }
-  */
+
 }
