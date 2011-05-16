@@ -15,7 +15,6 @@ import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -25,21 +24,23 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
-import org.sakaiproject.nakamura.lite.RepositoryImpl;
-import org.sakaiproject.nakamura.lite.content.ContentManagerImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.java2d.loops.GeneralRenderer;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.servlet.ServletException;
 
 public class DynamicListGetServletTest extends Assert {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListGetServletTest.class);
+
+  private static final String LIST_PATH = "/my/list/path";
+
+  private static final String CHILD_PATH = LIST_PATH + "/child";
+
+  private static final String GRANDCHILD_PATH = CHILD_PATH + "/grandchild";
 
   @Mock
   private SlingHttpServletRequest request;
@@ -47,48 +48,78 @@ public class DynamicListGetServletTest extends Assert {
   @Mock
   private SlingHttpServletResponse response;
 
-  private ContentManager contentManager;
+  private ByteArrayOutputStream responseStream;
 
-  public DynamicListGetServletTest() throws AccessDeniedException, StorageClientException, ClassNotFoundException {
+  private DynamicListGetServlet servlet;
+
+  public DynamicListGetServletTest() {
     MockitoAnnotations.initMocks(this);
-    BaseMemoryRepository baseMemoryRepository = new BaseMemoryRepository();
-    Repository repository = baseMemoryRepository.getRepository();
-    this.contentManager = repository.loginAdministrative().getContentManager();
   }
 
-  @Test
-  public void infiniteGet() throws IOException, ServletException, StorageClientException, JSONException, AccessDeniedException {
-    DynamicListGetServlet servlet = new DynamicListGetServlet();
+  @Before
+  public void setupExpectations() throws AccessDeniedException, StorageClientException, IOException, ClassNotFoundException {
+    this.servlet = new DynamicListGetServlet();
 
-    RequestPathInfo pathInfo = mock(RequestPathInfo.class);
-    when(pathInfo.getSelectors()).thenReturn(new String[]{"tidy", "infinity"});
-    when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
+    BaseMemoryRepository baseMemoryRepository = new BaseMemoryRepository();
+    Repository repository = baseMemoryRepository.getRepository();
+    ContentManager contentManager = repository.loginAdministrative().getContentManager();
 
-    Content content = new Content("/my/list/path", ImmutableMap.of(
+    Content content = new Content(LIST_PATH, ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) DynamicListService.DYNAMIC_LIST_RT));
-    this.contentManager.update(content);
+    contentManager.update(content);
 
-    Content child1 = new Content("/my/list/path/child1", ImmutableMap.of(
+    Content child = new Content(CHILD_PATH, ImmutableMap.of(
             "child1prop1",
             (Object) "prop1val"));
-    this.contentManager.update(child1);
+    contentManager.update(child);
+
+    Content grandchild = new Content(GRANDCHILD_PATH, ImmutableMap.of(
+            "grandchildprop1",
+            (Object) "prop1val"));
+    contentManager.update(grandchild);
 
     // we have to get the content via contentmanager so that it gets properly set up with internalize(),
     // or else the ExtendedJSONWriter call will fail. Ian insists this is not a code smell.
-    Content contentFromCM = this.contentManager.get("/my/list/path");
+    Content contentFromCM = contentManager.get(LIST_PATH);
     Resource resource = mock(Resource.class);
     when(request.getResource()).thenReturn(resource);
     when(resource.adaptTo(Content.class)).thenReturn(contentFromCM);
 
-    ByteArrayOutputStream responseStream = new ByteArrayOutputStream();
-    when(response.getWriter()).thenReturn(new PrintWriter(responseStream));
+    this.responseStream = new ByteArrayOutputStream();
+    when(response.getWriter()).thenReturn(new PrintWriter(this.responseStream));
 
-    servlet.doGet(this.request, this.response);
-
-    JSONObject json = new JSONObject(responseStream.toString("utf-8"));
-    assertNotNull(json);
-    LOGGER.info(json.toString(2));
   }
 
+  @Test
+  public void infiniteGet() throws IOException, ServletException, JSONException {
+    RequestPathInfo pathInfo = mock(RequestPathInfo.class);
+    when(pathInfo.getSelectors()).thenReturn(new String[]{"tidy", "infinity"});
+    when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
+
+    this.servlet.doGet(this.request, this.response);
+
+    JSONObject json = new JSONObject(responseStream.toString("utf-8"));
+    LOGGER.info(json.toString(2));
+    assertNotNull(json);
+    assertNotNull(json.getJSONObject(CHILD_PATH));
+    assertNotNull(json.getJSONObject(CHILD_PATH).getJSONObject(GRANDCHILD_PATH));
+
+  }
+
+  @Test(expected = JSONException.class)
+  public void finiteGet() throws ServletException, IOException, JSONException {
+    RequestPathInfo pathInfo = mock(RequestPathInfo.class);
+    when(pathInfo.getSelectors()).thenReturn(new String[]{"1"});
+    when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
+
+    this.servlet.doGet(this.request, this.response);
+
+    JSONObject json = new JSONObject(responseStream.toString("utf-8"));
+    LOGGER.info(json.toString(2));
+    assertNotNull(json);
+    assertNotNull(json.getJSONObject(CHILD_PATH));
+    // next line should produce JSONException since grandchild isn't part of 1-level output
+    json.getJSONObject(CHILD_PATH).getJSONObject(GRANDCHILD_PATH);
+  }
 }
