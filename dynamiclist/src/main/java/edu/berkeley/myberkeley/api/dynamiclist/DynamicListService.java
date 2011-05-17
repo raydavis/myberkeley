@@ -31,6 +31,7 @@ import javax.jcr.RepositoryException;
  */
 public interface DynamicListService {
   public static final String DYNAMIC_LIST_RT = "myberkeley/dynamiclist";
+  public static final String DYNAMIC_LIST_STORE_RT = "myberkeley/dynamicliststore";
   public static final String DYNAMIC_LIST_CONTEXT_RT = "myberkeley/dynamicListContext";
   public static final String DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT = "myberkeley/personalDemographic";
   public static final String DYNAMIC_LIST_CONTEXT_PROP = "myb-context";
