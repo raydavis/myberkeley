@@ -91,7 +91,7 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
       for (Content list : lists) {
         if (isStore(content)) {
-          writer.key(StorageClientUtils.getObjectName(list.getPath()));
+          writer.key(list.getPath());
         }
         writer.object();
         writer.key("numusers");
