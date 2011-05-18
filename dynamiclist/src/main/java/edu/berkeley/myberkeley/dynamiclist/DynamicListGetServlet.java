@@ -57,7 +57,6 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     try {
       List<Content> lists = findLists(content, session.getContentManager());
 
-      String resourceType = (String) content.getProperty("sling:resourceType");
       if (isStore(content)) {
         writer.object();
       }
