@@ -51,8 +51,6 @@ public class DynamicListGetServletTest extends Assert {
 
   private static final String GRANDCHILD_PATH = CHILD_PATH + "/grandchild";
 
-  private static final String QUERY_PATH = LIST_PATH + "/query";
-
   @Mock
   private SlingHttpServletRequest request;
 
@@ -81,6 +79,8 @@ public class DynamicListGetServletTest extends Assert {
     Content content = new Content(LIST_PATH, ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) DynamicListService.DYNAMIC_LIST_RT));
+    content.setProperty("filter", "some criteria");
+    content.setProperty("context", "test-context");
     contentManager.update(content);
 
     Content child = new Content(CHILD_PATH, ImmutableMap.of(
@@ -93,12 +93,6 @@ public class DynamicListGetServletTest extends Assert {
             (Object) "prop1val"));
     contentManager.update(grandchild);
 
-    Content query = new Content(QUERY_PATH, ImmutableMap.of(
-            "grandchildprop1",
-            (Object) "prop1val"));
-    query.setProperty("filter", "some criteria");
-    query.setProperty("context", "test-context");
-    contentManager.update(query);
 
     // we have to get the content via contentmanager so that it gets properly set up with internalize(),
     // or else the ExtendedJSONWriter call will fail. Ian insists this is not a code smell.

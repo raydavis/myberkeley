@@ -103,9 +103,8 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
 
   public Collection<String> getUserIdsForNode(Content list, Session session) throws StorageClientException,
           AccessDeniedException, RepositoryException {
-    Content listQuery = session.getContentManager().get(list.getPath() + "/query");
-    String criteria = (String) listQuery.getProperty("filter");
-    String contextName = (String) listQuery.getProperty("context");
+    String criteria = (String) list.getProperty("filter");
+    String contextName = (String) list.getProperty("context");
     javax.jcr.Session jcrSession = null;
 
     try {
