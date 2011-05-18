@@ -42,6 +42,7 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.util.ISO8601Date;
+import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +163,14 @@ public class SendNotificationsJob implements Job {
 
     try {
 
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(result, session);
+      Content dynamicList = session.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
+      if ( dynamicList == null ) {
+        LOGGER.error("Dynamic list is null for notification at path " + result.getPath()
+                + "; dynamic list path = " + notification.getDynamicListID());
+        return;
+      }
+
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, session);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       // save notification in bedework server

@@ -20,14 +20,12 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorProviderImpl;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
@@ -43,7 +41,6 @@ import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
-import org.apache.sling.commons.testing.jcr.MockProperty;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
@@ -64,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 public class SendNotificationsJobTest extends NotificationTests {
@@ -99,12 +95,12 @@ public class SendNotificationsJobTest extends NotificationTests {
 
     this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService);
 
-    Content queryContent = new Content("/a/path/to/a/dynamic/list/query", ImmutableMap.of(
+    Content dynamicList = new Content("/a/path/to/a/dynamic/list", ImmutableMap.of(
       JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
-    queryContent.setProperty("context", "g-ced-students");
-    queryContent.setProperty("filter", "mock filter");
-    when(this.cm.get("/a/path/to/a/dynamic/list/query")).thenReturn(queryContent);
+    dynamicList.setProperty("context", "g-ced-students");
+    dynamicList.setProperty("filter", "mock filter");
+    when(this.cm.get("/a/path/to/a/dynamic/list")).thenReturn(dynamicList);
 
     when(this.job.sparseRepository.loginAdministrative()).thenReturn(this.adminSession);
     when(this.adminSession.getContentManager()).thenReturn(this.cm);
