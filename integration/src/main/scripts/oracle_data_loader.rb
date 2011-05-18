@@ -303,11 +303,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
       options[:runenv] = re
     end
 
-    options[:numstudents] = 10
-    opts.on("-n", "--numstudents [NUMSTUDENTS]", Integer, "Number of Students to load") do |ns|
-      options[:numstudents] = ns
-    end
-
     opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
       options[:userpwdkey] = pk
     end
