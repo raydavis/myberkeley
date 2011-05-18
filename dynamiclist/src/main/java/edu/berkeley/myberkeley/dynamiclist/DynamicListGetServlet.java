@@ -44,40 +44,13 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
           throws ServletException, IOException {
 
-    // digest the selectors to determine if we should send a tidy result
-    // or if we need to traverse deeper into the tagged node.
-    boolean isTidy = false;
-    int depth = 0;
-    String[] selectors = request.getRequestPathInfo().getSelectors();
-
-    for (String sel : selectors) {
-      if ("tidy".equals(sel)) {
-        isTidy = true;
-      } else if ("infinity".equals(sel)) {
-        depth = -1;
-      } else {
-        // check if the selector is telling us the depth of detail to return
-        Integer d = null;
-        try {
-          d = Integer.parseInt(sel);
-        } catch (NumberFormatException ignored) {
-          // NaN
-        }
-        if (d != null) {
-          depth = d;
-        }
-      }
-    }
-
-    LOGGER.info("Get of dynamic list with depth=" + depth + " and tidy=" + isTidy);
-
     Session session = StorageClientUtils.adaptToSession(request.getResourceResolver().adaptTo(
             javax.jcr.Session.class));
     Resource resource = request.getResource();
     Content content = resource.adaptTo(Content.class);
 
     JSONWriter writer = new JSONWriter(response.getWriter());
-    writer.setTidy(isTidy);
+    writer.setTidy(isTidy(request));
     response.setContentType("application/json");
     response.setCharacterEncoding(CharEncoding.UTF_8);
 
@@ -97,7 +70,7 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
         writer.key("numusers");
         Collection<String> users = this.dynamicListService.getUserIdsForNode(list, session);
         writer.value(users.size());
-        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, depth, false);
+        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, 1, false);
         writer.endObject();
       }
 
@@ -121,6 +94,16 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
       response.getWriter().close();
     }
 
+  }
+
+  private boolean isTidy(SlingHttpServletRequest request) {
+    String[] selectors = request.getRequestPathInfo().getSelectors();
+    for (String sel : selectors) {
+      if ("tidy".equals(sel)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean isStore(Content node) {

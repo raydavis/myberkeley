@@ -49,8 +49,6 @@ public class DynamicListGetServletTest extends Assert {
 
   private static final String CHILD_PATH = LIST_PATH + "/child";
 
-  private static final String GRANDCHILD_PATH = CHILD_PATH + "/grandchild";
-
   @Mock
   private SlingHttpServletRequest request;
 
@@ -88,12 +86,6 @@ public class DynamicListGetServletTest extends Assert {
             (Object) "prop1val"));
     contentManager.update(child);
 
-    Content grandchild = new Content(GRANDCHILD_PATH, ImmutableMap.of(
-            "grandchildprop1",
-            (Object) "prop1val"));
-    contentManager.update(grandchild);
-
-
     // we have to get the content via contentmanager so that it gets properly set up with internalize(),
     // or else the ExtendedJSONWriter call will fail. Ian insists this is not a code smell.
     Content contentFromCM = contentManager.get(LIST_PATH);
@@ -121,9 +113,9 @@ public class DynamicListGetServletTest extends Assert {
   }
 
   @Test
-  public void infiniteGet() throws IOException, ServletException, JSONException {
+  public void get() throws IOException, ServletException, JSONException {
     RequestPathInfo pathInfo = mock(RequestPathInfo.class);
-    when(pathInfo.getSelectors()).thenReturn(new String[]{"tidy", "infinity"});
+    when(pathInfo.getSelectors()).thenReturn(new String[]{"tidy"});
     when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
 
     this.servlet.doGet(this.request, this.response);
@@ -132,23 +124,7 @@ public class DynamicListGetServletTest extends Assert {
     LOGGER.info(json.toString(2));
     assertNotNull(json);
     assertNotNull(json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)));
-    assertNotNull(json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)).getJSONObject(StorageClientUtils.getObjectName(GRANDCHILD_PATH)));
 
   }
 
-  @Test(expected = JSONException.class)
-  public void finiteGet() throws ServletException, IOException, JSONException {
-    RequestPathInfo pathInfo = mock(RequestPathInfo.class);
-    when(pathInfo.getSelectors()).thenReturn(new String[]{"1"});
-    when(this.request.getRequestPathInfo()).thenReturn(pathInfo);
-
-    this.servlet.doGet(this.request, this.response);
-
-    JSONObject json = new JSONObject(responseStream.toString("utf-8"));
-    LOGGER.info(json.toString(2));
-    assertNotNull(json);
-    assertNotNull(json.getJSONObject(CHILD_PATH));
-    // next line should produce JSONException since grandchild isn't part of 1-level output
-    json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)).getJSONObject(StorageClientUtils.getObjectName(GRANDCHILD_PATH));
-  }
 }
