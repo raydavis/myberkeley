@@ -74,7 +74,7 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
         writer.endObject();
       }
 
-      if (DynamicListService.DYNAMIC_LIST_STORE_RT.equals(resourceType)) {
+      if (isStore(content)) {
         writer.endObject();
       }
 
