@@ -264,11 +264,11 @@ module MyBerkeleyData
       home_url = @sling.url_for(student.home_path_for @sling)
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "everyone",
-        "privilege@jcr:all" => "denied"
+        "privilege@jcr:read" => "denied"
       })
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "anonymous",
-        "privilege@jcr:all" => "denied"
+        "privilege@jcr:read" => "denied"
       })
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => CED_ADVISORS_GROUP_NAME,
@@ -280,11 +280,11 @@ module MyBerkeleyData
       home_url = @sling.url_for(advisor.home_path_for @sling)
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "everyone",
-        "privilege@jcr:all" => "denied"
+        "privilege@jcr:read" => "denied"
       })
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "anonymous",
-        "privilege@jcr:all" => "denied"
+        "privilege@jcr:read" => "denied"
       })
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => CED_ADVISORS_GROUP_NAME,
