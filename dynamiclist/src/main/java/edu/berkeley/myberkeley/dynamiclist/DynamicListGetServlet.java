@@ -91,13 +91,13 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
       for (Content list : lists) {
         if (isStore(content)) {
-          writer.key(list.getPath());
+          writer.key(StorageClientUtils.getObjectName(list.getPath()));
         }
         writer.object();
         writer.key("numusers");
         Collection<String> users = this.dynamicListService.getUserIdsForNode(list, session);
         writer.value(users.size());
-        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, depth);
+        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, depth, false);
         writer.endObject();
       }
 

@@ -27,6 +27,7 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.SessionAdaptable;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
@@ -136,8 +137,8 @@ public class DynamicListGetServletTest extends Assert {
     JSONObject json = new JSONObject(responseStream.toString("utf-8"));
     LOGGER.info(json.toString(2));
     assertNotNull(json);
-    assertNotNull(json.getJSONObject(CHILD_PATH));
-    assertNotNull(json.getJSONObject(CHILD_PATH).getJSONObject(GRANDCHILD_PATH));
+    assertNotNull(json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)));
+    assertNotNull(json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)).getJSONObject(StorageClientUtils.getObjectName(GRANDCHILD_PATH)));
 
   }
 
@@ -154,6 +155,6 @@ public class DynamicListGetServletTest extends Assert {
     assertNotNull(json);
     assertNotNull(json.getJSONObject(CHILD_PATH));
     // next line should produce JSONException since grandchild isn't part of 1-level output
-    json.getJSONObject(CHILD_PATH).getJSONObject(GRANDCHILD_PATH);
+    json.getJSONObject(StorageClientUtils.getObjectName(CHILD_PATH)).getJSONObject(StorageClientUtils.getObjectName(GRANDCHILD_PATH));
   }
 }
