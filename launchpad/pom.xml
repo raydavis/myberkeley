@@ -86,6 +86,13 @@
               <version>0.10-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
+            <!-- MYB-597 -->
+            <bundle>
+              <groupId>org.apache.felix</groupId>
+              <artifactId>org.apache.felix.fileinstall</artifactId>
+              <version>3.1.11-20110216</version>
+              <startLevel>30</startLevel>
+            </bundle>
           </additionalBundles>
           <bundleExclusions>
             <bundle>

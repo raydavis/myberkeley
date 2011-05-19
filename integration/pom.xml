@@ -215,6 +215,7 @@
                   <jvmarg value="-XX:MaxPermSize=256m"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="felix.fileinstall.noInitialDelay" value="true"/>
+                  <sysproperty key="felix.fileinstall.disableConfigSave" value="false"/>
                   <sysproperty key="sling.home" value="sling"/>
 				  <sysproperty key="org.sakaiproject.nakamura.core.port" value="${sling.port}"/>
 				  <sysproperty key="org.mortbay.jetty.ajp.port" value="8010"/>
