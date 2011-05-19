@@ -89,15 +89,19 @@ module MyBerkeleyData
       attributes_map = student_row.attributes()
       (1..4).each do |i|
         major_field = "major_name"
+        major_title = "major_title"
         if (i > 1)
           major_field += i.to_s
+          major_title += i.to_s
         end
-        major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
+        major_val = attributes_map[major_field].to_s.strip
         if (!major_val.empty?)
+          major_title_val = attributes_map[major_title].to_s.strip
+          major_val = major_title_val if (!major_title_val.empty?)
           if (i == 2)
             profile_val += " : "
           elsif (i > 2)
-            profile_val += ", "
+            profile_val += " ; "
           end
           profile_val += major_val
         end
