@@ -78,7 +78,7 @@ public class DynamicListQueryServlet extends SlingAllMethodsServlet {
       return;
     }
 
-    // Get the criteria as a JSON string.
+    // Get the criteria as a JSON string. This parameter is required!
     String criteria = request.getRequestParameter("criteria").getString();
 
     // WARNING: Dynamic List search bypasses normal access restrictions for the user session.

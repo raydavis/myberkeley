@@ -85,6 +85,9 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
       QueryResponse response = solrServer.query(solrQuery);
       SolrDocumentList resultList = response.getResults();
       LOGGER.info("Got {} hits in {} ms", resultList.size(), response.getElapsedTime());
+      if (resultList.size() >= SOLR_PAGE_SIZE) {
+        LOGGER.warn("AT PAGE SIZE LIMIT!");
+      }
       for (SolrDocument solrDocument : resultList) {
         LOGGER.info("  solrDocument=" + solrDocument.getFieldValuesMap());
         String fullPath = (String) solrDocument.getFirstValue("path");
@@ -170,7 +173,8 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
     }
 
     StringBuilder sb = new StringBuilder();
-    sb.append("resourceType:").append(DynamicListService.DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT).append(" AND (");
+    sb.append("resourceType:").append(DynamicListService.DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT);
+    sb.append(" AND (");
     appendClause(context, parsedCriteria, sb, null);
     sb.append(")");
     return sb.toString();

@@ -31,9 +31,6 @@ public class DynamicListContext {
   private String contextId;
   private Set<String> allowedClauses;
 
-  /**
-   * For testing only.
-   */
   public DynamicListContext(String contextId, Set<String> allowedClauses) {
     this.contextId = contextId;
     this.allowedClauses = allowedClauses;
