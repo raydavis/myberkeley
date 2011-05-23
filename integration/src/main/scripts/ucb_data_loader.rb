@@ -18,11 +18,12 @@ module MyBerkeleyData
     'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
   ]
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
+  STUDENT_ROLES = ["Undergraduate Student", "Graduate Student", "Student"]
   ENV_PROD = 'prod'
-  
+
   # Actually means "all advisers in the pilot". This will be fixed soon.
   CED_ADVISERS_GROUP_NAME = "g-ced-advisers"
-  
+
   # These only come into play when loading test data.
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
   GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
@@ -34,8 +35,6 @@ module MyBerkeleyData
 
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
-
-    @ced_advisers_group = nil
 
     @env = nil
 
@@ -60,18 +59,6 @@ module MyBerkeleyData
       @bedeworkPort = bedeworkPort
     end
 
-    def get_or_create_groups
-      @ced_advisers_group = get_or_create_group CED_ADVISERS_GROUP_NAME
-    end
-
-    def get_or_create_group(groupname)
-      group = @user_manager.create_group groupname
-      if(!group)
-        group = Group.new groupname
-      end
-      return group
-    end
-
     def make_password(name, key)
       digest = Digest::SHA1.new
       digest.update(name).update(key)
@@ -79,7 +66,7 @@ module MyBerkeleyData
     end
 
     def get_all_ucb_accounts
-      res = @sling.executeGet(@sling.url_for("system/myberkeley/integratedUserIds.json"))
+      res = @sling.execute_get(@sling.url_for("system/myberkeley/integratedUserIds.json"))
       if (res.code != "200")
         @log.error("Could not get existing integrated users: #{res.code} / #{res.body}")
         return nil
@@ -88,8 +75,11 @@ module MyBerkeleyData
       end
     end
 
-    def add_adviser_to_group adviser
-      @ced_advisers_group.add_member @sling, adviser.name, "user"
+    def add_user_to_group(user_id, group_id)
+      result = @sling.execute_post(@sling.url_for("/system/userManager/group/#{group_id}.update.html"), {
+        ":member" => user_id
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
     def load_dev_advisers
@@ -100,8 +90,7 @@ module MyBerkeleyData
         loaded_user = load_defined_adviser user
         puts "loaded user: #{loaded_user.inspect}"
         if (loaded_user)
-          add_adviser_to_group loaded_user
-          apply_adviser_aces loaded_user
+          add_user_to_group(loaded_user.name, CED_ADVISERS_GROUP_NAME)
           loaded_users << loaded_user
         end
       end
@@ -130,7 +119,6 @@ module MyBerkeleyData
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_student_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
         loaded_calnet_test_user = load_user uid, user_props
-        apply_student_aces loaded_calnet_test_user
         apply_demographic uid, user_props
         i = i + 1
       end
@@ -142,10 +130,8 @@ module MyBerkeleyData
         user_props['firstName'] = first_name.chomp
         user_props['lastName'] = last_name.chomp
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
-        #user_props['department'] = '' # empty string breaks trimpath
         user_props['college'] = ['College of Environmental Design']
         if ( index < length/2)
-          user_props['standing'] = 'undergrad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:U]
           user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
@@ -153,7 +139,6 @@ module MyBerkeleyData
             "/colleges/CED/standings/undergrad/majors/" + user_props['major']
           ]
         else
-          user_props['standing'] = 'grad'
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
           majorval = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
@@ -164,7 +149,7 @@ module MyBerkeleyData
             user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/DOUBLE")
             user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/PSYCHOLOGY")
             # Basic Profile only handles single-valued string properties
-            majorval = "DOUBLE: " + majorval + "," + "PSYCHOLOGY"
+            majorval = "DOUBLE : " + majorval + " ; " + "PSYCHOLOGY"
           end
         end
         user_props['major'] = majorval
@@ -193,6 +178,12 @@ module MyBerkeleyData
         @log.info "Error creating user"
         return nil
       end
+      if (STUDENT_ROLES.include?(user_props["role"]))
+        apply_student_aces(user)
+      else
+        apply_adviser_aces(user)
+      end
+      apply_demographic(username, user_props)
       create_bedework_acct(username)
       return user
     end
@@ -229,7 +220,9 @@ module MyBerkeleyData
       response = update_profile_properties @sling, target_user, user_props
       if (response.code.to_i > 299)
         @log.error("Could not update user #{username}: #{response.code}, #{response.body}")
+        return nil
       end
+      apply_demographic(username, user_props)
       create_bedework_acct(username)
       return target_user
     end
@@ -249,26 +242,41 @@ module MyBerkeleyData
 
     def apply_student_aces(student)
       home_url = @sling.url_for(student.home_path_for @sling)
-      @sling.execute_post("#{home_url}.modifyAce.html", {
+      result = @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "everyone",
         "privilege@jcr:read" => "denied"
       })
-      @sling.execute_post("#{home_url}.modifyAce.html", {
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+      result = @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "anonymous",
         "privilege@jcr:read" => "denied"
       })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
     def apply_adviser_aces(adviser)
       home_url = @sling.url_for(adviser.home_path_for @sling)
-      @sling.execute_post("#{home_url}.modifyAce.html", {
+      result = @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "anonymous",
         "privilege@jcr:read" => "denied"
       })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
     def apply_demographic(uid, user_props)
-      @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", "myb-demographics" => user_props["myb-demographics"] )
+      demog = user_props["myb-demographics"]
+      if (!demog.nil?)
+        if (demog.empty?)
+          result = @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", {
+            "myb-demographics@Delete" => ""
+          })
+        else
+          result = @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", {
+            "myb-demographics" => demog
+          })
+        end
+        @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+      end
     end
   end
 end
@@ -276,7 +284,6 @@ end
 if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
-  sdl.get_or_create_groups
   sdl.load_dev_advisers
   sdl.load_calnet_test_users
 end

@@ -20,7 +20,7 @@
   ],
   "security:principals" : [
     {
-      "name" : "g-ced-advisors",
+      "name" : "g-ced-advisers",
       "isgroup" :"true"
     }
   ],
@@ -38,10 +38,10 @@
       ]
     },
     {
-      "principal" : "g-ced-advisors",
+      "principal" : "g-ced-advisers",
       "granted" : [
         "jcr:read"
       ]
-    }    
+    }
   ]
 }

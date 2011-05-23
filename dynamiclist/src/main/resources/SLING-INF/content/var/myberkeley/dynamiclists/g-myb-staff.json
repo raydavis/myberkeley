@@ -1,0 +1,30 @@
+{
+  "sling:resourceType": "myberkeley/dynamicListContext",
+  "myb-context": "g-myb-staff",
+  "security:principals" : [
+    {
+      "name" : "g-myb-staff",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "g-myb-staff",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

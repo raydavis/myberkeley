@@ -28,6 +28,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
+import org.apache.sling.servlets.post.SlingPostConstants;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
@@ -68,19 +69,20 @@ public class DynamicListSetPersonalDemographicServlet extends SlingAllMethodsSer
   @Override
   protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    // Make sure we have reasonable parameters.
-    RequestParameter[] demographicParameters = request.getRequestParameters(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
-    if (demographicParameters == null) {
-      response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-      "The " + DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP + " parameter must not be null");
-      return;
-    }
     Set<String> demographicSet = new HashSet<String>();
-    for (RequestParameter parameter : demographicParameters) {
-      demographicSet.add(parameter.toString());
+    boolean isClear = isDeleteRequest(request);
+    if (!isClear) {
+      RequestParameter[] demographicParameters = request.getRequestParameters(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
+      if (demographicParameters == null) {
+        response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+        "The " + DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP + " parameter must not be null");
+        return;
+      }
+      for (RequestParameter parameter : demographicParameters) {
+        demographicSet.add(parameter.toString());
+      }
     }
     String[] demographics = demographicSet.toArray(new String[demographicSet.size()]);
-
     Content home = request.getResource().adaptTo(Content.class);
     Session session = StorageClientUtils.adaptToSession(request.getResourceResolver().adaptTo(
         javax.jcr.Session.class));
@@ -99,7 +101,11 @@ public class DynamicListSetPersonalDemographicServlet extends SlingAllMethodsSer
         accessControlManager.setAcl(Security.ZONE_CONTENT, storePath, modifications.toArray(new AclModification[modifications.size()]));
       }
       Content content = contentManager.get(storePath);
-      content.setProperty(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP, demographics);
+      if (isClear) {
+        content.removeProperty(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
+      } else {
+        content.setProperty(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP, demographics);
+      }
       LOGGER.info("Set {} demographics to {}", home.getPath(), Arrays.asList(demographics));
       contentManager.update(content);
     } catch (StorageClientException e) {
@@ -107,6 +113,11 @@ public class DynamicListSetPersonalDemographicServlet extends SlingAllMethodsSer
     } catch (AccessDeniedException e) {
       throw new ServletException(e.getMessage(), e);
     }
+  }
+
+  private boolean isDeleteRequest(SlingHttpServletRequest request) {
+    RequestParameter requestParameter = request.getRequestParameter(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP + SlingPostConstants.SUFFIX_DELETE);
+    return (requestParameter != null);
   }
 
 }
