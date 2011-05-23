@@ -20,11 +20,8 @@ module MyBerkeleyData
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   ENV_PROD = 'prod'
   
-  # Currently these group names are misleading. They actually mean "all
-  # advisors in the pilot" and "all students in the pilot".
-  # TODO Generalize the name or add two more groups.
-  CED_ADVISORS_GROUP_NAME = "g-ced-advisors"
-  CED_ALL_STUDENTS_GROUP_NAME = "g-ced-students"
+  # Actually means "all advisers in the pilot". This will be fixed soon.
+  CED_ADVISERS_GROUP_NAME = "g-ced-advisers"
   
   # These only come into play when loading test data.
   UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
@@ -38,8 +35,7 @@ module MyBerkeleyData
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
 
-    @ced_advisors_group = nil
-    @ced_all_students_group = nil
+    @ced_advisers_group = nil
 
     @env = nil
 
@@ -65,8 +61,7 @@ module MyBerkeleyData
     end
 
     def get_or_create_groups
-      @ced_advisors_group = get_or_create_group CED_ADVISORS_GROUP_NAME
-      @ced_all_students_group = get_or_create_group CED_ALL_STUDENTS_GROUP_NAME
+      @ced_advisers_group = get_or_create_group CED_ADVISERS_GROUP_NAME
     end
 
     def get_or_create_group(groupname)
@@ -83,53 +78,46 @@ module MyBerkeleyData
       return digest.hexdigest
     end
 
-    def add_student_to_group user
-      @ced_all_students_group.add_member @sling, user.name, "user"
-    end
-    
-    def get_all_student_uids
-      return @ced_all_students_group.members(@sling)
-    end
-    
-    def remove_student_from_group(user_id)
-      result = @ced_all_students_group.remove_member(@sling, user_id, "user")
-      @log.info("Result of remove : #{result.code}, #{result.body}")
+    def get_all_ucb_accounts
+      res = @sling.executeGet(@sling.url_for("system/myberkeley/integratedUserIds.json"))
+      if (res.code != "200")
+        @log.error("Could not get existing integrated users: #{res.code} / #{res.body}")
+        return nil
+      else
+        return (JSON.parse(res.body))["userIds"]
+      end
     end
 
-    def add_advisor_to_group advisor
-      @ced_advisors_group.add_member @sling, advisor.name, "user"
+    def add_adviser_to_group adviser
+      @ced_advisers_group.add_member @sling, adviser.name, "user"
     end
 
-    def load_defined_advisors
-      all_data = JSON.load(File.open "json_data.js", "r")
+    def load_dev_advisers
+      all_data = JSON.load(File.open "dev_advisers_json.js", "r")
       users = all_data['users']
       loaded_users = Array.new
       users.each do |user|
-        loaded_user = load_defined_advisor user
+        loaded_user = load_defined_adviser user
         puts "loaded user: #{loaded_user.inspect}"
         if (loaded_user)
-          add_advisor_to_group loaded_user
-          apply_advisor_aces loaded_user
+          add_adviser_to_group loaded_user
+          apply_adviser_aces loaded_user
           loaded_users << loaded_user
         end
       end
       return loaded_users
     end
 
-    def load_defined_advisor user
+    def load_defined_adviser user
         username = user[0]
         user_props = user[1]
-        make_advisor_props user_props
+        make_adviser_props user_props
         # This will return nil if the user already exists.
         loaded_user = create_user_with_props username, user_props
         return loaded_user
     end
 
-    def make_advisor_props user_props #need to have firstName, lastName and email loaded already
-        user_props['standing'] = 'advisor'
-        user_props['major'] = "N/A"
-        # user_props['department'] = '' empty string breaks trimpath
-        user_props['college'] = ['College of Environmental Design']
+    def make_adviser_props user_props #need to have firstName, lastName and email loaded already
         user_props['role'] = ['Staff']
     end
 
@@ -140,16 +128,15 @@ module MyBerkeleyData
         last_name = id.split('-')[1].to_s
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
-        user_props = generate_user_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
+        user_props = generate_student_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
         loaded_calnet_test_user = load_user uid, user_props
-        add_student_to_group loaded_calnet_test_user
         apply_student_aces loaded_calnet_test_user
-        apply_student_demographic uid, user_props
+        apply_demographic uid, user_props
         i = i + 1
       end
     end
 
-    def generate_user_props(username, first_name, last_name, index, length)
+    def generate_student_props(username, first_name, last_name, index, length)
         user_props = {}
         user_props[':name'] = username
         user_props['firstName'] = first_name.chomp
@@ -270,36 +257,18 @@ module MyBerkeleyData
         "principalId" => "anonymous",
         "privilege@jcr:read" => "denied"
       })
-      @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => CED_ADVISORS_GROUP_NAME,
-        "privilege@jcr:read" => "granted"
-      })
     end
 
-    def apply_advisor_aces(advisor)
-      home_url = @sling.url_for(advisor.home_path_for @sling)
-      @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => "everyone",
-        "privilege@jcr:read" => "denied"
-      })
+    def apply_adviser_aces(adviser)
+      home_url = @sling.url_for(adviser.home_path_for @sling)
       @sling.execute_post("#{home_url}.modifyAce.html", {
         "principalId" => "anonymous",
         "privilege@jcr:read" => "denied"
       })
-      @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => CED_ADVISORS_GROUP_NAME,
-        "privilege@jcr:read" => "granted"
-      })
-
-      #needed so message search results can include sender's profile info
-      @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => CED_ALL_STUDENTS_GROUP_NAME,
-        "privilege@jcr:read" => "granted"
-      })
     end
 
-    def apply_student_demographic(studentuid, user_props)
-      @sling.execute_post("#{@server}~#{studentuid}.myb-demographic.html", "myb-demographics" => user_props["myb-demographics"] )
+    def apply_demographic(uid, user_props)
+      @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", "myb-demographics" => user_props["myb-demographics"] )
     end
   end
 end
@@ -308,6 +277,6 @@ if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
   sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
   sdl.get_or_create_groups
-  sdl.load_defined_advisors
+  sdl.load_dev_advisers
   sdl.load_calnet_test_users
 end

@@ -26,7 +26,7 @@
     },
     "892685": {
       "lastName": "Shumikhin",
-      "firstName": "Roman v",
+      "firstName": "Roman V",
       "email": "roman@berkeley.edu"
     },
     "3060": {
@@ -124,7 +124,8 @@
     "12005": {
       "lastName": "Hagstrom",
       "firstName": "Susan Janan",
-      "email": "hagstrom@berkeley.edu"
+      "email": "hagstrom@berkeley.edu",
+      "college" : "College of Environmental Design"
     },
     "760063": {
       "lastName": "Ng",

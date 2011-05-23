@@ -34,7 +34,7 @@ module MyBerkeleyData
       @oracle_sid = options[:oraclesid]
 
       @additional_user_ids_file = options[:usersfile]
-      @remaining_students = []
+      @remaining_accounts = []
 
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
@@ -54,9 +54,9 @@ module MyBerkeleyData
          )
     end
 
-    def collect_loaded_students
+    def collect_integrated_accounts
       @ucb_data_loader.get_or_create_groups
-      @remaining_students = ucb_data_loader.get_all_student_uids
+      @remaining_accounts = ucb_data_loader.get_all_ucb_accounts
     end
 
     def make_user_props(student_row)
@@ -218,11 +218,11 @@ module MyBerkeleyData
         user = @ucb_data_loader.load_user student_uid, props, user_password
         @ucb_data_loader.add_student_to_group user
         @ucb_data_loader.apply_student_aces user
-        @ucb_data_loader.apply_student_demographic student_uid, props
-        if (@remaining_students.include?(student_uid))
-          @remaining_students.delete(student_uid)
+        @ucb_data_loader.apply_demographic student_uid, props
+        if (@remaining_accounts.include?(student_uid))
+          @remaining_accounts.delete(student_uid)
         end
-      elsif (@remaining_students.include?(student_uid))
+      elsif (@remaining_accounts.include?(student_uid))
         @log.info("Removing non-current student #{student_uid}")
         drop_student(student_uid)
       end
@@ -250,8 +250,8 @@ module MyBerkeleyData
     end
     
     def drop_stale_students
-      @log.info("Remaining students = #{@remaining_students.inspect}")
-      iterating_copy = Array.new(@remaining_students)
+      @log.info("Remaining students = #{@remaining_accounts.inspect}")
+      iterating_copy = Array.new(@remaining_accounts)
       iterating_copy.each do |student_uid|
         drop_student(student_uid)
       end
@@ -260,10 +260,9 @@ module MyBerkeleyData
     def drop_student(student_uid)
       # Delete demographic.
       user_props = {"myb-demographics"  => []}
-      @ucb_data_loader.apply_student_demographic student_uid, user_props
+      @ucb_data_loader.apply_demographic student_uid, user_props
       # TODO Change user's ACL?
-      @ucb_data_loader.remove_student_from_group(student_uid)
-      @remaining_students.delete(student_uid)
+      @remaining_accounts.delete(student_uid)
     end
   end
 
@@ -320,8 +319,8 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
 
   odl = MyBerkeleyData::OracleDataLoader.new options
 
-  odl.collect_loaded_students
-  odl.ucb_data_loader.load_defined_advisors
+  odl.collect_integrated_accounts
+  odl.ucb_data_loader.load_defined_advisers
   odl.load_ced_students
   odl.load_additional_students
   odl.drop_stale_students
