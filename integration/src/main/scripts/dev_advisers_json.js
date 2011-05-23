@@ -131,6 +131,11 @@
       "lastName": "Ng",
       "firstName": "Nicole",
       "email": "nicole.ng@berkeley.edu"
+    },
+    "871943": {
+        "lastName": "Boo",
+        "firstName": "Carina Geobio",
+        "email": "carinaboo@berkeley.edu"
     }
   }
 }
