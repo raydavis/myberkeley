@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-# TODO Need to bring up to date with dynamic lists.
-
 # The Oracle server's host, port, and service name must be configured in:
 #   $TNS_ADMIN/tnsnames.ora
 
@@ -20,9 +18,7 @@ require 'sling/users'
 require 'ucb_data_loader'
 
 module MyBerkeleyData
-  # TODO Can we eliminate this translation to slim the integration?
-  COLLEGE_ABBR_TO_DEMOGRAPHIC = {"ENV DSGN" => "CED"}
-  COLLEGE_ABBR_TO_PROFILE = {'ENV DSGN' => 'College of Environmental Design'}
+  COLLEGES = [ "ENV DSGN", "NAT RES" ]
   class OracleDataLoader
     attr_reader :ucb_data_loader
 
@@ -102,12 +98,14 @@ module MyBerkeleyData
         if (!person_row.ug_grad_flag.nil?)
           case person_row.ug_grad_flag.strip
           when 'G'
-            standing_segment = '/standings/grad/programs/'
+            standing_val = '/standings/grad'
+            major_segment = '/standings/grad/programs/'
           when 'U'
-            standing_segment = '/standings/undergrad/majors/'
+            standing_val = '/standings/undergrad'
+            major_segment = '/standings/undergrad/majors/'
           end
         end
-        if (standing_segment.nil?)
+        if (standing_val.nil?)
           @log.warn("Current student #{person_row.ldap_uid.to_i.to_s} has unrecognized UG_GRAD_FLAG #{person_row.ug_grad_flag}; no demographics")
         else
           attributes_map = person_row.attributes()
@@ -119,13 +117,10 @@ module MyBerkeleyData
               major_field += i.to_s
             end
             college_val = attributes_map[college_field].to_s.strip.sub(/&/, 'AND')
-            if (COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val])
-              college_val = COLLEGE_ABBR_TO_DEMOGRAPHIC[college_val]
-            end
             major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
             if (!major_val.empty?)
-              myb_demographics.push("/colleges/" + college_val)
-              myb_demographics.push("/colleges/" + college_val + standing_segment + major_val)
+              myb_demographics.push("/colleges/" + college_val + standing_val)
+              myb_demographics.push("/colleges/" + college_val + major_segment + major_val)
             end
           end
           myb_demographics.uniq!
@@ -177,18 +172,18 @@ module MyBerkeleyData
       return email
     end
 
-    def select_ced_students
-      ced_students =  MyBerkeleyData::Student.find_by_sql(
+    def select_students_from_college(college)
+      student_rows =  MyBerkeleyData::Student.find_by_sql(
         "select si.STUDENT_LDAP_UID as LDAP_UID, si.UG_GRAD_FLAG, si.FIRST_NAME, si.LAST_NAME,
            si.STUDENT_EMAIL_ADDRESS as EMAIL_ADDRESS, si.STU_NAME as PERSON_NAME, si.AFFILIATIONS,
            sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
            sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
            sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4
            from BSPACE_STUDENT_INFO_VW si left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-           where (sm.COLLEGE_ABBR = 'ENV DSGN' or sm.COLLEGE_ABBR2 = 'ENV DSGN' or sm.COLLEGE_ABBR3 = 'ENV DSGN' or sm.COLLEGE_ABBR4 = 'ENV DSGN')
+           where (sm.COLLEGE_ABBR = '#{college}' or sm.COLLEGE_ABBR2 = '#{college}' or sm.COLLEGE_ABBR3 = '#{college}' or sm.COLLEGE_ABBR4 = '#{college}')
            and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
       )
-      return ced_students
+      return student_rows
     end
 
     def load_single_account(user_id)
@@ -226,12 +221,17 @@ module MyBerkeleyData
       end
       user
     end
+    
+    def load_all_students
+      COLLEGES.each do |college|
+        load_students_from_college(college)
+      end
+    end
 
-    def load_ced_students
-      ced_students = select_ced_students
-      @log.info("DB returned #{ced_students.length} target student records")
-      i = 0
-      ced_students.each do |s|
+    def load_students_from_college(college)
+      students = select_students_from_college(college)
+      @log.info("DB returned #{students.length} student records for college #{college}")
+      students.each do |s|
         load_user_from_row(s)
       end
     end
@@ -319,10 +319,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
     opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
       options[:userpwdkey] = pk
     end
-
-    opts.on("-f", "--fileids USERIDS", "File of user_ids") do |nu|
-      options[:usersfile] = nu
-    end
   end
 
   optparser.parse ARGV
@@ -330,7 +326,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl = MyBerkeleyData::OracleDataLoader.new options
 
   odl.collect_integrated_accounts
-  odl.load_ced_students
+  odl.load_all_students
   odl.load_additional_accounts
   odl.drop_stale_accounts
 

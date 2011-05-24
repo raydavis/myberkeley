@@ -1,0 +1,38 @@
+{
+  "sling:resourceType": "myberkeley/dynamicListContext",
+  "myb-context": "myb-cnr-grads-environmental",
+  "myb-clauses": [
+    "/colleges/NAT RES/standings/grad/programs/RANGE MANAGEMENT",
+    "/colleges/NAT RES/standings/grad/programs/ENV SCI POL AND MGMT",
+    "/colleges/NAT RES/standings/grad/programs/FORESTRY",
+    "/colleges/NAT RES/standings/grad/programs/Ecosystem Sciences",
+    "/colleges/NAT RES/standings/grad/programs/SOCIETY&ENVIRONMENT",
+    "/colleges/NAT RES/standings/grad/programs/Organisms & Environment"
+  ],
+  "security:principals" : [
+    {
+      "name" : "myb-advisers-cnr-grads-environmental",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-advisers-cnr-grads-environmental",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

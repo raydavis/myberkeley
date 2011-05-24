@@ -9,7 +9,7 @@ Three content areas come into play here:
 is added to storage under "/var". This defines what criteria can be used for a Dynamic List.
 Only the group's advisors should be given read access to this node.
 
-The initial one is at "/var/myberkeley/dynamiclists/g-ced-students".
+The initial one is at "/var/myberkeley/dynamiclists/myb-advisers-ced".
 
 * Relevant criteria for each student are stored in a node under the student's home:
 "/~STUDENT_USER_ID/_myberkeley-demographic".
@@ -48,7 +48,7 @@ DYNAMIC LIST CONTEXT
 ====================
 
 A starting Dynamic List Context node is created at:
-  /var/myberkeley/dynamiclists/g-ced-students
+  /var/myberkeley/dynamiclists/myb-advisers-ced
 
 Its ACL sets read-access for CED advisors.
 
@@ -84,13 +84,13 @@ curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2
 }
 
 # Here's a sample query, somewhat like what we'd retrieve from a named Dynamic List.
-curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/g-ced-students.json?criteria={OR:[\"/colleges/CED/standings/grad/programs/ARCHITECTURE\",\"/colleges/CED/standings/grad/programs/LAND%20ARCH%20AND%20ENV%20PLAN\"]}"
+curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-advisers-ced.json?criteria={OR:[\"/colleges/CED/standings/grad/programs/ARCHITECTURE\",\"/colleges/CED/standings/grad/programs/LAND%20ARCH%20AND%20ENV%20PLAN\"]}"
 
 # And the results:
 {"count":1}
 
 # The log file is a bit more interesting:
-... DynamicListQueryServlet For criteria = ... and context = g-ced-students, user Ids = [300847]
+... DynamicListQueryServlet For criteria = ... and context = myb-advisers-ced, user Ids = [300847]
 
 ###
 

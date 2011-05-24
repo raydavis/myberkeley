@@ -136,6 +136,36 @@
         "lastName": "Boo",
         "firstName": "Carina Geobio",
         "email": "carinaboo@berkeley.edu"
+    },
+    "324838": {
+        "lastName": "O'Connor",
+        "firstName": "Olga",
+        "email": "olga_oconnor@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "4790": {
+        "lastName": "VALREY",
+        "firstName": "Theodosia",
+        "email": "doty@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "4818": {
+        "lastName": "VAWTER",
+        "firstName": "Gail",
+        "email": "gvawter@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "233219": {
+        "lastName": "JOHNSON",
+        "firstName": "Kimberly",
+        "email": "kcj@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "106391": {
+        "lastName": "Sanchez",
+        "firstName": "Rocio",
+        "email": "rocio_s@berkeley.edu",
+        "college" : "College of Natural Resources"
     }
   }
 }

@@ -1,0 +1,35 @@
+{
+  "sling:resourceType": "myberkeley/dynamicListContext",
+  "myb-context": "myb-cnr-grads-plant",
+  "myb-clauses": [
+    "/colleges/NAT RES/standings/grad/programs/PLANT BIOLOGY",
+    "/colleges/NAT RES/standings/grad/programs/MICROBIAL BIOLOGY",
+    "/colleges/NAT RES/standings/grad/programs/AGRICULTURAL CHEM"
+  ],
+  "security:principals" : [
+    {
+      "name" : "myb-advisers-cnr-grads-plant",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-advisers-cnr-grads-plant",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "sling:resourceType": "myberkeley/dynamicListContext",
+  "myb-context": "myb-cnr-grads-nutritional",
+  "myb-clauses": [
+    "/colleges/NAT RES/standings/grad/programs/MOLECULAR TOXICOLOGY",
+    "/colleges/NAT RES/standings/grad/programs/Metabolic Biology"
+  ],
+  "security:principals" : [
+    {
+      "name" : "myb-advisers-cnr-grads-nutritional",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-advisers-cnr-grads-nutritional",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

@@ -1,9 +1,12 @@
 {
   "sling:resourceType": "myberkeley/dynamicListContext",
-  "myb-context": "g-myb-staff",
+  "myb-context": "myb-cnr-grads-agricultural",
+  "myb-clauses": [
+    "/colleges/NAT RES/standings/grad/programs/AGR & RES ECON"
+  ],
   "security:principals" : [
     {
-      "name" : "g-myb-staff",
+      "name" : "myb-advisers-cnr-grads-agricultural",
       "isgroup" :"true"
     }
   ],
@@ -21,7 +24,7 @@
       ]
     },
     {
-      "principal" : "g-myb-staff",
+      "principal" : "myb-advisers-cnr-grads-agricultural",
       "granted" : [
         "jcr:read"
       ]

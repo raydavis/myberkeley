@@ -19,14 +19,21 @@ module MyBerkeleyData
   ]
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   STUDENT_ROLES = ["Undergraduate Student", "Graduate Student", "Student"]
+  COLLEGE_ABBR_TO_PROFILE = { "ENV DSGN" => "College of Environmental Design", "NAT RES" => "College of Natural Resources" }
   ENV_PROD = 'prod'
-
-  # Actually means "all advisers in the pilot". This will be fixed soon.
-  CED_ADVISERS_GROUP_NAME = "g-ced-advisers"
-
-  # These only come into play when loading test data.
-  UNDERGRAD_MAJORS = [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED","LANDSCAPE ARCH", "URBAN STUDIES" ]
-  GRAD_MAJORS = [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN","LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
+  
+  # Test data for development environments
+  TEST_ADVISER_GROUPS = ["myb-advisers-ced-students", "myb-advisers-cnr-undergrads", "myb-advisers-cnr-grads-agricultural",
+    "myb-advisers-cnr-grads-environmental", "myb-advisers-cnr-grads-nutritional", "myb-advisers-cnr-grads-plant"]
+  TEST_DEMOGRAPHICS = [{
+      "college" => "ENV DSGN",
+      "undergradMajors" => [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED", "LANDSCAPE ARCH", "URBAN STUDIES" ],
+      "gradMajors" => [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
+    }, {
+      "college" => "NAT RES",
+      "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
+      "gradMajors" => [ "AGR & RES ECON", "AGRICULTURAL CHEM", "COMP BIOCHEMISTRY", "ENV SCI POL AND MGMT", "FORESTRY", "PLANT BIOLOGY", "RANGE MANAGEMENT" ]
+    }]
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
     "test-300852","test-300853","test-300854","test-300855","test-300856","test-300857","test-300858",
     "test-300859","test-300860","test-300861","test-300862","test-300863","test-300864","test-300865",
@@ -90,7 +97,9 @@ module MyBerkeleyData
         loaded_user = load_defined_adviser user
         puts "loaded user: #{loaded_user.inspect}"
         if (loaded_user)
-          add_user_to_group(loaded_user.name, CED_ADVISERS_GROUP_NAME)
+          TEST_ADVISER_GROUPS.each do |group_id|
+            add_user_to_group(loaded_user.name, group_id)
+          end
           loaded_users << loaded_user
         end
       end
@@ -130,29 +139,31 @@ module MyBerkeleyData
         user_props['firstName'] = first_name.chomp
         user_props['lastName'] = last_name.chomp
         user_props['email'] = first_name.downcase + '.' + last_name.downcase + '@berkeley.edu'
-        user_props['college'] = ['College of Environmental Design']
-        if ( index < length/2)
+        demog = TEST_DEMOGRAPHICS[index % TEST_DEMOGRAPHICS.length]
+        user_props['college'] = COLLEGE_ABBR_TO_PROFILE[demog["college"]]
+        if (index < length/2)
           user_props['role'] = UG_GRAD_FLAG_MAP[:U]
-          user_props['major'] = UNDERGRAD_MAJORS[index % UNDERGRAD_MAJORS.length].sub(/&/, 'AND')
+          majors_demog = demog["undergradMajors"]
+          user_props['major'] = majors_demog[index % majors_demog.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
-            "/colleges/CED/standings/undergrad",
-            "/colleges/CED/standings/undergrad/majors/" + user_props['major']
+            "/colleges/#{demog['college']}/standings/undergrad",
+            "/colleges/#{demog['college']}/standings/undergrad/majors/" + user_props['major']
           ]
         else
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
-          majorval = GRAD_MAJORS[index % GRAD_MAJORS.length].sub(/&/, 'AND')
+          majors_demog = demog["gradMajors"]
+          user_props['major'] = majors_demog[index % majors_demog.length].sub(/&/, 'AND')
           user_props['myb-demographics'] = [
-            "/colleges/CED/standings/grad",
-            "/colleges/CED/standings/grad/programs/" + majorval
+            "/colleges/#{demog['college']}/standings/grad",
+            "/colleges/#{demog['college']}/standings/grad/programs/" + user_props['major']
           ]
           if (index == length - 1)
-            user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/DOUBLE")
-            user_props['myb-demographics'].push("/colleges/CED/standings/grad/programs/PSYCHOLOGY")
+            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/programs/DOUBLE")
+            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/programs/PSYCHOLOGY")
             # Basic Profile only handles single-valued string properties
-            majorval = "DOUBLE : " + majorval + " ; " + "PSYCHOLOGY"
+            user_props['major'] = "DOUBLE : " + user_props['major'] + " ; " + "PSYCHOLOGY"
           end
         end
-        user_props['major'] = majorval
         return user_props
     end
 
