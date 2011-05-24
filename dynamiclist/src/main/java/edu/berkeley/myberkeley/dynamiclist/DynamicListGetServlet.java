@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
         resourceTypes = {DynamicListService.DYNAMIC_LIST_RT, DynamicListService.DYNAMIC_LIST_STORE_RT}
 )
 public class DynamicListGetServlet extends SlingSafeMethodsServlet {
-
+  private static final long serialVersionUID = 4960320583375004661L;
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListGetServlet.class);
 
   @Reference
