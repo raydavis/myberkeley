@@ -116,8 +116,8 @@ module MyBerkeleyData
               college_field += i.to_s
               major_field += i.to_s
             end
-            college_val = attributes_map[college_field].to_s.strip.sub(/&/, 'AND')
-            major_val = attributes_map[major_field].to_s.strip.sub(/&/, 'AND')
+            college_val = attributes_map[college_field].to_s.strip
+            major_val = attributes_map[major_field].to_s.strip
             if (!major_val.empty?)
               myb_demographics.push("/colleges/" + college_val + standing_val)
               myb_demographics.push("/colleges/" + college_val + major_segment + major_val)

@@ -28,7 +28,7 @@ module MyBerkeleyData
   TEST_DEMOGRAPHICS = [{
       "college" => "ENV DSGN",
       "undergradMajors" => [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED", "LANDSCAPE ARCH", "URBAN STUDIES" ],
-      "gradMajors" => [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LAND ARCH AND ENV PLAN", "URBAN DESIGN" ]
+      "gradMajors" => [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LAND ARCH & ENV PLAN", "URBAN DESIGN" ]
     }, {
       "college" => "NAT RES",
       "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
@@ -144,7 +144,7 @@ module MyBerkeleyData
         if (index < length/2)
           user_props['role'] = UG_GRAD_FLAG_MAP[:U]
           majors_demog = demog["undergradMajors"]
-          user_props['major'] = majors_demog[index % majors_demog.length].sub(/&/, 'AND')
+          user_props['major'] = majors_demog[index % majors_demog.length]
           user_props['myb-demographics'] = [
             "/colleges/#{demog['college']}/standings/undergrad",
             "/colleges/#{demog['college']}/standings/undergrad/majors/" + user_props['major']
@@ -152,7 +152,7 @@ module MyBerkeleyData
         else
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
           majors_demog = demog["gradMajors"]
-          user_props['major'] = majors_demog[index % majors_demog.length].sub(/&/, 'AND')
+          user_props['major'] = majors_demog[index % majors_demog.length]
           user_props['myb-demographics'] = [
             "/colleges/#{demog['college']}/standings/grad",
             "/colleges/#{demog['college']}/standings/grad/programs/" + user_props['major']
