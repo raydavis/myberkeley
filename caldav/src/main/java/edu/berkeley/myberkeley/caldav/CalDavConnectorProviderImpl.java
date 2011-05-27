@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Service;
+import org.apache.sling.commons.osgi.OsgiUtil;
 import org.osgi.service.component.ComponentContext;
 
 import java.util.Dictionary;
@@ -54,9 +55,9 @@ public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
   @SuppressWarnings({"UnusedDeclaration"})
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
-    this.adminUsername = (String) props.get(PROP_ADMIN_USERNAME);
-    this.adminPassword = (String) props.get(PROP_ADMIN_PASSWORD);
-    this.calDavServerRoot = (String) props.get(PROP_SERVER_ROOT);
+    this.adminUsername = OsgiUtil.toString(props.get(PROP_ADMIN_USERNAME), "admin");
+    this.adminPassword = OsgiUtil.toString(props.get(PROP_ADMIN_PASSWORD), "bedework");
+    this.calDavServerRoot = OsgiUtil.toString(props.get(PROP_SERVER_ROOT), "http://test.media.berkeley.edu:8080");
 
   }
 
