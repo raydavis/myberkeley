@@ -18,7 +18,7 @@ require 'sling/users'
 require 'ucb_data_loader'
 
 module MyBerkeleyData
-  COLLEGES = [ "ENV DSGN", "NAT RES" ]
+  COLLEGES = "'ENV DSGN', 'NAT RES'"
   class OracleDataLoader
     attr_reader :ucb_data_loader
 
@@ -172,7 +172,7 @@ module MyBerkeleyData
       return email
     end
 
-    def select_students_from_college(college)
+    def select_students_from_colleges(colleges)
       student_rows =  MyBerkeleyData::Student.find_by_sql(
         "select si.STUDENT_LDAP_UID as LDAP_UID, si.UG_GRAD_FLAG, si.FIRST_NAME, si.LAST_NAME,
            si.STUDENT_EMAIL_ADDRESS as EMAIL_ADDRESS, si.STU_NAME as PERSON_NAME, si.AFFILIATIONS,
@@ -180,7 +180,7 @@ module MyBerkeleyData
            sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
            sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4
            from BSPACE_STUDENT_INFO_VW si left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-           where (sm.COLLEGE_ABBR = '#{college}' or sm.COLLEGE_ABBR2 = '#{college}' or sm.COLLEGE_ABBR3 = '#{college}' or sm.COLLEGE_ABBR4 = '#{college}')
+           where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or sm.COLLEGE_ABBR3 in (#{colleges}) or sm.COLLEGE_ABBR4  in (#{colleges}))
            and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
       )
       return student_rows
@@ -223,14 +223,8 @@ module MyBerkeleyData
     end
     
     def load_all_students
-      COLLEGES.each do |college|
-        load_students_from_college(college)
-      end
-    end
-
-    def load_students_from_college(college)
-      students = select_students_from_college(college)
-      @log.info("DB returned #{students.length} student records for college #{college}")
+      students = select_students_from_colleges(COLLEGES)
+      @log.info("DB returned #{students.length} student records for colleges #{COLLEGES}")
       students.each do |s|
         load_user_from_row(s)
       end

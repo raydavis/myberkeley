@@ -64,8 +64,9 @@ TEST RUN
 
 # Create a personal demographic profile for a student. This would be done by our data import.
 curl -u admin:admin http://localhost:8080/~300847.myb-demographic.html \
-  -F myb-demographics="/colleges/CED/standings/grad" \
-  -F myb-demographics="/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN"
+  -F myb-demographics="/colleges/ENV DSGN/standings/grad" \
+  -F myb-demographics="/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN" \
+  -F myb-demographics="/student/degreeProgram/M.S."
 
 # Take a look.
 curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2.json
@@ -75,8 +76,9 @@ curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2
   "_id": "rWSSkanQU5xpozVklih",
   "_lastModifiedBy": "admin",
   "myb-demographics": [
-    "/colleges/CED/standings/grad",
-    "/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN"
+    "/student/degreeProgram/M.S.",
+    "/colleges/ENV DSGN/standings/grad",
+    "/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN"
   ],
   "_lastModified": 1301009856381,
   "_createdBy": "admin",
@@ -84,7 +86,7 @@ curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2
 }
 
 # Here's a sample query, somewhat like what we'd retrieve from a named Dynamic List.
-curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-advisers-ced.json?criteria={OR:[\"/colleges/CED/standings/grad/programs/ARCHITECTURE\",\"/colleges/CED/standings/grad/programs/LAND%20ARCH%20AND%20ENV%20PLAN\"]}"
+curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-ced-students.json?criteria={ANY:[\"/colleges/ENV%20DSGN/standings/grad/programs/ARCHITECTURE\",\"/colleges/ENV%20DSGN/standings/grad/programs/LAND%20ARCH%20%26%20ENV%20PLAN\"],FILTER:\"/student/degreeProgram/M.S.\"}"
 
 # And the results:
 {"count":1}
@@ -96,43 +98,38 @@ curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-ad
 
 That query wasn't terribly easy to read. Pretty-printed, the "criteria" parameter was:
   {
-    OR: [
-      "/colleges/CED/standings/grad/programs/ARCHITECTURE",
-      "/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN"
-    ]
+    ANY: [
+      "/colleges/ENV DSGN/standings/grad/programs/ARCHITECTURE",
+      "/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN"
+    ],
+    FILTER: "/student/degreeProgram/M.S."
   }
-Which means "Match any of the following criteria."
+Which means "Get graduate students who have these two majors, and filter the results by
+the student's degree program."
 
 For all undergrads, the criteria would just be:
-  "/colleges/CED/standings/undergrad"
+  "/colleges/ENV DSGN/standings/undergrad"
 
-Future clauses might include:
-  /colleges/CED/standings/grad/jobs/GSI
-  /colleges/CED/standings/undergrad/levels/freshman
-  /specialprograms/DSP
+To look for CED Juniors majoring in "Architecture" or "Landscape Architecture"
+and M.S. and Ph.D. candidates, the criteria might be:
 
-So, for example, to look for undergraduates majoring in "Architecture" or "Landscape
-Architecture" and for GSRs in the equivalent programs, the criteria might look like:
   {
-    OR: [
-      "/colleges/CED/standings/undergrad/majors/ARCHITECTURE",
-      "/colleges/CED/standings/undergrad/majors/LANDSCAPE ARCH",
+    ANY: [
       {
-        AND: [
-          "/colleges/CED/standings/grad/jobs/GSR",
-          {
-            OR: [
-              "/colleges/CED/standings/grad/programs/ARCHITECTURE",
-              "/colleges/CED/standings/grad/programs/LAND ARCH AND ENV PLAN"
-            ]
-          }
-        ]
+        ANY: [
+          "/colleges/ENV DSGN/standings/undergrad/majors/ARCHITECTURE",
+          "/colleges/ENV DSGN/standings/undergrad/majors/LANDSCAPE ARCH"
+        ],
+        FILTER: "/student/level/Junior"
+      },
+      {
+        ALL: "/colleges/ENV DSGN/standings/grad",
+        FILTER: {
+          ANY: [
+            "/student/degreeProgram/M.S.",
+            "/student/degreeProgram/PH.D."
+          ]
+        }
       }
     ]
   }
-
-The hierarchical paths are used to (hopefully) give us more flexible integration options.
-They could be parsed by an external group-and-role provider, for example. In Solr, they
-give us the option of querying "all" via wildcards:
-
-  /colleges/CED/*

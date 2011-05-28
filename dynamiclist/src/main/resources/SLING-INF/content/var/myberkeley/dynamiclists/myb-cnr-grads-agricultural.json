@@ -4,6 +4,9 @@
   "myb-clauses": [
     "/colleges/NAT RES/standings/grad/programs/AGR & RES ECON"
   ],
+  "myb-filters": [
+    "/student/*"
+  ],
   "security:principals" : [
     {
       "name" : "myb-advisers-cnr-grads-agricultural",

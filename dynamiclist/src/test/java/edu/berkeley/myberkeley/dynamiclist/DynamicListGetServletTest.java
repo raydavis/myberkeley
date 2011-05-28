@@ -77,8 +77,8 @@ public class DynamicListGetServletTest extends Assert {
     Content content = new Content(LIST_PATH, ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) DynamicListService.DYNAMIC_LIST_RT));
-    content.setProperty("filter", "some criteria");
-    content.setProperty("context", "test-context");
+    content.setProperty(DynamicListService.DYNAMIC_LIST_STORE_CRITERIA_PROP, "some criteria");
+    content.setProperty(DynamicListService.DYNAMIC_LIST_STORE_CONTEXT_PROP, "test-context");
     contentManager.update(content);
 
     Content child = new Content(CHILD_PATH, ImmutableMap.of(

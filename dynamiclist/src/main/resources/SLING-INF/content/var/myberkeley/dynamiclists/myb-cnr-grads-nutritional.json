@@ -5,6 +5,9 @@
     "/colleges/NAT RES/standings/grad/programs/MOLECULAR TOXICOLOGY",
     "/colleges/NAT RES/standings/grad/programs/Metabolic Biology"
   ],
+  "myb-filters": [
+    "/student/*"
+  ],
   "security:principals" : [
     {
       "name" : "myb-advisers-cnr-grads-nutritional",
