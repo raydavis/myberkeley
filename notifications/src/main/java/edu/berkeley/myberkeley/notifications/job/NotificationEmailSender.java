@@ -31,7 +31,7 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
-import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.apache.sling.commons.osgi.OsgiUtil;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
 import org.sakaiproject.nakamura.api.lite.Repository;
@@ -92,9 +92,9 @@ public class NotificationEmailSender {
 
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
-    this.smtpPort = PropertiesUtil.toInteger(props.get(SMTP_PORT), 25);
-    this.smtpServer = PropertiesUtil.toString(props.get(SMTP_SERVER), "");
-    this.sendEmail = PropertiesUtil.toBoolean(props.get(SEND_EMAIL), false);
+    this.smtpPort = OsgiUtil.toInteger(props.get(SMTP_PORT), 25);
+    this.smtpServer = OsgiUtil.toString(props.get(SMTP_SERVER), "");
+    this.sendEmail = OsgiUtil.toBoolean(props.get(SEND_EMAIL), false);
   }
 
   @SuppressWarnings({"UnusedParameters"})
