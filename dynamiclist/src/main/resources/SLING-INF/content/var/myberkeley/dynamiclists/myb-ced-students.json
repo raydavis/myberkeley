@@ -3,20 +3,12 @@
   "myb-context": "myb-ced-students",
   "myb-clauses": [
     "/colleges/ENV DSGN/standings/undergrad",
-    "/colleges/ENV DSGN/standings/undergrad/majors/ARCHITECTURE",
-    "/colleges/ENV DSGN/standings/undergrad/majors/LANDSCAPE ARCH",
-    "/colleges/ENV DSGN/standings/undergrad/majors/INDIVIDUAL",
-    "/colleges/ENV DSGN/standings/undergrad/majors/LIMITED",
-    "/colleges/ENV DSGN/standings/undergrad/majors/URBAN STUDIES",
-    "/colleges/ENV DSGN/standings/undergrad/majors/DOUBLE",
+    "/colleges/ENV DSGN/standings/undergrad/majors/*",
     "/colleges/ENV DSGN/standings/grad",
-    "/colleges/ENV DSGN/standings/grad/programs/ARCHITECTURE",
-    "/colleges/ENV DSGN/standings/grad/programs/CITY REGIONAL PLAN",
-    "/colleges/ENV DSGN/standings/grad/programs/DESIGN",
-    "/colleges/ENV DSGN/standings/grad/programs/LIMITED",
-    "/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN",
-    "/colleges/ENV DSGN/standings/grad/programs/URBAN DESIGN",
-    "/colleges/ENV DSGN/standings/grad/programs/DOUBLE"
+    "/colleges/ENV DSGN/standings/grad/programs/*",
+  ],
+  "myb-filters": [
+    "/student/*"
   ],
   "security:principals" : [
     {

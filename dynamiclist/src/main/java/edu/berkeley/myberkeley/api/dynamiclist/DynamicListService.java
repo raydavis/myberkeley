@@ -37,6 +37,10 @@ public interface DynamicListService {
   public static final String DYNAMIC_LIST_CONTEXT_PROP = "myb-context";
   public static final String DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP = "myb-demographics";
   public static final String DYNAMIC_LIST_CONTEXT_CLAUSES_PROP = "myb-clauses";
+  public static final String DYNAMIC_LIST_CONTEXT_FILTERS_PROP = "myb-filters";
+  public static final String DYNAMIC_LIST_CONTEXT_WILDCARD = "*";
+  public static final String DYNAMIC_LIST_STORE_CONTEXT_PROP = "context";
+  public static final String DYNAMIC_LIST_STORE_CRITERIA_PROP = "filter";
 
   Collection<String> getUserIdsForCriteria(DynamicListContext context, String criteriaJson);
 

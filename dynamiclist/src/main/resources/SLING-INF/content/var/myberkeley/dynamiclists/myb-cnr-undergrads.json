@@ -3,22 +3,10 @@
   "myb-context": "myb-cnr-undergrads",
   "myb-clauses": [
     "/colleges/NAT RES/standings/undergrad",
-    "/colleges/NAT RES/standings/undergrad/majors/AGR & RES ECON",
-    "/colleges/NAT RES/standings/undergrad/majors/CONSERV&RSRC STUDIES",
-    "/colleges/NAT RES/standings/undergrad/majors/DOUBLE",
-    "/colleges/NAT RES/standings/undergrad/majors/ENV ECON & POLICY",
-    "/colleges/NAT RES/standings/undergrad/majors/ENVIR SCIENCES",
-    "/colleges/NAT RES/standings/undergrad/majors/FOREST & NATURAL RES",
-    "/colleges/NAT RES/standings/undergrad/majors/GENETICS & PLANT BIO",
-    "/colleges/NAT RES/standings/undergrad/majors/MICROBIAL BIOLOGY",
-    "/colleges/NAT RES/standings/undergrad/majors/MOL ENV BIOLOGY",
-    "/colleges/NAT RES/standings/undergrad/majors/MOLECULAR TOXICOLOGY",
-    "/colleges/NAT RES/standings/undergrad/majors/NUTR SCI-DIETETICS",
-    "/colleges/NAT RES/standings/undergrad/majors/NUTR SCI-PHYS & MET",
-    "/colleges/NAT RES/standings/undergrad/majors/NUTRITION SCIENCE",
-    "/colleges/NAT RES/standings/undergrad/majors/SOCIETY&ENVIRONMENT",
-    "/colleges/NAT RES/standings/undergrad/majors/UNDECLARED",
-    "/colleges/NAT RES/standings/undergrad/majors/VISTOR-NON-UC CAMPUS"
+    "/colleges/NAT RES/standings/undergrad/majors/*",
+  ],
+  "myb-filters": [
+    "/student/*"
   ],
   "security:principals" : [
     {

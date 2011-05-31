@@ -1,4 +1,5 @@
 /*
+
  * Licensed to the Sakai Foundation (SF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -16,6 +17,8 @@
  * specific language governing permissions and limitations under the License.
  */
 package edu.berkeley.myberkeley.dynamiclist;
+
+import com.google.common.collect.ImmutableMap;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
@@ -47,7 +50,10 @@ import java.net.URLDecoder;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
@@ -62,6 +68,13 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
   // Eventually we'll likely replace this Solr implementation by a Sparse find
   // or a straightforward SQL query against the source DB.
   private static final Integer SOLR_PAGE_SIZE = 20000;
+
+  private static final Map<String, String> QUERY_TO_CONNECTORS_MAP = ImmutableMap.of(
+      "AND", "AND",
+      "OR", "OR",
+      "ALL", "AND",
+      "ANY", "OR"
+  );
 
   @Reference
   private SolrServerService solrSearchService;
@@ -106,8 +119,8 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
 
   public Collection<String> getUserIdsForNode(Content list, Session session) throws StorageClientException,
           AccessDeniedException, RepositoryException {
-    String criteria = (String) list.getProperty("filter");
-    String contextName = (String) list.getProperty("context");
+    String criteria = (String) list.getProperty(DynamicListService.DYNAMIC_LIST_STORE_CRITERIA_PROP);
+    String contextName = (String) list.getProperty(DynamicListService.DYNAMIC_LIST_STORE_CONTEXT_PROP);
     javax.jcr.Session jcrSession = null;
 
     try {
@@ -122,39 +135,65 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
     }
   }
 
-  private StringBuilder appendClause(DynamicListContext context, Object jsonVal, StringBuilder sb, String connector)
-          throws AccessControlException, JSONException {
+  private StringBuilder appendClause(DynamicListContext context, Object jsonVal, StringBuilder sb,
+      String connector, boolean isFilterClause) throws AccessControlException, JSONException {
     if (jsonVal instanceof String) {
       String match = (String) jsonVal;
-      if (!context.getAllowedClauses().contains(match)) {
+      LOGGER.debug("appendClause: match='" + match + "', sb='" + sb.toString() + "', connector='" + connector + "'");
+      if ((!isFilterClause && !context.isClauseAllowed(match)) ||
+          (isFilterClause && !context.isFilterAllowed(match))) {
         throw new AccessControlException("Allowed criteria for " + context.getContextId() + " do not include " + match);
       }
       sb.append("myb-demographics:\"").append((String) jsonVal).append("\"");
     } else if (jsonVal instanceof JSONObject) {
       JSONObject jsonObj = (JSONObject) jsonVal;
-      if (jsonObj.length() != 1) {
-        throw new JSONException("Each clause must have only one JSON key: " + jsonObj.toString());
+      if ((jsonObj.length() > 2) || (jsonObj.length() < 1)) {
+        throw new JSONException("Each clause must have only one connector and one filter: " + jsonObj.toString());
       }
-      String newConnector = jsonObj.keys().next();
-      if (newConnector.equals("AND") || newConnector.equals("OR")) {
-        JSONArray array = jsonObj.getJSONArray(newConnector);
+      boolean hasFilter = false;
+      String newConnector = null;
+      Iterator<String> keys = jsonObj.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        if ("FILTER".equals(key)) {
+          if (isFilterClause) {
+            throw new JSONException("Filter clauses do not have filters: " + jsonObj.toString());
+          }
+          hasFilter = true;
+        } else {
+          newConnector = key;
+        }
+      }
+      if (hasFilter && newConnector == null) {
+        throw new AccessControlException("Standalone filter specified in " + jsonObj.toString());
+      }
+      if (!QUERY_TO_CONNECTORS_MAP.containsKey(newConnector)) {
+        throw new JSONException("Unknown query connector: " + jsonObj.toString());
+      }
+      if (hasFilter) {
         sb.append("(");
-        appendClause(context, array, sb, newConnector);
+      }
+      Object inner = jsonObj.get(newConnector);
+      appendClause(context, inner, sb, QUERY_TO_CONNECTORS_MAP.get(newConnector), isFilterClause);
+      if (hasFilter) {
+        sb.append(" AND ");
+        Object filter = jsonObj.get("FILTER");
+        appendClause(context, filter, sb, null, true);
         sb.append(")");
-      } else {
-        throw new JSONException("Connector is not AND or OR: " + jsonObj.toString());
       }
     } else if (jsonVal instanceof JSONArray) {
       JSONArray array = (JSONArray) jsonVal;
       if ((array.length() > 0) && (connector == null)) {
         throw new JSONException("No connector specified for array: " + array.toString());
       }
+      sb.append("(");
       for (int i = 0; i < array.length(); i++) {
         if (i > 0) {
           sb.append(" ").append(connector).append(" ");
         }
-        appendClause(context, array.get(i), sb, connector);
+        appendClause(context, array.get(i), sb, connector, isFilterClause);
       }
+      sb.append(")");
     } else {
       throw new JSONException("Could not parse Dynamic List criteria: " + jsonVal);
     }
@@ -174,9 +213,8 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
 
     StringBuilder sb = new StringBuilder();
     sb.append("resourceType:").append(DynamicListService.DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT);
-    sb.append(" AND (");
-    appendClause(context, parsedCriteria, sb, null);
-    sb.append(")");
+    sb.append(" AND ");
+    appendClause(context, parsedCriteria, sb, null, false);
     return sb.toString();
   }
 
