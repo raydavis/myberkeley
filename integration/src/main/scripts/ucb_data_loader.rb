@@ -180,6 +180,7 @@ module MyBerkeleyData
       }
       firstname = user_props['firstName']
       lastname = user_props['lastName']
+      create_bedework_acct(username)
       if (!firstname.nil? and !lastname.nil?)
         data = add_profile_property(user_props, data)
         data[":sakai:pages-template"] = "/var/templates/site/defaultuser"
