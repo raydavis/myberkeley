@@ -39,6 +39,9 @@ module MyBerkeleyData
       @sling.do_login
       @ucb_data_loader = MyBerkeleyData::UcbDataLoader.new(options[:appserver], options[:adminpwd])
 
+      @bedeworkServer = options[:bedeworkServer]
+      @bedeworkPort = options[:bedeworkPort]
+
       ActiveRecord::Base.logger = Logger.new(STDOUT)
       #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
       conn = ActiveRecord::Base.establish_connection(
@@ -210,6 +213,7 @@ module MyBerkeleyData
     def load_user_from_row(person_row)
       props = make_user_props(person_row)
       person_uid = person_row.ldap_uid.to_i.to_s
+      create_bedework_acct(person_uid)
       if (@user_password_key)
         user_password = ucb_data_loader.make_password person_row.person_name, @user_password_key
       else
@@ -264,6 +268,20 @@ module MyBerkeleyData
         end
       end
     end
+
+    def create_bedework_acct(username)
+      # create users on the bedework server.
+      # this will only work if the server has been put into unsecure login mode.
+      if (@bedeworkServer)
+        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
+        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
+          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
+          req.basic_auth username, username
+          response = http.request(req)
+        }
+      end
+    end
+
   end
 
   class Student < ActiveRecord::Base
@@ -313,6 +331,17 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
     opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
       options[:userpwdkey] = pk
     end
+
+    options[:bedeworkServer] = nil
+    opts.on("-bs", "--bedeworkserver [BEDEWORKSERVER]", "Bedework server") do |bs|
+      options[:bedeworkServer] = bs
+    end
+
+    options[:bedeworkPort] = 8080
+    opts.on("-bp", "--bedeworkport [BEDEWORKPORT]", "Bedework server port") do |bp|
+      options[:bedeworkPort] = bp
+    end
+
   end
 
   optparser.parse ARGV
