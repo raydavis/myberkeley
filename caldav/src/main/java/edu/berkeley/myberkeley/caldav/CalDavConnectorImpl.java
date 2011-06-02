@@ -238,12 +238,25 @@ public class CalDavConnectorImpl implements CalDavConnector {
         DavPropertySet propSet = response.getProperties(HttpServletResponse.SC_OK);
         DavProperty etag = propSet.get(DavPropertyName.GETETAG);
         if (etag != null) {
-          return true;
+          DavProperty prop = propSet.get(
+                  CalDavConstants.CALDAV_XML_CALENDAR_DATA, CalDavConstants.CALDAV_NAMESPACE);
+          CalendarBuilder builder = new CalendarBuilder();
+          net.fortuna.ical4j.model.Calendar calendar = builder.build(
+                  new StringReader(prop.getValue().toString()));
+          CalendarWrapper wrapper = new CalendarWrapper(
+                  calendar,
+                  new URI(this.serverRoot, response.getHref(), false),
+                  etag.getValue().toString());
+          if (!wrapper.isCompleted() && !wrapper.isArchived()) {
+            return true;
+          }
         }
       }
 
     } catch (DavException de) {
       throw new CalDavException("Got a webdav exception", de);
+    } catch (ParserException pe) {
+      throw new CalDavException("Invalid calendar data", pe);
     } finally {
       if (report != null) {
         report.releaseConnection();

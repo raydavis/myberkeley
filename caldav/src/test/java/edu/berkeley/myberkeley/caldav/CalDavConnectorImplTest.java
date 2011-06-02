@@ -25,15 +25,23 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
+import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Dur;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.component.VEvent;
+import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
+import net.fortuna.ical4j.model.property.CalScale;
+import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.ProdId;
+import net.fortuna.ical4j.model.property.Status;
 import net.fortuna.ical4j.model.property.Uid;
+import net.fortuna.ical4j.model.property.Version;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.time.DateUtils;
@@ -45,6 +53,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -335,6 +344,59 @@ public class CalDavConnectorImplTest extends CalDavTests {
     try {
       this.adminConnector.putCalendar(calendar);
       assertTrue(this.adminConnector.hasOverdueTasks());
+    } catch (IOException ioe) {
+      LOGGER.error("Trouble contacting server", ioe);
+    }
+  }
+
+  @Test
+  public void hasAPastTaskThatIsCompleted() throws CalDavException {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar calendar = new Calendar();
+    calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    calendar.getProperties().add(Version.VERSION_2_0);
+    calendar.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    calendar.getComponents().add(tz);
+    DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
+    VToDo vtodo = new VToDo(due, due, "foo");
+    vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+    vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vtodo.getProperties().add(Status.VTODO_COMPLETED);
+    calendar.getComponents().add(vtodo);
+    try {
+      this.adminConnector.putCalendar(calendar);
+      assertFalse(this.adminConnector.hasOverdueTasks());
+    } catch (IOException ioe) {
+      LOGGER.error("Trouble contacting server", ioe);
+    }
+  }
+
+
+  @Test
+  public void hasAPastTaskThatIsArchived() throws CalDavException {
+    CalendarBuilder builder = new CalendarBuilder();
+    Calendar calendar = new Calendar();
+    calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
+    calendar.getProperties().add(Version.VERSION_2_0);
+    calendar.getProperties().add(CalScale.GREGORIAN);
+    TimeZoneRegistry registry = builder.getRegistry();
+    VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
+    calendar.getComponents().add(tz);
+    DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
+    VToDo vtodo = new VToDo(due, due, "foo");
+    vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
+    vtodo.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
+            "specified standard 75th column"));
+    vtodo.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
+    calendar.getComponents().add(vtodo);
+    try {
+      this.adminConnector.putCalendar(calendar);
+      assertFalse(this.adminConnector.hasOverdueTasks());
     } catch (IOException ioe) {
       LOGGER.error("Trouble contacting server", ioe);
     }
