@@ -177,7 +177,7 @@ public class SendNotificationsJob implements Job {
       for (String userID : userIDs) {
         boolean needsCalendarEntry;
         try {
-          needsCalendarEntry = recipientToCalendarURIMap.getJSONObject(userID) == null;
+          needsCalendarEntry = recipientToCalendarURIMap.get(userID) == null;
         } catch (JSONException ignored) {
           needsCalendarEntry = true;
         }

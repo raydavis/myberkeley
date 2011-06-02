@@ -65,8 +65,8 @@ import javax.jcr.RepositoryException;
 
 public class SendNotificationsJobTest extends NotificationTests {
 
-  private static final String RECIPIENT_ID = "904715"; 
-  
+  private static final String RECIPIENT_ID = "904715";
+
   private SendNotificationsJob job;
 
   @Mock
@@ -96,7 +96,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService);
 
     Content dynamicList = new Content("/a/path/to/a/dynamic/list", ImmutableMap.of(
-      JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     dynamicList.setProperty("context", "g-ced-students");
     dynamicList.setProperty("filter", "mock filter");
@@ -204,12 +204,25 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(true);
-    Content logContent = new Content("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME,
-            ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                    (Object) RecipientLog.RESOURCETYPE));
-    JSONObject recipMap = new JSONObject();
-    recipMap.put(RECIPIENT_ID, new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    logContent.setProperty(RecipientLog.PROP_RECIPIENT_TO_CALENDAR_URI, recipMap.toString());
+
+
+    Content logContent = mock(Content.class);
+    when(logContent.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME);
+
+    Content subnode = mock(Content.class);
+    when(subnode.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/"
+            + RecipientLog.STORE_NAME + "/" + RecipientLog.SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP);
+    JSONObject calURI = new CalendarURI(new URI("foo", false), new Date()).toJSON();
+    Content recipNode = new Content("a:123456/_myberkeley_notificationstore/notice1/"
+            + RecipientLog.STORE_NAME + "/" + RecipientLog.SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP + "/" + RECIPIENT_ID,
+            ImmutableMap.<String, Object>of(RecipientLog.PROP_CALENDAR_URI, calURI.toString()));
+    ArrayList<Content> recipientNodes = new ArrayList<Content>();
+    recipientNodes.add(recipNode);
+    when(subnode.listChildren()).thenReturn(recipientNodes);
+
+    ArrayList<Content> logSubnodes = new ArrayList<Content>();
+    logSubnodes.add(subnode);
+    when(logContent.listChildren()).thenReturn(logSubnodes);
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
 
     this.job.execute(this.context);

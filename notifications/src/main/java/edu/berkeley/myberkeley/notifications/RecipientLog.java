@@ -118,7 +118,7 @@ public class RecipientLog {
         String recip = iterator.next();
         JSONObject json = this.recipientToCalendarURIMap.getJSONObject(recip);
         String subnodePath = StorageClientUtils.newPath(this.content.getPath(), recip);
-        Content subnode = new Content(subnodePath, ImmutableMap.<String, Object>of(PROP_CALENDAR_URI, (Object) json.toString()));
+        Content subnode = new Content(subnodePath, ImmutableMap.<String, Object>of(PROP_CALENDAR_URI, json.toString()));
         contentManager.update(subnode);
       }
     } catch (JSONException ignored) {
