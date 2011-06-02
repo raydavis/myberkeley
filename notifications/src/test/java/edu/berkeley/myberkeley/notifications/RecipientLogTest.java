@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
@@ -40,6 +41,7 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AclModification;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
 
 import java.io.IOException;
 
@@ -59,12 +61,16 @@ public class RecipientLogTest extends NotificationTests {
   }
 
   @Before
-  public void setup() throws IOException, JSONException, CalDavException, AccessDeniedException, StorageClientException {
+  public void setup() throws IOException, JSONException, CalDavException, AccessDeniedException, StorageClientException, ClassNotFoundException {
+
+    BaseMemoryRepository baseMemoryRepository = new BaseMemoryRepository();
+    Repository repository = baseMemoryRepository.getRepository();
+    this.contentManager = repository.loginAdministrative().getContentManager();
+
+
     when(this.session.getContentManager()).thenReturn(this.contentManager);
     when(this.session.getAccessControlManager()).thenReturn(this.accessControlManager);
-    when(this.contentManager.exists("/notification/path/" + RecipientLog.STORE_NAME)).thenReturn(false);
-    Content content = mock(Content.class);
-    when(this.contentManager.get("/notification/path/" + RecipientLog.STORE_NAME)).thenReturn(content);
+
   }
 
   @Test

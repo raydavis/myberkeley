@@ -38,6 +38,7 @@ import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class RecipientLog {
@@ -47,6 +48,10 @@ public class RecipientLog {
   public static final String STORE_NAME = "recipientlog";
 
   public static final String PROP_RECIPIENT_TO_CALENDAR_URI = "recipientToCalendarURI";
+
+  public static final String PROP_CALENDAR_URI = "calendarURI";
+
+  public static final String SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP = "recipientToCalendarURIMap";
 
   public static final String PROP_EMAIL_MESSAGE_ID = "emailMessageID";
 
@@ -71,14 +76,21 @@ public class RecipientLog {
     }
     this.content = session.getContentManager().get(storePath);
 
-    if (this.content.hasProperty(PROP_RECIPIENT_TO_CALENDAR_URI)) {
-      try {
-        this.recipientToCalendarURIMap = new JSONObject((String) this.content.getProperty(PROP_RECIPIENT_TO_CALENDAR_URI));
-      } catch (JSONException ignored) {
+    this.recipientToCalendarURIMap = new JSONObject();
+    try {
+      for (Content subnode : this.content.listChildren()) {
+        if (SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP.equals(StorageClientUtils.getObjectName(subnode.getPath()))) {
+          for (Content recip : subnode.listChildren()) {
+            String calendarURI = (String) recip.getProperty(PROP_CALENDAR_URI);
+            this.recipientToCalendarURIMap.put(StorageClientUtils.getObjectName(recip.getPath()), calendarURI);
+          }
+          break;
+        }
       }
-    } else {
-      this.recipientToCalendarURIMap = new JSONObject();
+    } catch (JSONException ignored) {
+
     }
+
     if (this.content.hasProperty(PROP_EMAIL_MESSAGE_ID)) {
       this.emailMessageID = (String) this.content.getProperty(PROP_EMAIL_MESSAGE_ID);
     }
@@ -97,7 +109,21 @@ public class RecipientLog {
   }
 
   public void update(ContentManager contentManager) throws AccessDeniedException, StorageClientException {
-    this.content.setProperty(PROP_RECIPIENT_TO_CALENDAR_URI, this.recipientToCalendarURIMap.toString());
+    for (Content oldsubnode : this.content.listChildren()) {
+      contentManager.delete(oldsubnode.getPath());
+    }
+    Iterator<String> iterator = this.recipientToCalendarURIMap.keys();
+    try {
+      while (iterator.hasNext()) {
+        String recip = iterator.next();
+        JSONObject json = this.recipientToCalendarURIMap.getJSONObject(recip);
+        String subnodePath = StorageClientUtils.newPath(this.content.getPath(), recip);
+        Content subnode = new Content(subnodePath, ImmutableMap.<String, Object>of(PROP_CALENDAR_URI, (Object) json.toString()));
+        contentManager.update(subnode);
+      }
+    } catch (JSONException ignored) {
+
+    }
     if (this.emailMessageID != null) {
       this.content.setProperty(PROP_EMAIL_MESSAGE_ID, this.emailMessageID);
     }
