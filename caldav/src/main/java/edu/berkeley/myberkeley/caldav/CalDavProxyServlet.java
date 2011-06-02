@@ -249,8 +249,10 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
         component.getProperties().remove(CalDavConnector.MYBERKELEY_ARCHIVED);
       }
       if (isCompleted) {
-        component.getProperties().remove(Property.STATUS);
-        component.getProperties().add(new Status(Status.COMPLETED));
+        component.getProperties().remove(Status.VTODO_NEEDS_ACTION);
+        component.getProperties().add(Status.VTODO_COMPLETED);
+      } else {
+        component.getProperties().remove(Status.VTODO_COMPLETED);
       }
 
       connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar());
