@@ -133,6 +133,8 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
     Content logContent = mock(Content.class);
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
+    when(logContent.listChildren()).thenReturn(new ArrayList<Content>());
+    when(logContent.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME);
 
     this.job.execute(this.context);
 
@@ -166,10 +168,13 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
 
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
-    Content logContent = new Content("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME,
-            ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-                    (Object) RecipientLog.RESOURCETYPE));
-    logContent.setProperty(RecipientLog.PROP_EMAIL_MESSAGE_ID, "messageID12345");
+
+
+    Content logContent = mock(Content.class);
+    when(logContent.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME);
+    when(logContent.hasProperty(RecipientLog.PROP_EMAIL_MESSAGE_ID)).thenReturn(true);
+    when(logContent.getProperty(RecipientLog.PROP_EMAIL_MESSAGE_ID)).thenReturn("messageID12345");
+    when(logContent.listChildren()).thenReturn(new ArrayList<Content>());
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
 
     this.job.execute(this.context);
