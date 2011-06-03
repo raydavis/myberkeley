@@ -61,9 +61,8 @@ public class RecipientLog {
           throws AccessDeniedException, StorageClientException {
     String storePath = StorageClientUtils.newPath(path, STORE_NAME);
     if (!session.getContentManager().exists(storePath)) {
-      session.getContentManager().update(new Content(storePath, ImmutableMap.of(
-              JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-              (Object) RESOURCETYPE)));
+      session.getContentManager().update(new Content(storePath, ImmutableMap.<String, Object>of(
+              JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESOURCETYPE)));
       List<AclModification> modifications = new ArrayList<AclModification>();
       AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
       AclModification.addAcl(false, Permissions.ALL, Group.EVERYONE, modifications);
@@ -79,7 +78,7 @@ public class RecipientLog {
           this.recipientToCalendarURIMap.put(StorageClientUtils.getObjectName(recip.getPath()), calendarURI);
       }
     } catch (JSONException ignored) {
-
+      // won't ever happen since we're building the json obj ourselves
     }
 
     if (this.content.hasProperty(PROP_EMAIL_MESSAGE_ID)) {
