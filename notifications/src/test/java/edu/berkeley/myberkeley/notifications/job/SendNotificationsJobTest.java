@@ -214,20 +214,13 @@ public class SendNotificationsJobTest extends NotificationTests {
     Content logContent = mock(Content.class);
     when(logContent.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME);
 
-    Content subnode = mock(Content.class);
-    when(subnode.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/"
-            + RecipientLog.STORE_NAME + "/" + RecipientLog.SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP);
     JSONObject calURI = new CalendarURI(new URI("foo", false), new Date()).toJSON();
     Content recipNode = new Content("a:123456/_myberkeley_notificationstore/notice1/"
-            + RecipientLog.STORE_NAME + "/" + RecipientLog.SUBNODE_RECIPIENT_TO_CALENDAR_URI_MAP + "/" + RECIPIENT_ID,
+            + RecipientLog.STORE_NAME + "/" + RECIPIENT_ID,
             ImmutableMap.<String, Object>of(RecipientLog.PROP_CALENDAR_URI, calURI.toString()));
     ArrayList<Content> recipientNodes = new ArrayList<Content>();
     recipientNodes.add(recipNode);
-    when(subnode.listChildren()).thenReturn(recipientNodes);
-
-    ArrayList<Content> logSubnodes = new ArrayList<Content>();
-    logSubnodes.add(subnode);
-    when(logContent.listChildren()).thenReturn(logSubnodes);
+    when(logContent.listChildren()).thenReturn(recipientNodes);
     when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
 
     this.job.execute(this.context);
