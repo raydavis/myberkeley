@@ -43,6 +43,7 @@
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
               <version>${nakamura.version}</version>
+              <startLevel>1</startLevel>
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
