@@ -105,6 +105,9 @@ module MyBerkeleyData
             major_segment = '/standings/undergrad/majors/'
           end
         end
+        if (!person_row.educ_level.nil?)
+          myb_demographics.push("/student/educ_level/#{person_row.educ_level.strip}")
+        end
         if (standing_val.nil?)
           @log.warn("Current student #{person_row.ldap_uid.to_i.to_s} has unrecognized UG_GRAD_FLAG #{person_row.ug_grad_flag}; no demographics")
         else
@@ -174,14 +177,17 @@ module MyBerkeleyData
 
     def select_students_from_colleges(colleges)
       student_rows =  MyBerkeleyData::Student.find_by_sql(
-        "select si.STUDENT_LDAP_UID as LDAP_UID, si.UG_GRAD_FLAG, si.FIRST_NAME, si.LAST_NAME,
-           si.STUDENT_EMAIL_ADDRESS as EMAIL_ADDRESS, si.STU_NAME as PERSON_NAME, si.AFFILIATIONS,
+        "select pi.STUDENT_LDAP_UID as LDAP_UID, pi.UG_GRAD_FLAG, pi.FIRST_NAME, pi.LAST_NAME,
+           pi.STUDENT_EMAIL_ADDRESS as EMAIL_ADDRESS, pi.STU_NAME as PERSON_NAME, pi.AFFILIATIONS,
            sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
            sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
-           sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4
-           from BSPACE_STUDENT_INFO_VW si left join BSPACE_STUDENT_MAJOR_VW sm on si.STUDENT_LDAP_UID = sm.LDAP_UID
-           where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or sm.COLLEGE_ABBR3 in (#{colleges}) or sm.COLLEGE_ABBR4  in (#{colleges}))
-           and si.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
+           sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4,
+           sp.EDUC_LEVEL
+           from BSPACE_STUDENT_MAJOR_VW sm join BSPACE_STUDENT_INFO_VW pi on pi.STUDENT_LDAP_UID = sm.LDAP_UID
+           left join BSPACE_STUDENT_PORTAL_VW sp on pi.STUDENT_LDAP_UID = sp.LDAP_UID
+           where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or 
+             sm.COLLEGE_ABBR3 in (#{colleges}) or sm.COLLEGE_ABBR4  in (#{colleges}))
+           and pi.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
       )
       return student_rows
     end
@@ -190,12 +196,16 @@ module MyBerkeleyData
       # The ID must be numeric.
       if (/^([\d]+)$/ =~ user_id)
         persondata = MyBerkeleyData::Person.find_by_sql(
-          "select pi.LDAP_UID, pi.UG_GRAD_FLAG, pi.FIRST_NAME, pi.LAST_NAME, pi.PERSON_NAME, pi.EMAIL_ADDRESS, pi.AFFILIATIONS,
-             sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
-             sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
-             sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4
-             from BSPACE_PERSON_INFO_VW pi left join BSPACE_STUDENT_MAJOR_VW sm on pi.LDAP_UID = sm.LDAP_UID
-             where pi.LDAP_UID = #{user_id}"
+        "select pi.LDAP_UID, pi.UG_GRAD_FLAG, pi.FIRST_NAME, pi.LAST_NAME,
+           pi.EMAIL_ADDRESS, pi.PERSON_NAME, pi.AFFILIATIONS,
+           sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
+           sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
+           sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4,
+           sp.EDUC_LEVEL
+           from BSPACE_PERSON_INFO_VW pi
+           left join BSPACE_STUDENT_MAJOR_VW sm on pi.LDAP_UID = sm.LDAP_UID
+           left join BSPACE_STUDENT_PORTAL_VW sp on pi.LDAP_UID = sp.LDAP_UID
+           where pi.LDAP_UID = #{user_id}"
         )
         if (!persondata.empty?)
           load_user_from_row(persondata[0])

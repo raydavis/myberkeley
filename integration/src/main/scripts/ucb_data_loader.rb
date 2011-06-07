@@ -34,6 +34,10 @@ module MyBerkeleyData
       "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
       "gradMajors" => [ "AGR & RES ECON", "AGRICULTURAL CHEM", "COMP BIOCHEMISTRY", "ENV SCI POL AND MGMT", "FORESTRY", "PLANT BIOLOGY", "RANGE MANAGEMENT" ]
     }]
+  TEST_EDUC_LEVEL_U = ["Freshman", "Senior", "Sophomore", "Junior"]
+  TEST_EDUC_LEVEL_G = ["Masters", "Adv Doc", "Doctoral"]
+  TEST_DEG_ABBREV_U = ["A.B.", "B.S."]
+  TEST_DEG_ABBREV_G = ["M.A.", "PH.D.", "M.B.A.", "M.S.", "JURIS.D", "M.P.P."]
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
     "test-300852","test-300853","test-300854","test-300855","test-300856","test-300857","test-300858",
     "test-300859","test-300860","test-300861","test-300862","test-300863","test-300864","test-300865",
@@ -147,15 +151,20 @@ module MyBerkeleyData
           user_props['major'] = majors_demog[index % majors_demog.length]
           user_props['myb-demographics'] = [
             "/colleges/#{demog['college']}/standings/undergrad",
-            "/colleges/#{demog['college']}/standings/undergrad/majors/" + user_props['major']
+            "/colleges/#{demog['college']}/standings/undergrad/majors/" + user_props['major'],
+            "/student/educ_level/#{TEST_EDUC_LEVEL_U[index % TEST_EDUC_LEVEL_U.length]}",
+            "/student/deg_abbrev/#{TEST_DEG_ABBREV_U[index % TEST_DEG_ABBREV_U.length]}"
           ]
         else
           user_props['role'] = UG_GRAD_FLAG_MAP[:G]
           majors_demog = demog["gradMajors"]
           user_props['major'] = majors_demog[index % majors_demog.length]
+          deg_abbrev = TEST_DEG_ABBREV_G[index % TEST_DEG_ABBREV_G.length]
           user_props['myb-demographics'] = [
             "/colleges/#{demog['college']}/standings/grad",
-            "/colleges/#{demog['college']}/standings/grad/programs/" + user_props['major']
+            "/colleges/#{demog['college']}/standings/grad/programs/" + user_props['major'],
+            "/student/educ_level/#{TEST_EDUC_LEVEL_G[index % TEST_EDUC_LEVEL_G.length]}",
+            "/student/deg_abbrev/#{deg_abbrev}"
           ]
           if (index == length - 1)
             user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/programs/DOUBLE")
