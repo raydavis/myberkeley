@@ -32,8 +32,8 @@ module MyBerkeleyData
     return make_user_json hits 
   end
   
-  def write_json(json_data, file_name = "json_data.js")
-    json_file = File.new "json_data.js", "w"
+  def write_json(json_data, file_name = "dev_advisers_json.js")
+    json_file = File.new "dev_advisers_json.js", "w"
     json_file.write json_data
   end
   
@@ -57,7 +57,8 @@ module MyBerkeleyData
     ctweney = make_name_filter "Chris", "Tweney"
     susanh = make_name_filter "Susan Janan", "HAGSTROM"
     allison = make_name_filter "Allison", "Bloodworth"
-    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh | romans | ctweney | susanh | allison
+    daphne = make_name_filter "Daphne", "Ogle"
+    return rachael | tonyc | bernie | eli | oliver | ray | johnk | davids | owenm | darlenek | kevinc | gregg | marah | jonh | romans | ctweney | susanh | allison | daphne
   end
   
   def make_students_filter
