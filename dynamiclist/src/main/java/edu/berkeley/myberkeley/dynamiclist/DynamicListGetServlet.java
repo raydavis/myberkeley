@@ -69,7 +69,7 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
         writer.key("numusers");
         Collection<String> users = this.dynamicListService.getUserIdsForNode(list, session);
         writer.value(users.size());
-        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, 1);
+        ExtendedJSONWriter.writeContentTreeToWriter(writer, list, true, 1, false);
         writer.endObject();
       }
 
