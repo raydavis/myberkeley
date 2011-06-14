@@ -48,7 +48,7 @@ public class DynamicListContext {
   }
 
   public DynamicListContext(Node node) throws RepositoryException {
-    this(node.getProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP).getString(),
+    this(node.getName(),
         propertiesToStringSet(node, DynamicListService.DYNAMIC_LIST_CONTEXT_CLAUSES_PROP),
         propertiesToStringSet(node, DynamicListService.DYNAMIC_LIST_CONTEXT_FILTERS_PROP));
   }

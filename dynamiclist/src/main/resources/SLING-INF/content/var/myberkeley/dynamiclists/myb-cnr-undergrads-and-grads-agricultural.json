@@ -1,8 +1,8 @@
 {
   "sling:resourceType": "myberkeley/dynamicListContext",
   "myb-clauses": [
-    "/colleges/NAT RES/standings/undergrad",
-    "/colleges/NAT RES/standings/undergrad/majors/*"
+    "/colleges/NAT RES/standings/undergrad/majors/*",
+    "/colleges/NAT RES/standings/grad/majors/AGR & RES ECON"
   ],
   "myb-filters": [
     "/student/*"

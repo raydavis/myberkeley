@@ -65,8 +65,8 @@ TEST RUN
 # Create a personal demographic profile for a student. This would be done by our data import.
 curl -u admin:admin http://localhost:8080/~300847.myb-demographic.html \
   -F myb-demographics="/colleges/ENV DSGN/standings/grad" \
-  -F myb-demographics="/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN" \
-  -F myb-demographics="/student/degreeProgram/M.S."
+  -F myb-demographics="/colleges/ENV DSGN/standings/grad/majors/LAND ARCH & ENV PLAN" \
+  -F myb-demographics="/student/educ_level/Masters"
 
 # Take a look.
 curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2.json
@@ -76,9 +76,9 @@ curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2
   "_id": "rWSSkanQU5xpozVklih",
   "_lastModifiedBy": "admin",
   "myb-demographics": [
-    "/student/degreeProgram/M.S.",
+    "/student/educ_level/Masters",
     "/colleges/ENV DSGN/standings/grad",
-    "/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN"
+    "/colleges/ENV DSGN/standings/grad/majors/LAND ARCH & ENV PLAN"
   ],
   "_lastModified": 1301009856381,
   "_createdBy": "admin",
@@ -86,7 +86,7 @@ curl -u admin:admin http://localhost:8080/~300847/_myberkeley-demographic.tidy.2
 }
 
 # Here's a sample query, somewhat like what we'd retrieve from a named Dynamic List.
-curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-ced-students.json?criteria={ANY:[\"/colleges/ENV%20DSGN/standings/grad/programs/ARCHITECTURE\",\"/colleges/ENV%20DSGN/standings/grad/programs/LAND%20ARCH%20%26%20ENV%20PLAN\"],FILTER:\"/student/degreeProgram/M.S.\"}"
+curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-ced-students.json?criteria={ANY:[\"/colleges/ENV%20DSGN/standings/grad/majors/ARCHITECTURE\",\"/colleges/ENV%20DSGN/standings/grad/majors/LAND%20ARCH%20%26%20ENV%20PLAN\"],FILTER:\"/student/degreeProgram/M.S.\"}"
 
 # And the results:
 {"count":1}
@@ -99,19 +99,20 @@ curl -g -u admin:admin "http://localhost:8080/var/myberkeley/dynamiclists/myb-ce
 That query wasn't terribly easy to read. Pretty-printed, the "criteria" parameter was:
   {
     ANY: [
-      "/colleges/ENV DSGN/standings/grad/programs/ARCHITECTURE",
-      "/colleges/ENV DSGN/standings/grad/programs/LAND ARCH & ENV PLAN"
+      "/colleges/ENV DSGN/standings/grad/majors/ARCHITECTURE",
+      "/colleges/ENV DSGN/standings/grad/majors/LAND ARCH & ENV PLAN"
     ],
-    FILTER: "/student/degreeProgram/M.S."
+    FILTER: "/student/educ_level/Masters"
   }
-Which means "Get graduate students who have these two majors, and filter the results by
-the student's degree program."
+
+Which means "Get graduate students who have these two majors, and filter out
+all but those in a Masters program."
 
 For all undergrads, the criteria would just be:
   "/colleges/ENV DSGN/standings/undergrad"
 
 To look for CED Juniors majoring in "Architecture" or "Landscape Architecture"
-and M.S. and Ph.D. candidates, the criteria might be:
+and also look for Ph.D. candidates, the criteria might be:
 
   {
     ANY: [
@@ -120,14 +121,14 @@ and M.S. and Ph.D. candidates, the criteria might be:
           "/colleges/ENV DSGN/standings/undergrad/majors/ARCHITECTURE",
           "/colleges/ENV DSGN/standings/undergrad/majors/LANDSCAPE ARCH"
         ],
-        FILTER: "/student/level/Junior"
+        FILTER: "/student/educ_level/Junior"
       },
       {
         ALL: "/colleges/ENV DSGN/standings/grad",
         FILTER: {
           ANY: [
-            "/student/degreeProgram/M.S.",
-            "/student/degreeProgram/PH.D."
+            "/student/educ_level/Doctoral",
+            "/student/educ_level/Adv Doc"
           ]
         }
       }
