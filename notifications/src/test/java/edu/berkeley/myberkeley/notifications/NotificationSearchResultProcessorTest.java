@@ -81,7 +81,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
     ExtendedJSONWriter writer = new ExtendedJSONWriter(w);
 
     Content contentA = new Content("/note/a", null);
-    Notification notificationA = new Notification(new JSONObject(readNotificationFromFile()));
+    Notification notificationA = new CalendarNotification(new JSONObject(readNotificationFromFile()));
     notificationA.toContent("/note", contentA);
 
     when(cm.get("/note/a")).thenReturn(contentA);

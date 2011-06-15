@@ -32,6 +32,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
@@ -113,7 +114,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   @Test
   public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
 
-    Notification notification = new Notification(new JSONObject(readNotificationFromFile()));
+    Notification notification = new CalendarNotification(new JSONObject(readNotificationFromFile()));
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
@@ -128,7 +129,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
-    when(this.job.emailSender.send(Matchers.<Notification>any(), Matchers.<List<String>>any())).thenReturn("12345");
+    when(this.job.emailSender.send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any())).thenReturn("12345");
 
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
     Content logContent = mock(Content.class);
@@ -142,7 +143,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
+    verify(this.job.emailSender).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -150,7 +151,7 @@ public class SendNotificationsJobTest extends NotificationTests {
           JSONException, CalDavException {
 
     JSONObject json = new JSONObject(readNotificationFromFile());
-    Notification notification = new Notification(json);
+    Notification notification = new CalendarNotification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
@@ -183,7 +184,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender, times(0)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
+    verify(this.job.emailSender, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -191,7 +192,7 @@ public class SendNotificationsJobTest extends NotificationTests {
           JSONException, CalDavException {
 
     JSONObject json = new JSONObject(readNotificationFromFile());
-    Notification notification = new Notification(json);
+    Notification notification = new CalendarNotification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
@@ -229,7 +230,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender, times(1)).send(Matchers.<Notification>any(), Matchers.<List<String>>any());
+    verify(this.job.emailSender, times(1)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
 }

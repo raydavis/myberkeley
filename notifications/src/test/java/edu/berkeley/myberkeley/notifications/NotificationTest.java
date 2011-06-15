@@ -39,7 +39,7 @@ public class NotificationTest extends NotificationTests {
   @Test
   public void fromJSON() throws IOException, JSONException, CalDavException {
     String json = readNotificationFromFile();
-    Notification notification = new Notification(new JSONObject(json));
+    Notification notification = new CalendarNotification(new JSONObject(json));
     assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
@@ -49,7 +49,7 @@ public class NotificationTest extends NotificationTests {
   @Test
   public void toContent() throws IOException, JSONException, CalDavException {
     String json = readNotificationFromFile();
-    Notification notification = new Notification(new JSONObject(json));
+    Notification notification = new CalendarNotification(new JSONObject(json));
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
@@ -69,7 +69,7 @@ public class NotificationTest extends NotificationTests {
     JSONObject originalJSON = new JSONObject(readNotificationFromFile());
     JSONObject recipMap = new JSONObject();
     recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    Notification notification = new Notification(originalJSON);
+    Notification notification = new CalendarNotification(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import org.apache.commons.mail.EmailException;
@@ -58,7 +59,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
 
   private NotificationEmailSender sender;
 
-  private Notification notification;
+  private CalendarNotification notification;
 
   @Mock
   private ComponentContext componentContext;
@@ -74,7 +75,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
   public void setup() throws IOException, JSONException, CalDavException {
     this.sender = new NotificationEmailSender();
     this.sender.repository = mock(Repository.class);
-    this.notification = new Notification(new JSONObject(readNotificationFromFile()));
+    this.notification = new CalendarNotification(new JSONObject(readNotificationFromFile()));
 
     this.sender.smtpServer = "localhost";
     this.sender.smtpPort = 25;

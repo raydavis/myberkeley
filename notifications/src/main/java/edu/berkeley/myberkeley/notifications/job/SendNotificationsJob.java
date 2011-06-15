@@ -140,7 +140,7 @@ public class SendNotificationsJob implements Job {
   private void sendNotification(Content result, Session session) throws IOException {
 
     boolean success = false;
-    Notification notification;
+    CalendarNotification notification;
     RecipientLog recipientLog;
 
     try {

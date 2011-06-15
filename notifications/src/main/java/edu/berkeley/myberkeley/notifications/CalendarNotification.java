@@ -21,18 +21,56 @@
 package edu.berkeley.myberkeley.notifications;
 
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 
 public class CalendarNotification extends Notification {
 
+  private CalendarWrapper wrapper;
+
   public CalendarNotification(JSONObject json) throws JSONException, CalDavException {
     super(json);
+    this.wrapper = new CalendarWrapper(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
   }
 
   public CalendarNotification(Content content) throws JSONException, CalDavException {
     super(content);
+    this.wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
   }
 
+  public CalendarWrapper getWrapper() {
+    return this.wrapper;
+  }
+
+  @Override
+  public void toContent(String storePath, Content content) throws JSONException {
+    super.toContent(storePath, content);
+    content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + (this.wrapper != null ? this.wrapper.hashCode() : 0);
+    return result;
+  }
+
+  @SuppressWarnings({"RedundantIfStatement"})
+  @Override
+  public boolean equals(Object o) {
+    if ( this == o ) {
+      return true;
+    }
+    if (o == null || this.getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    CalendarNotification that = (CalendarNotification) o;
+    if (this.wrapper != null ? !this.wrapper.equals(that.wrapper) : that.wrapper != null) return false;
+    return true;
+  }
 }
