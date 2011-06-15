@@ -26,6 +26,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
+import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
 import org.apache.commons.httpclient.HttpStatus;
@@ -143,7 +144,7 @@ public class SendNotificationsJob implements Job {
     RecipientLog recipientLog;
 
     try {
-      notification = new Notification(result);
+      notification = new CalendarNotification(result);
       recipientLog = new RecipientLog(result.getPath(), session);
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);

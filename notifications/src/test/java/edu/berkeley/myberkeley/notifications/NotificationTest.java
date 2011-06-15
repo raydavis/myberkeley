@@ -74,7 +74,7 @@ public class NotificationTest extends NotificationTests {
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
-    Notification notificationFromContent = new Notification(content);
+    Notification notificationFromContent = new CalendarNotification(content);
     assertEquals(notification, notificationFromContent);
 
   }
