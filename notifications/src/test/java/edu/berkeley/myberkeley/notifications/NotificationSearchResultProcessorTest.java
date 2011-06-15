@@ -93,7 +93,6 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
 
     // make sure some key parts of the notification made it into json
     JSONObject json = new JSONObject(s);
-    assertEquals("reminder", json.getString("category"));
     CalendarWrapper wrapper = new CalendarWrapper(json.getJSONObject("calendarWrapper"));
     assertNotNull(wrapper);
     assertTrue(json.getJSONObject("uxState").getBoolean("validated"));

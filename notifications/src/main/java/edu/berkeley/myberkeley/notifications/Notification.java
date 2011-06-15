@@ -21,7 +21,6 @@
 package edu.berkeley.myberkeley.notifications;
 
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
-import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.lite.content.Content;
@@ -48,12 +47,6 @@ public abstract class Notification {
     queue,
     archive,
     trash
-  }
-
-  @SuppressWarnings({"UnusedDeclaration"})
-  public enum CATEGORY {
-    reminder,           // a task or event stored in Bedework
-    message             // a Sakai message (possibly also emailed out)
   }
 
   @SuppressWarnings({"UnusedDeclaration"})
@@ -87,8 +80,6 @@ public abstract class Notification {
 
   private String dynamicListID;
 
-  private CATEGORY category;
-
   private JSONObject uxState;
 
   protected Notification(JSONObject json) throws JSONException, CalDavException {
@@ -96,7 +87,6 @@ public abstract class Notification {
     this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
     this.sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
-    this.category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
 
     // set defaults for optional properties
     SEND_STATE sendState = SEND_STATE.pending;
@@ -126,7 +116,6 @@ public abstract class Notification {
     this.senderID = (String) content.getProperty(JSON_PROPERTIES.senderID.toString());
     this.sendDate = new ISO8601Date((String) content.getProperty(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = (String) content.getProperty(JSON_PROPERTIES.dynamicListID.toString());
-    this.category = CATEGORY.valueOf((String) content.getProperty(JSON_PROPERTIES.category.toString()));
 
     // set defaults for optional properties
     JSONObject uxState = new JSONObject();
@@ -164,10 +153,6 @@ public abstract class Notification {
     return this.dynamicListID;
   }
 
-  public CATEGORY getCategory() {
-    return this.category;
-  }
-
   public JSONObject getUXState() {
     return this.uxState;
   }
@@ -180,7 +165,6 @@ public abstract class Notification {
     content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());
     content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
     content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
-    content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
     content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
   }
 
@@ -205,9 +189,6 @@ public abstract class Notification {
 
     Notification that = (Notification) o;
 
-    if (this.category != that.category) {
-      return false;
-    }
     if (this.dynamicListID != null ? !this.dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null)
       return false;
     if (this.id != null ? !this.id.equals(that.id) : that.id != null) return false;
@@ -228,7 +209,6 @@ public abstract class Notification {
     result = 31 * result + (this.sendState != null ? this.sendState.hashCode() : 0);
     result = 31 * result + (this.messageBox != null ? this.messageBox.hashCode() : 0);
     result = 31 * result + (this.dynamicListID != null ? this.dynamicListID.hashCode() : 0);
-    result = 31 * result + (this.category != null ? this.category.hashCode() : 0);
     result = 31 * result + (this.uxState != null ? this.uxState.hashCode() : 0);
     return result;
   }

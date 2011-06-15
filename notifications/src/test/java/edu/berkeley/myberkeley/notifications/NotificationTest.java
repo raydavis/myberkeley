@@ -42,7 +42,6 @@ public class NotificationTest extends NotificationTests {
     Notification notification = new CalendarNotification(new JSONObject(json));
     assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
-    assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
     assertNotNull(notification.getSenderID());
   }
 
@@ -56,7 +55,6 @@ public class NotificationTest extends NotificationTests {
     notification.toContent("/some", content);
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.pending.toString());
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
-    assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.reminder.toString());
     assertNotNull(notification.getUXState());
     assertNotNull(notification.getUXState().get("eventHour"));
     CalendarWrapper wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
