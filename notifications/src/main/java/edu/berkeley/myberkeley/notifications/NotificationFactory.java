@@ -11,10 +11,12 @@ public class NotificationFactory {
     Notification.TYPE type = Notification.TYPE.valueOf(json.getString(
             Notification.JSON_PROPERTIES.type.toString()));
 
-    if ( Notification.TYPE.calendar.equals(type)) {
+    if (Notification.TYPE.calendar.equals(type)) {
       return new CalendarNotification(json);
     }
-
+    if (Notification.TYPE.message.equals(type)) {
+      return new MessageNotification(json);
+    }
     throw new IllegalArgumentException("Passed json does not contain a supported notification type");
   }
 
@@ -23,10 +25,12 @@ public class NotificationFactory {
             Notification.JSON_PROPERTIES.type.toString()
     ));
 
-    if ( Notification.TYPE.calendar.equals(type)) {
+    if (Notification.TYPE.calendar.equals(type)) {
       return new CalendarNotification(content);
     }
-
+    if (Notification.TYPE.message.equals(type)) {
+      return new MessageNotification(content);
+    }
     throw new IllegalArgumentException("Passed content object does not contain a supported notification type");
   }
 

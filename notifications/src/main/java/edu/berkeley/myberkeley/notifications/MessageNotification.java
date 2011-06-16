@@ -27,14 +27,41 @@ import org.sakaiproject.nakamura.api.lite.content.Content;
 
 public class MessageNotification extends Notification {
 
+  public enum JSON_PROPERTIES {
+    subject,
+    body
+  }
+
+  private String subject;
+
+  private String body;
+
   public MessageNotification(JSONObject json) throws JSONException, CalDavException {
     super(json);
     this.type = TYPE.message;
+    this.subject = json.getString(JSON_PROPERTIES.subject.toString());
+    this.body = json.getString(JSON_PROPERTIES.body.toString());
   }
 
   public MessageNotification(Content content) throws JSONException, CalDavException {
     super(content);
     this.type = TYPE.message;
+    this.subject = (String) content.getProperty(JSON_PROPERTIES.subject.toString());
+    this.body = (String) content.getProperty(JSON_PROPERTIES.body.toString());
   }
 
+  @Override
+  public void toContent(String storePath, Content content) throws JSONException {
+    super.toContent(storePath, content);
+    content.setProperty(JSON_PROPERTIES.subject.toString(), getSubject());
+    content.setProperty(JSON_PROPERTIES.body.toString(), getBody());
+  }
+
+  public String getSubject() {
+    return this.subject;
+  }
+
+  public String getBody() {
+    return this.body;
+  }
 }

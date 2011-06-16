@@ -33,4 +33,9 @@ public abstract class NotificationTests extends Assert {
     return IOUtils.readFully(in, "utf-8");
   }
 
+  public String readMessageNotificationFromFile() throws IOException {
+    InputStream in = getClass().getClassLoader().getResourceAsStream("messageNotification.json");
+    return IOUtils.readFully(in, "utf-8");
+  }
+
 }
