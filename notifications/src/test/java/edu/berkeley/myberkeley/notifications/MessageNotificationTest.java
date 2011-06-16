@@ -57,8 +57,8 @@ public class MessageNotificationTest extends NotificationTests {
     notification.toContent("/some", content);
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.pending.toString());
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
-    assertNotNull(content.getProperty(MessageNotification.JSON_PROPERTIES.body.toString()));
-    assertNotNull(content.getProperty(MessageNotification.JSON_PROPERTIES.subject.toString()));
+    assertEquals(notification.getBody(), content.getProperty(MessageNotification.JSON_PROPERTIES.body.toString()));
+    assertEquals(notification.getSubject(), content.getProperty(MessageNotification.JSON_PROPERTIES.subject.toString()));
 
   }
 
