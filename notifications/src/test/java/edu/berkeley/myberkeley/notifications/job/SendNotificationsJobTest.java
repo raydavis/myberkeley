@@ -114,7 +114,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   @Test
   public void execute() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
 
-    Notification notification = new CalendarNotification(new JSONObject(readNotificationFromFile()));
+    Notification notification = new CalendarNotification(new JSONObject(readCalendarNotificationFromFile()));
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
@@ -150,7 +150,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   public void executeWhenEmailHasAlreadyBeenSent() throws StorageClientException, AccessDeniedException, IOException,
           JSONException, CalDavException {
 
-    JSONObject json = new JSONObject(readNotificationFromFile());
+    JSONObject json = new JSONObject(readCalendarNotificationFromFile());
     Notification notification = new CalendarNotification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(
@@ -191,7 +191,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   public void executeWhenCalendarHasAlreadyBeenSent() throws StorageClientException, AccessDeniedException, IOException,
           JSONException, CalDavException {
 
-    JSONObject json = new JSONObject(readNotificationFromFile());
+    JSONObject json = new JSONObject(readCalendarNotificationFromFile());
     Notification notification = new CalendarNotification(json);
 
     Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.of(

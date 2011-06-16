@@ -36,11 +36,13 @@ public class CalendarNotification extends Notification {
 
   public CalendarNotification(JSONObject json) throws JSONException, CalDavException {
     super(json);
+    this.type = TYPE.calendar;
     this.wrapper = new CalendarWrapper(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
   }
 
   public CalendarNotification(Content content) throws JSONException, CalDavException {
     super(content);
+    this.type = TYPE.calendar;
     this.wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
   }
 

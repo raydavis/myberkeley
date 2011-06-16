@@ -71,6 +71,8 @@ public abstract class Notification {
     uxState
   }
 
+  protected TYPE type;
+
   private UUID id;
 
   private String senderID;
@@ -162,6 +164,7 @@ public abstract class Notification {
 
   public void toContent(String storePath, Content content) throws JSONException {
     content.setProperty("sakai:messagestore", storePath);
+    content.setProperty(JSON_PROPERTIES.type.toString(), this.type.toString());
     content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
     content.setProperty(JSON_PROPERTIES.senderID.toString(), this.getSenderID());
     content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());

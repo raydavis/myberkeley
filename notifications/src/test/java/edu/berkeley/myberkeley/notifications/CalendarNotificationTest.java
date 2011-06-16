@@ -34,12 +34,12 @@ import org.sakaiproject.nakamura.api.lite.content.Content;
 
 import java.io.IOException;
 
-public class NotificationTest extends NotificationTests {
+public class CalendarNotificationTest extends NotificationTests {
 
   @Test
   public void fromJSON() throws IOException, JSONException, CalDavException {
-    String json = readNotificationFromFile();
-    Notification notification = new CalendarNotification(new JSONObject(json));
+    String json = readCalendarNotificationFromFile();
+    Notification notification = NotificationFactory.getFromJSON(new JSONObject(json));
     assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
     assertNotNull(notification.getSenderID());
@@ -47,8 +47,8 @@ public class NotificationTest extends NotificationTests {
 
   @Test
   public void toContent() throws IOException, JSONException, CalDavException {
-    String json = readNotificationFromFile();
-    Notification notification = new CalendarNotification(new JSONObject(json));
+    String json = readCalendarNotificationFromFile();
+    Notification notification = NotificationFactory.getFromJSON(new JSONObject(json));
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
@@ -64,15 +64,15 @@ public class NotificationTest extends NotificationTests {
 
   @Test
   public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException {
-    JSONObject originalJSON = new JSONObject(readNotificationFromFile());
+    JSONObject originalJSON = new JSONObject(readCalendarNotificationFromFile());
     JSONObject recipMap = new JSONObject();
     recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    Notification notification = new CalendarNotification(originalJSON);
+    Notification notification = NotificationFactory.getFromJSON(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
-    Notification notificationFromContent = new CalendarNotification(content);
+    Notification notificationFromContent = NotificationFactory.getFromContent(content);
     assertEquals(notification, notificationFromContent);
 
   }

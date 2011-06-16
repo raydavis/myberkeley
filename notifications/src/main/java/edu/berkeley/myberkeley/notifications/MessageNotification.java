@@ -20,17 +20,21 @@
 
 package edu.berkeley.myberkeley.notifications;
 
-import org.junit.Assert;
-import org.sakaiproject.nakamura.util.IOUtils;
+import edu.berkeley.myberkeley.caldav.api.CalDavException;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
+import org.sakaiproject.nakamura.api.lite.content.Content;
 
-import java.io.IOException;
-import java.io.InputStream;
+public class MessageNotification extends Notification {
 
-public abstract class NotificationTests extends Assert {
+  public MessageNotification(JSONObject json) throws JSONException, CalDavException {
+    super(json);
+    this.type = TYPE.message;
+  }
 
-  public String readCalendarNotificationFromFile() throws IOException {
-    InputStream in = getClass().getClassLoader().getResourceAsStream("calendarNotification.json");
-    return IOUtils.readFully(in, "utf-8");
+  public MessageNotification(Content content) throws JSONException, CalDavException {
+    super(content);
+    this.type = TYPE.message;
   }
 
 }
