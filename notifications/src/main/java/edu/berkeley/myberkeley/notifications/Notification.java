@@ -35,6 +35,11 @@ public abstract class Notification {
   public static final String STORE_RESOURCETYPE = "myberkeley/notificationstore";
   public static final String SEARCH_PROP_NOTIFICATIONSTORE = "_userNotificationPath";
 
+  @SuppressWarnings({"UnusedDeclaration"})
+  public enum TYPE {
+    calendar,
+    message
+  }
 
   public enum SEND_STATE {
     pending,
@@ -51,6 +56,7 @@ public abstract class Notification {
 
   @SuppressWarnings({"UnusedDeclaration"})
   public enum JSON_PROPERTIES {
+    type,
     id,
     senderID,
     sendDate,
@@ -62,10 +68,7 @@ public abstract class Notification {
       }
     },
     dynamicListID,
-    calendarWrapper,
-    category,
-    uxState,
-    calendarURIs
+    uxState
   }
 
   private UUID id;

@@ -30,6 +30,10 @@ public class CalendarNotification extends Notification {
 
   private CalendarWrapper wrapper;
 
+  public enum JSON_PROPERTIES {
+    calendarWrapper
+  }
+
   public CalendarNotification(JSONObject json) throws JSONException, CalDavException {
     super(json);
     this.wrapper = new CalendarWrapper(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
