@@ -64,4 +64,27 @@ public class MessageNotification extends Notification {
   public String getBody() {
     return this.body;
   }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + (this.body == null ? 0 : this.body.hashCode());
+    result = 31 * result + (this.subject == null ? 0 : this.subject.hashCode());
+    return result;
+  }
+
+  @SuppressWarnings({"RedundantIfStatement"})
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+
+    MessageNotification that = (MessageNotification) o;
+
+    if (body != null ? !body.equals(that.body) : that.body != null) return false;
+    if (subject != null ? !subject.equals(that.subject) : that.subject != null) return false;
+
+    return true;
+  }
 }
