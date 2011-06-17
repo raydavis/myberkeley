@@ -8,7 +8,7 @@ do
   {
       "sakai:messagebox":"queue",
       "senderID" : "904715",
-      "type":"calendar",
+      "type":"message",
       "sendDate":"2011-02-02T12:16:59-01:00",
       "sendState":"pending",
       "dynamicListID":"/~904715/private/dynamic_lists/dl-904715-1308350730880",
@@ -18,22 +18,8 @@ do
           "eventMin" : 2,
           "eventAMPM" : 3
       },
-      "calendarWrapper":{
-          "uri":"",
-          "etag":"2011-03-16T12:16:59-07:00",
-          "component":"VTODO",
-          "isRequired":false,
-          "isArchived":false,
-          "isCompleted":false,
-          "icalData":{
-              "DTSTAMP":"2011-03-31T15:15:06-07:00",
-              "DTSTART":"2011-05-05T15:15:06-07:00",
-              "DUE":"2011-05-05T15:15:06-07:00",
-              "SUMMARY":"Task Z",
-              "CATEGORIES":[],
-              "DESCRIPTION":"This is our test task description Z"
-          }
-      }
+      "body":"Message body Z",
+      "subject":"Subject Z"
   }
   '
 
