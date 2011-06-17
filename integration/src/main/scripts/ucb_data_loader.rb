@@ -47,6 +47,9 @@ module MyBerkeleyData
     "test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
     "test-300873","test-300874","test-300875","test-300876","test-300877"]
 
+  # Still needed by dev/lib/myb/myb.api.security.js : security.isUserAnAdviser
+  TEST_ADVISER_GROUPS = ["myb-advisers-ced-students"]
+
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
 
@@ -114,6 +117,9 @@ module MyBerkeleyData
         if (loaded_user)
           TEST_DYNAMIC_LIST_CONTEXTS.each do |context_id|
             add_reader_to_context(loaded_user.name, context_id)
+          end
+          TEST_ADVISER_GROUPS.each do |group_id|
+            add_user_to_group(loaded_user.name, group_id)
           end
           loaded_users << loaded_user
         end

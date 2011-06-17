@@ -1,0 +1,39 @@
+{
+  "sling:resourceType": "myberkeley/dynamicListContext",
+  "myb-context": "myb-ced-students",
+  "myb-clauses": [
+    "/colleges/ENV DSGN/standings/undergrad",
+    "/colleges/ENV DSGN/standings/undergrad/majors/*",
+    "/colleges/ENV DSGN/standings/grad",
+    "/colleges/ENV DSGN/standings/grad/majors/*",
+  ],
+  "myb-filters": [
+    "/student/*"
+  ],
+  "security:principals" : [
+    {
+      "name" : "myb-advisers-ced-students",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-advisers-ced-students",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

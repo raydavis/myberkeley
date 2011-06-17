@@ -7,6 +7,7 @@
     "163402": {
     },
     "6576": {
+      "groups" : ["myb-advisers-ced-students"],
       "contexts" : [ "myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
                      "myb-ced-undergrads-and-grads-limited", "myb-ced-undergrads", "myb-cnr-undergrads-and-grads-agricultural", 
                      "myb-cnr-grads-environmental", "myb-cnr-grads-nutritional", "myb-cnr-grads-plant", "myb-cnr-undergrads"]
@@ -64,6 +65,7 @@
     "80818": {
     },
     "12005": {
+      "groups" : ["myb-advisers-ced-students"],
       "contexts" : ["myb-ced-undergrads-and-grads-limited"]
     },
     "760063": {
