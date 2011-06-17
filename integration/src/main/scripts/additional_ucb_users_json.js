@@ -7,8 +7,9 @@
     "163402": {
     },
     "6576": {
-      "groups" : [ "myb-advisers-ced-students", "myb-advisers-cnr-undergrads", "myb-advisers-cnr-grads-agricultural",
-                   "myb-advisers-cnr-grads-environmental", "myb-advisers-cnr-grads-nutritional", "myb-advisers-cnr-grads-plant"]
+      "contexts" : [ "myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
+                     "myb-ced-undergrads-and-grads-limited", "myb-ced-undergrads", "myb-cnr-undergrads-and-grads-agricultural", 
+                     "myb-cnr-grads-environmental", "myb-cnr-grads-nutritional", "myb-cnr-grads-plant", "myb-cnr-undergrads"]
     },
     "592722": {
     },
@@ -63,26 +64,26 @@
     "80818": {
     },
     "12005": {
-      "groups" : ["myb-advisers-ced-students"]
+      "contexts" : ["myb-ced-undergrads-and-grads-limited"]
     },
     "760063": {
     },
     "871943": {
     },
     "324838": {
-      "groups" : ["myb-advisers-cnr-grads-nutritional"]
+      "contexts" : ["myb-cnr-grads-nutritional"]
     },
     "4790": {
-      "groups" : ["myb-advisers-cnr-grads-environmental"]
+      "contexts" : ["myb-cnr-grads-environmental"]
     },
     "4818": {
-      "groups" : ["myb-advisers-cnr-grads-agricultural"]
+      "contexts" : ["myb-cnr-undergrads-and-grads-agricultural"]
     },
     "233219": {
-      "groups" : ["myb-advisers-cnr-undergrads"]
+      "contexts" : ["myb-cnr-undergrads"]
     },
     "106391": {
-      "groups" : ["myb-advisers-cnr-grads-plant"]
+      "contexts" : ["myb-cnr-grads-plant"]
     }
   }
 }

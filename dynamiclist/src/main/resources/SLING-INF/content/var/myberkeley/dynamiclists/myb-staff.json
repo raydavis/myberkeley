@@ -1,6 +1,5 @@
 {
   "sling:resourceType": "myberkeley/dynamicListContext",
-  "myb-context": "myb-staff",
   "security:principals" : [
     {
       "name" : "myb-staff",

@@ -99,7 +99,7 @@ module MyBerkeleyData
           case person_row.ug_grad_flag.strip
           when 'G'
             standing_val = '/standings/grad'
-            major_segment = '/standings/grad/programs/'
+            major_segment = '/standings/grad/majors/'
           when 'U'
             standing_val = '/standings/undergrad'
             major_segment = '/standings/undergrad/majors/'
@@ -269,6 +269,12 @@ module MyBerkeleyData
           if (!groups.nil?)
             groups.each do |group_id|
               @ucb_data_loader.add_user_to_group(user_id, group_id)
+            end
+          end
+          contexts = user_props["contexts"]
+          if (!contexts.nil?)
+            contexts.each do |context_id|
+              @ucb_data_loader.add_reader_to_context(user_id, context_id)
             end
           end
         end

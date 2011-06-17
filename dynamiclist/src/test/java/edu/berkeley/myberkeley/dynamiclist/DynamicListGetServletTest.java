@@ -103,7 +103,7 @@ public class DynamicListGetServletTest extends Assert {
     when(resolver.adaptTo(javax.jcr.Session.class)).thenReturn(jcrSession);
 
     Node node = mock(Node.class);
-    when(node.getProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP)).thenReturn(new MockProperty(DynamicListService.DYNAMIC_LIST_CONTEXT_PROP));
+    when(node.getName()).thenReturn("test-context");
     when(service.slingRepository.loginAdministrative(null)).thenReturn(jcrSession);
     when(jcrSession.getNode(anyString())).thenReturn(node);
 

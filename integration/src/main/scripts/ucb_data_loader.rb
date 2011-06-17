@@ -23,15 +23,18 @@ module MyBerkeleyData
   ENV_PROD = 'prod'
   
   # Test data for development environments
-  TEST_ADVISER_GROUPS = ["myb-advisers-ced-students", "myb-advisers-cnr-undergrads", "myb-advisers-cnr-grads-agricultural",
-    "myb-advisers-cnr-grads-environmental", "myb-advisers-cnr-grads-nutritional", "myb-advisers-cnr-grads-plant"]
+  TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
+    "myb-ced-undergrads-and-grads-limited", "myb-ced-undergrads", "myb-cnr-undergrads-and-grads-agricultural", 
+    "myb-cnr-grads-environmental", "myb-cnr-grads-nutritional", "myb-cnr-grads-plant", "myb-cnr-undergrads"]
   TEST_DEMOGRAPHICS = [{
       "college" => "ENV DSGN",
       "undergradMajors" => [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED", "LANDSCAPE ARCH", "URBAN STUDIES" ],
       "gradMajors" => [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LAND ARCH & ENV PLAN", "URBAN DESIGN" ]
     }, {
       "college" => "NAT RES",
-      "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
+      "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", 
+        "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", 
+        "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
       "gradMajors" => [ "AGR & RES ECON", "AGRICULTURAL CHEM", "COMP BIOCHEMISTRY", "ENV SCI POL AND MGMT", "FORESTRY", "PLANT BIOLOGY", "RANGE MANAGEMENT" ]
     }]
   TEST_EDUC_LEVEL_U = ["Freshman", "Senior", "Sophomore", "Junior"]
@@ -93,6 +96,14 @@ module MyBerkeleyData
       @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
+    def add_reader_to_context(user_id, context_id)
+      result = @sling.execute_post(@sling.url_for("/var/myberkeley/dynamiclists/#{context_id}.modifyAce.html"), {
+        "principalId" => user_id,
+        "privilege@jcr:read" => "granted"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+    end
+
     def load_dev_advisers
       all_data = JSON.load(File.open "dev_advisers_json.js", "r")
       users = all_data['users']
@@ -101,8 +112,8 @@ module MyBerkeleyData
         loaded_user = load_defined_adviser user
         puts "loaded user: #{loaded_user.inspect}"
         if (loaded_user)
-          TEST_ADVISER_GROUPS.each do |group_id|
-            add_user_to_group(loaded_user.name, group_id)
+          TEST_DYNAMIC_LIST_CONTEXTS.each do |context_id|
+            add_reader_to_context(loaded_user.name, context_id)
           end
           loaded_users << loaded_user
         end
@@ -162,13 +173,13 @@ module MyBerkeleyData
           deg_abbrev = TEST_DEG_ABBREV_G[index % TEST_DEG_ABBREV_G.length]
           user_props['myb-demographics'] = [
             "/colleges/#{demog['college']}/standings/grad",
-            "/colleges/#{demog['college']}/standings/grad/programs/" + user_props['major'],
+            "/colleges/#{demog['college']}/standings/grad/majors/" + user_props['major'],
             "/student/educ_level/#{TEST_EDUC_LEVEL_G[index % TEST_EDUC_LEVEL_G.length]}",
             "/student/deg_abbrev/#{deg_abbrev}"
           ]
           if (index == length - 1)
-            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/programs/DOUBLE")
-            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/programs/PSYCHOLOGY")
+            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/majors/DOUBLE")
+            user_props['myb-demographics'].push("/colleges/#{demog['college']}/standings/grad/majors/PSYCHOLOGY")
             # Basic Profile only handles single-valued string properties
             user_props['major'] = "DOUBLE : " + user_props['major'] + " ; " + "PSYCHOLOGY"
           end

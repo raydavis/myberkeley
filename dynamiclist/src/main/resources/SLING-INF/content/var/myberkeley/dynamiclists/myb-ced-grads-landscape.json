@@ -1,8 +1,9 @@
 {
   "sling:resourceType": "myberkeley/dynamicListContext",
   "myb-clauses": [
-    "/colleges/NAT RES/standings/undergrad",
-    "/colleges/NAT RES/standings/undergrad/majors/*"
+    "/colleges/ENV DSGN/standings/grad/majors/LAND ARCH & ENV PLAN",
+    "/colleges/ENV DSGN/standings/grad/majors/LANDSCAPE ARCH",
+    "/colleges/ENV DSGN/standings/grad/majors/URBAN DESIGN"
   ],
   "myb-filters": [
     "/student/*"
