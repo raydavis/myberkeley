@@ -27,11 +27,12 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.CalendarNotification;
+import edu.berkeley.myberkeley.notifications.MessageNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
+import edu.berkeley.myberkeley.notifications.NotificationFactory;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.sling.commons.json.JSONException;
-import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.jcr.api.SlingRepository;
@@ -140,11 +141,11 @@ public class SendNotificationsJob implements Job {
   private void sendNotification(Content result, Session session) throws IOException {
 
     boolean success = false;
-    CalendarNotification notification;
+    Notification notification;
     RecipientLog recipientLog;
 
     try {
-      notification = new CalendarNotification(result);
+      notification = NotificationFactory.getFromContent(result);
       recipientLog = new RecipientLog(result.getPath(), session);
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
@@ -160,12 +161,10 @@ public class SendNotificationsJob implements Job {
       return;
     }
 
-    JSONObject recipientToCalendarURIMap = recipientLog.getRecipientToCalendarURIMap();
-
     try {
 
       Content dynamicList = session.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
-      if ( dynamicList == null ) {
+      if (dynamicList == null) {
         LOGGER.error("Dynamic list is null for notification at path " + result.getPath()
                 + "; dynamic list path = " + notification.getDynamicListID());
         return;
@@ -174,44 +173,11 @@ public class SendNotificationsJob implements Job {
       Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, session);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
-      // save notification in bedework server
-      for (String userID : userIDs) {
-        boolean needsCalendarEntry;
-        try {
-          needsCalendarEntry = recipientToCalendarURIMap.get(userID) == null;
-        } catch (JSONException ignored) {
-          needsCalendarEntry = true;
-        }
-
-        if (needsCalendarEntry) {
-          CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(userID);
-          notification.getWrapper().generateNewUID();
-          try {
-            CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
-            recipientToCalendarURIMap.put(userID, uri.toJSON());
-          } catch (BadRequestException e) {
-            if (HttpStatus.SC_NOT_FOUND == e.getStatusCode()) {
-              // 404 means user's not in Bedework, skip it and log
-              LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
-            } else {
-              throw e;
-            }
-          }
-        }
+      if (notification instanceof CalendarNotification) {
+        success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
+      } else if ( notification instanceof MessageNotification ) {
+        success = sendMessageNotification(result, (MessageNotification) notification);
       }
-
-      // send email
-      boolean needsEmail = recipientLog.getEmailMessageID() == null;
-      if (needsEmail) {
-        String messageID = this.emailSender.send(notification, userIDs);
-        if (messageID != null) {
-          recipientLog.setEmailMessageID(messageID);
-        }
-      }
-
-      success = true;
-      LOGGER.debug("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
-              + recipientToCalendarURIMap.toString(2));
 
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
@@ -244,4 +210,52 @@ public class SendNotificationsJob implements Job {
 
   }
 
+  private boolean sendCalendarNotification(Content result, CalendarNotification notification, RecipientLog recipientLog, Collection<String> userIDs)
+          throws CalDavException, IOException, JSONException {
+    // save notification in bedework server
+    for (String userID : userIDs) {
+      boolean needsCalendarEntry;
+      try {
+        needsCalendarEntry = recipientLog.getRecipientToCalendarURIMap().get(userID) == null;
+      } catch (JSONException ignored) {
+        needsCalendarEntry = true;
+      }
+
+      if (needsCalendarEntry) {
+        CalDavConnector connector = this.calDavConnectorProvider.getAdminConnector(userID);
+        notification.getWrapper().generateNewUID();
+        try {
+          CalendarURI uri = connector.putCalendar(notification.getWrapper().getCalendar());
+          recipientLog.getRecipientToCalendarURIMap().put(userID, uri.toJSON());
+        } catch (BadRequestException e) {
+          if (HttpStatus.SC_NOT_FOUND == e.getStatusCode()) {
+            // 404 means user's not in Bedework, skip it and log
+            LOGGER.warn("User {} does not have a Bedework account yet, skipping calendar creation", userID);
+          } else {
+            throw e;
+          }
+        }
+      }
+    }
+
+    // send email
+    boolean needsEmail = recipientLog.getEmailMessageID() == null;
+    if (needsEmail) {
+      String messageID = this.emailSender.send(notification, userIDs);
+      if (messageID != null) {
+        recipientLog.setEmailMessageID(messageID);
+      }
+    }
+
+    LOGGER.debug("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+            + recipientLog.getRecipientToCalendarURIMap().toString(2));
+    return true;
+  }
+
+  private boolean sendMessageNotification(Content result, MessageNotification notification) {
+    // deliver notifications as regular sakai messages
+
+    LOGGER.info("Sent MessageNotification; local path " + result.getPath());
+    return true;
+  }
 }
