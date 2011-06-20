@@ -33,6 +33,7 @@ import edu.berkeley.myberkeley.notifications.NotificationFactory;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
 import org.apache.sling.jcr.api.SlingRepository;
@@ -43,6 +44,8 @@ import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.message.LiteMessagingService;
+import org.sakaiproject.nakamura.api.message.MessageConstants;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
@@ -69,13 +72,17 @@ public class SendNotificationsJob implements Job {
 
   final SlingRepository slingRepository;
 
+  final LiteMessagingService messagingService;
+
   public SendNotificationsJob(Repository sparseRepository, SlingRepository slingRepository, NotificationEmailSender emailSender,
-                              CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService) {
+                              CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService,
+                              LiteMessagingService messagingService) {
     this.sparseRepository = sparseRepository;
     this.slingRepository = slingRepository;
     this.emailSender = emailSender;
     this.calDavConnectorProvider = calDavConnectorProvider;
     this.dynamicListService = dynamicListService;
+    this.messagingService = messagingService;
   }
 
   public void execute(JobContext jobContext) {
@@ -175,8 +182,8 @@ public class SendNotificationsJob implements Job {
 
       if (notification instanceof CalendarNotification) {
         success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
-      } else if ( notification instanceof MessageNotification ) {
-        success = sendMessageNotification(result, (MessageNotification) notification);
+      } else if (notification instanceof MessageNotification) {
+        success = sendMessageNotification((MessageNotification) notification, recipientLog, userIDs, session);
       }
 
     } catch (JSONException e) {
@@ -210,8 +217,9 @@ public class SendNotificationsJob implements Job {
 
   }
 
+  @SuppressWarnings({"DuplicateThrows"})
   private boolean sendCalendarNotification(Content result, CalendarNotification notification, RecipientLog recipientLog, Collection<String> userIDs)
-          throws CalDavException, IOException, JSONException {
+          throws BadRequestException, CalDavException, IOException, JSONException {
     // save notification in bedework server
     for (String userID : userIDs) {
       boolean needsCalendarEntry;
@@ -252,10 +260,40 @@ public class SendNotificationsJob implements Job {
     return true;
   }
 
-  private boolean sendMessageNotification(Content result, MessageNotification notification) {
+  private boolean sendMessageNotification(MessageNotification notification, RecipientLog recipientLog, Collection<String> userIDs, Session session) throws JSONException {
     // deliver notifications as regular sakai messages
 
-    LOGGER.info("Sent MessageNotification; local path " + result.getPath());
+    for (String userID : userIDs) {
+      boolean needsMessage;
+      try {
+        needsMessage = recipientLog.getRecipientToCalendarURIMap().get(userID) == null;
+      } catch (JSONException ignored) {
+        needsMessage = true;
+      }
+      if (needsMessage) {
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put("sling:resourceType", "sakai/message");
+        props.put("sakai:category", "message");
+        props.put("_charset_", "utf-8");
+        props.put(MessageConstants.PROP_SAKAI_SENDSTATE, MessageConstants.STATE_PENDING);
+        props.put(MessageConstants.PROP_SAKAI_BODY, notification.getBody());
+        props.put(MessageConstants.PROP_SAKAI_SUBJECT, notification.getSubject());
+        props.put(MessageConstants.PROP_SAKAI_TYPE, MessageConstants.TYPE_INTERNAL);
+        props.put(MessageConstants.PROP_SAKAI_TO, "internal:" + userID);
+        props.put(MessageConstants.PROP_SAKAI_READ, true);
+        props.put(MessageConstants.PROP_SAKAI_MESSAGEBOX, MessageConstants.BOX_OUTBOX);
+        props.put(MessageConstants.PROP_SAKAI_FROM, notification.getSenderID());
+        Content msg = this.messagingService.create(session, props);
+        JSONObject logEntry = new JSONObject();
+        logEntry.put("messagePath", msg.getPath());
+        recipientLog.getRecipientToCalendarURIMap().put(userID, logEntry);
+        LOGGER.debug("Sent MessageNotification to " + userID + "; local path " + msg.getPath());
+      } else {
+        LOGGER.debug("User " + userID + " already received message");
+      }
+
+    }
+
     return true;
   }
 }

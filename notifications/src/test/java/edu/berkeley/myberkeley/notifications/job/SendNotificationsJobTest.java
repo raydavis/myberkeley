@@ -33,6 +33,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.notifications.CalendarNotification;
+import edu.berkeley.myberkeley.notifications.MessageNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import edu.berkeley.myberkeley.notifications.RecipientLog;
@@ -56,6 +57,7 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.message.LiteMessagingService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,8 +95,9 @@ public class SendNotificationsJobTest extends NotificationTests {
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     DynamicListService dynamicListService = mock(DynamicListService.class);
     SlingRepository slingRepository = mock(SlingRepository.class);
+    LiteMessagingService messagingService = mock(LiteMessagingService.class);
 
-    this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService);
+    this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService, messagingService);
 
     Content dynamicList = new Content("/a/path/to/a/dynamic/list", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
@@ -144,6 +147,37 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
     verify(this.job.emailSender).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
+  }
+
+  @Test
+  public void executeMessageSending() throws IOException, JSONException, CalDavException, StorageClientException, AccessDeniedException {
+    Notification notification = new MessageNotification(new JSONObject(readMessageNotificationFromFile()));
+    Content content = new Content("a:123456/_myberkeley_notificationstore/notice1", ImmutableMap.<String, Object>of(
+            JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            Notification.RESOURCETYPE));
+    notification.toContent("/notice1", content);
+    List<Content> results = new ArrayList<Content>();
+    results.add(content);
+    when(this.cm.find(Matchers.<Map<String, Object>>any())).thenReturn(results);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1")).thenReturn(content);
+
+    Content msg = new Content("/admin/outbox", ImmutableMap.<String, Object>of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+            Notification.RESOURCETYPE));
+    when(this.job.messagingService.create(Matchers.<Session>any(), Matchers.<Map<String,Object>>any())).thenReturn(msg);
+
+    when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
+    Content logContent = mock(Content.class);
+    when(this.cm.get("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(logContent);
+    when(logContent.listChildren()).thenReturn(new ArrayList<Content>());
+    when(logContent.getPath()).thenReturn("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME);
+
+    this.job.execute(this.context);
+
+    verify(this.cm).update(content);
+    verify(this.cm).update(logContent);
+    verify(this.adminSession).logout();
+    verify(this.job.messagingService).create(Matchers.<Session>any(), Matchers.<Map<String,Object>>any());
+    verify(this.job.emailSender, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -218,7 +252,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     JSONObject calURI = new CalendarURI(new URI("foo", false), new Date()).toJSON();
     Content recipNode = new Content("a:123456/_myberkeley_notificationstore/notice1/"
             + RecipientLog.STORE_NAME + "/" + RECIPIENT_ID,
-            ImmutableMap.<String, Object>of(RecipientLog.PROP_CALENDAR_URI, calURI.toString()));
+            ImmutableMap.<String, Object>of(RecipientLog.PROP_JSON_DATA, calURI.toString()));
     ArrayList<Content> recipientNodes = new ArrayList<Content>();
     recipientNodes.add(recipNode);
     when(logContent.listChildren()).thenReturn(recipientNodes);

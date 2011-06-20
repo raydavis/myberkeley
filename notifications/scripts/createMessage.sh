@@ -18,8 +18,8 @@ do
           "eventMin" : 2,
           "eventAMPM" : 3
       },
-      "body":"Message body Z",
-      "subject":"Subject Z"
+      "body":"This is our message body Z",
+      "subject":"Clever subject Z"
   }
   '
 

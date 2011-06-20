@@ -31,6 +31,7 @@ import org.apache.sling.commons.scheduler.Scheduler;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.message.LiteMessagingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,9 @@ public class SendNotificationsScheduler {
   @Reference
   protected DynamicListService dynamicListService;
 
+  @Reference
+  protected LiteMessagingService messagingService;
+
   @org.apache.felix.scr.annotations.Property(longValue = 60, label = "Poll Interval Seconds",
           description = "How often to wake up and check for outgoing notifications")
   protected static final String PROP_POLL_INTERVAL_SECONDS = "queuedsender.pollinterval";
@@ -76,7 +80,7 @@ public class SendNotificationsScheduler {
     Long pollInterval = OsgiUtil.toLong(props.get(PROP_POLL_INTERVAL_SECONDS), 60);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
     final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.slingRepository, this.emailSender, this.provider,
-            this.dynamicListService);
+            this.dynamicListService, this.messagingService);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);

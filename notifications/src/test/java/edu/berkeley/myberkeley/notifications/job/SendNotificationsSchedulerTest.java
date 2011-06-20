@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
+import org.sakaiproject.nakamura.api.message.LiteMessagingService;
 
 import java.io.Serializable;
 import java.util.Dictionary;
@@ -59,6 +60,7 @@ public class SendNotificationsSchedulerTest extends NotificationTests {
     this.sender.slingRepository = mock(SlingRepository.class);
     this.sender.scheduler = mock(Scheduler.class);
     this.sender.dynamicListService = mock(DynamicListService.class);
+    this.sender.messagingService = mock(LiteMessagingService.class);
   }
 
   @Test
