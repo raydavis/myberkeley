@@ -46,6 +46,12 @@
               <startLevel>1</startLevel>
             </bundle>
             <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
+              <version>0.10-SNAPSHOT</version>
+              <startLevel>1</startLevel>
+            </bundle>
+            <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.auth.cas</artifactId>
               <version>${nakamura.version}</version>

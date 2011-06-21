@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>edu.berkeley.myberkeley.base</artifactId>
+    <groupId>edu.berkeley.myberkeley</groupId>
+    <version>0.10-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.berkeley.myberkeley</groupId>
+  <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
+  <name>Oracle JDBC bundle</name>
+  <version>0.10-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>com.oracle</groupId>
+      <artifactId>ojdbc5_g</artifactId>
+      <version>11.2.0.2.0</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>
+              oracle.*
+            </Export-Package>
+            <Import-Package>
+              oracle.i18n.text;resolution:=optional,
+              oracle.i18n.text.converter;resolution:=optional,
+              oracle.ons;resolution:=optional,
+              oracle.security.pki;resolution:=optional,
+              oracle.xdb;resolution:=optional,
+              com.sun.security.auth.module;resolution:=optional,
+              sun.security.krb5;resolution:=optional,
+              sun.security.krb5.internal;resolution:=optional,
+              sun.security.util;resolution:=optional,
+              *
+            </Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
