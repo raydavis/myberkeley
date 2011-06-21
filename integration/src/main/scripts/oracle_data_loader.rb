@@ -277,6 +277,11 @@ module MyBerkeleyData
               @ucb_data_loader.add_reader_to_context(user_id, context_id)
             end
           end
+          demographics = user_props["demographics"]
+          if (!demographics.nil?)
+            # WARNING: This will wipe out any existing campus demographics.
+            @ucb_data_loader.apply_demographic(user_id, {"myb-demographics" => demographics})
+          end
         end
       end
     end
