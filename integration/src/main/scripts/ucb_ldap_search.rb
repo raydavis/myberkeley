@@ -32,8 +32,8 @@ module MyBerkeleyData
     return make_user_json hits 
   end
   
-  def write_json(json_data, file_name = "dev_advisers_json.js")
-    json_file = File.new "dev_advisers_json.js", "w"
+  def write_json(json_data, file_name = "json_data.js")
+    json_file = File.new "json_data.js", "w"
     json_file.write json_data
   end
   

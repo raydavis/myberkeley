@@ -26,11 +26,11 @@
     },
     "892685": {
       "lastName": "Shumikhin",
-      "firstName": "Roman v",
+      "firstName": "Roman V",
       "email": "roman@berkeley.edu"
     },
     "3060": {
-      "lastName": "Mcgrath",
+      "lastName": "McGrath",
       "firstName": "Owen",
       "email": "owen@media.berkeley.edu"
     },
@@ -61,7 +61,7 @@
     },
     "271592": {
       "lastName": "King",
-      "firstName": "John f",
+      "firstName": "John F.",
       "email": "johnk@media.berkeley.edu"
     },
     "95509": {
@@ -81,7 +81,7 @@
     },
     "750152": {
       "lastName": "Voytek",
-      "firstName": "Jessica b"
+      "firstName": "Jessica B."
     },
     "764968": {
       "lastName": "Lai",
@@ -123,18 +123,54 @@
     },
     "12005": {
       "lastName": "Hagstrom",
-      "firstName": "Susan janan",
-      "email": "hagstrom@berkeley.edu"
+      "firstName": "Susan Janan",
+      "email": "hagstrom@berkeley.edu",
+      "college" : "College of Environmental Design"
     },
     "760063": {
       "lastName": "Ng",
       "firstName": "Nicole",
       "email": "nicole.ng@berkeley.edu"
     },
+    "871943": {
+        "lastName": "Boo",
+        "firstName": "Carina Geobio",
+        "email": "carinaboo@berkeley.edu"
+    },
     "266945": {
       "lastName": "Ogle",
       "firstName": "Daphne",
       "email": "daphne@media.berkeley.edu"
+    },
+    "324838": {
+        "lastName": "O'Connor",
+        "firstName": "Olga",
+        "email": "olga_oconnor@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "4790": {
+        "lastName": "VALREY",
+        "firstName": "Theodosia",
+        "email": "doty@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "4818": {
+        "lastName": "VAWTER",
+        "firstName": "Gail",
+        "email": "gvawter@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "233219": {
+        "lastName": "JOHNSON",
+        "firstName": "Kimberly",
+        "email": "kcj@berkeley.edu",
+        "college" : "College of Natural Resources"
+    },
+    "106391": {
+        "lastName": "Sanchez",
+        "firstName": "Rocio",
+        "email": "rocio_s@berkeley.edu",
+        "college" : "College of Natural Resources"
     }
   }
 }
