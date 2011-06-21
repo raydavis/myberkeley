@@ -11,15 +11,15 @@ do
       "type":"message",
       "sendDate":"2011-02-02T12:16:59-01:00",
       "sendState":"pending",
-      "dynamicListID":"/~904715/private/dynamic_lists/dl-904715-1308350730880",
+      "dynamicListID":"/~904715/private/dynamic_lists/dl-904715-1308676450054",
       "uxState" : {
           "validated" : true,
           "eventHour" : 1,
           "eventMin" : 2,
           "eventAMPM" : 3
       },
-      "body":"This is our message body Z",
-      "subject":"Clever subject Z"
+      "body":"A surpassingly clever message body Z",
+      "subject":"Another interesting Tuesday subject Z"
   }
   '
 

@@ -145,15 +145,16 @@ public class SendNotificationsJob implements Job {
     return Notification.MESSAGEBOX.queue.equals(box) && Notification.SEND_STATE.pending.equals(sendState) && now.compareTo(sendDate) >= 0;
   }
 
-  private void sendNotification(Content result, Session session) throws IOException {
+  private void sendNotification(Content result, Session adminSession) throws IOException {
 
     boolean success = false;
     Notification notification;
     RecipientLog recipientLog;
+    Session userSession = null;
 
     try {
       notification = NotificationFactory.getFromContent(result);
-      recipientLog = new RecipientLog(result.getPath(), session);
+      recipientLog = new RecipientLog(result.getPath(), adminSession);
     } catch (JSONException e) {
       LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
       return;
@@ -170,20 +171,21 @@ public class SendNotificationsJob implements Job {
 
     try {
 
-      Content dynamicList = session.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
+      Content dynamicList = adminSession.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
       if (dynamicList == null) {
         LOGGER.error("Dynamic list is null for notification at path " + result.getPath()
                 + "; dynamic list path = " + notification.getDynamicListID());
         return;
       }
 
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, session);
+      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, adminSession);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       if (notification instanceof CalendarNotification) {
         success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
       } else if (notification instanceof MessageNotification) {
-        success = sendMessageNotification((MessageNotification) notification, recipientLog, userIDs, session);
+        userSession = this.sparseRepository.loginAdministrative(notification.getSenderID());
+        success = sendMessageNotification((MessageNotification) notification, recipientLog, userIDs, userSession);
       }
 
     } catch (JSONException e) {
@@ -198,6 +200,14 @@ public class SendNotificationsJob implements Job {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
+    } finally {
+      if (userSession != null) {
+        try {
+          userSession.logout();
+        } catch (ClientPoolException e) {
+          LOGGER.error("SendNotificationsJob failed to log out of user session", e);
+        }
+      }
     }
 
     // mark the notification as archived in our repo if all went well
@@ -207,8 +217,8 @@ public class SendNotificationsJob implements Job {
     }
 
     try {
-      recipientLog.update(session.getContentManager());
-      session.getContentManager().update(result);
+      recipientLog.update(adminSession.getContentManager());
+      adminSession.getContentManager().update(result);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);
     } catch (StorageClientException e) {
