@@ -81,7 +81,7 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
     ExtendedJSONWriter writer = new ExtendedJSONWriter(w);
 
     Content contentA = new Content("/note/a", null);
-    Notification notificationA = new Notification(new JSONObject(readNotificationFromFile()));
+    Notification notificationA = new CalendarNotification(new JSONObject(readCalendarNotificationFromFile()));
     notificationA.toContent("/note", contentA);
 
     when(cm.get("/note/a")).thenReturn(contentA);
@@ -93,7 +93,6 @@ public class NotificationSearchResultProcessorTest extends NotificationTests {
 
     // make sure some key parts of the notification made it into json
     JSONObject json = new JSONObject(s);
-    assertEquals("reminder", json.getString("category"));
     CalendarWrapper wrapper = new CalendarWrapper(json.getJSONObject("calendarWrapper"));
     assertNotNull(wrapper);
     assertTrue(json.getJSONObject("uxState").getBoolean("validated"));

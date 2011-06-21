@@ -34,48 +34,47 @@ import org.sakaiproject.nakamura.api.lite.content.Content;
 
 import java.io.IOException;
 
-public class NotificationTest extends NotificationTests {
+public class CalendarNotificationTest extends NotificationTests {
 
   @Test
   public void fromJSON() throws IOException, JSONException, CalDavException {
-    String json = readNotificationFromFile();
-    Notification notification = new Notification(new JSONObject(json));
+    String json = readCalendarNotificationFromFile();
+    CalendarNotification notification = (CalendarNotification) NotificationFactory.getFromJSON(new JSONObject(json));
     assertEquals(Notification.SEND_STATE.pending, notification.getSendState());
     assertEquals(Notification.MESSAGEBOX.queue, notification.getMessageBox());
-    assertEquals(Notification.CATEGORY.reminder, notification.getCategory());
     assertNotNull(notification.getSenderID());
+    assertNotNull(notification.getUXState());
+    assertNotNull(notification.getUXState().get("eventHour"));
+    assertNotNull(notification.getWrapper());
   }
 
   @Test
   public void toContent() throws IOException, JSONException, CalDavException {
-    String json = readNotificationFromFile();
-    Notification notification = new Notification(new JSONObject(json));
+    String json = readCalendarNotificationFromFile();
+    CalendarNotification notification = (CalendarNotification) NotificationFactory.getFromJSON(new JSONObject(json));
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.sendState.toString()), Notification.SEND_STATE.pending.toString());
     assertEquals(content.getProperty(Notification.JSON_PROPERTIES.messageBox.toString()), Notification.MESSAGEBOX.queue.toString());
-    assertEquals(content.getProperty(Notification.JSON_PROPERTIES.category.toString()), Notification.CATEGORY.reminder.toString());
-    assertNotNull(notification.getUXState());
-    assertNotNull(notification.getUXState().get("eventHour"));
-    CalendarWrapper wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(Notification.JSON_PROPERTIES.calendarWrapper.toString())));
+    assertNotNull(content.getProperty(Notification.JSON_PROPERTIES.uxState.toString()));
+    CalendarWrapper wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(CalendarNotification.JSON_PROPERTIES.calendarWrapper.toString())));
     assertNotNull(wrapper);
     assertTrue(wrapper.isRequired());
   }
 
   @Test
   public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException {
-    JSONObject originalJSON = new JSONObject(readNotificationFromFile());
+    JSONObject originalJSON = new JSONObject(readCalendarNotificationFromFile());
     JSONObject recipMap = new JSONObject();
     recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
-    Notification notification = new Notification(originalJSON);
+    CalendarNotification notification = (CalendarNotification) NotificationFactory.getFromJSON(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
-    Notification notificationFromContent = new Notification(content);
+    Notification notificationFromContent = NotificationFactory.getFromContent(content);
     assertEquals(notification, notificationFromContent);
-
   }
 }

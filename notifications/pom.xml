@@ -95,6 +95,12 @@
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
+            <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
+            <version>0.11-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>

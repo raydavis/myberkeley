@@ -47,7 +47,7 @@ public class RecipientLog {
 
   public static final String STORE_NAME = "recipientlog";
 
-  public static final String PROP_CALENDAR_URI = "calendarURI";
+  public static final String PROP_JSON_DATA = "jsonData";
 
   public static final String PROP_EMAIL_MESSAGE_ID = "emailMessageID";
 
@@ -74,7 +74,7 @@ public class RecipientLog {
     this.recipientToCalendarURIMap = new JSONObject();
     try {
       for (Content recip : this.content.listChildren()) {
-          String calendarURI = (String) recip.getProperty(PROP_CALENDAR_URI);
+          String calendarURI = (String) recip.getProperty(PROP_JSON_DATA);
           this.recipientToCalendarURIMap.put(StorageClientUtils.getObjectName(recip.getPath()), calendarURI);
       }
     } catch (JSONException ignored) {
@@ -108,7 +108,7 @@ public class RecipientLog {
         String recip = iterator.next();
         JSONObject json = this.recipientToCalendarURIMap.getJSONObject(recip);
         String subnodePath = StorageClientUtils.newPath(this.content.getPath(), recip);
-        Content subnode = new Content(subnodePath, ImmutableMap.<String, Object>of(PROP_CALENDAR_URI, json.toString()));
+        Content subnode = new Content(subnodePath, ImmutableMap.<String, Object>of(PROP_JSON_DATA, json.toString()));
         contentManager.update(subnode);
       }
     } catch (JSONException ignored) {

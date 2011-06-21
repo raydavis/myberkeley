@@ -21,7 +21,7 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
-import edu.berkeley.myberkeley.notifications.Notification;
+import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VToDo;
@@ -102,7 +102,7 @@ public class NotificationEmailSender {
     // nothing to do
   }
 
-  public String send(Notification notification, Collection<String> recipientIDs) {
+  public String send(CalendarNotification notification, Collection<String> recipientIDs) {
     Session adminSession = null;
     String messageID = null;
     try {
@@ -166,7 +166,7 @@ public class NotificationEmailSender {
     return null;
   }
 
-  MultiPartEmail buildEmail(Notification notification, List<String> recipientEmails, ContentManager contentManager)
+  MultiPartEmail buildEmail(CalendarNotification notification, List<String> recipientEmails, ContentManager contentManager)
           throws StorageClientException, AccessDeniedException, EmailException, MessagingException {
     MultiPartEmail email = new MultiPartEmail();
 
@@ -210,7 +210,7 @@ public class NotificationEmailSender {
     return email;
   }
 
-  private String getSubjectPrefix(Notification notification) {
+  private String getSubjectPrefix(CalendarNotification notification) {
     if (notification.getWrapper().isRequired()) {
       if (notification.getWrapper().getComponent() instanceof VToDo) {
         return SUBJECT_PREFIX_TASK_REQUIRED;

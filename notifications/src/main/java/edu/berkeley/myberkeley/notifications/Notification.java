@@ -21,7 +21,6 @@
 package edu.berkeley.myberkeley.notifications;
 
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
-import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.sakaiproject.nakamura.api.lite.content.Content;
@@ -29,13 +28,18 @@ import org.sakaiproject.nakamura.util.ISO8601Date;
 
 import java.util.UUID;
 
-public class Notification {
+public abstract class Notification {
 
   public static final String RESOURCETYPE = "myberkeley/notification";
   public static final String STORE_NAME = "_myberkeley_notificationstore";
   public static final String STORE_RESOURCETYPE = "myberkeley/notificationstore";
   public static final String SEARCH_PROP_NOTIFICATIONSTORE = "_userNotificationPath";
 
+  @SuppressWarnings({"UnusedDeclaration"})
+  public enum TYPE {
+    calendar,
+    message
+  }
 
   public enum SEND_STATE {
     pending,
@@ -51,13 +55,8 @@ public class Notification {
   }
 
   @SuppressWarnings({"UnusedDeclaration"})
-  public enum CATEGORY {
-    reminder,           // a task or event stored in Bedework
-    message             // a Sakai message (possibly also emailed out)
-  }
-
-  @SuppressWarnings({"UnusedDeclaration"})
   public enum JSON_PROPERTIES {
+    type,
     id,
     senderID,
     sendDate,
@@ -69,11 +68,10 @@ public class Notification {
       }
     },
     dynamicListID,
-    calendarWrapper,
-    category,
-    uxState,
-    calendarURIs
+    uxState
   }
+
+  protected TYPE type;
 
   private UUID id;
 
@@ -87,19 +85,13 @@ public class Notification {
 
   private String dynamicListID;
 
-  private CalendarWrapper wrapper;
-
-  private CATEGORY category;
-
   private JSONObject uxState;
 
-  public Notification(JSONObject json) throws JSONException, CalDavException {
+  protected Notification(JSONObject json) throws JSONException, CalDavException {
     this.id = getNotificationID(json);
     this.senderID = json.getString(JSON_PROPERTIES.senderID.toString());
-    this.wrapper = new CalendarWrapper(json.getJSONObject(JSON_PROPERTIES.calendarWrapper.toString()));
     this.sendDate = new ISO8601Date(json.getString(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = json.getString(JSON_PROPERTIES.dynamicListID.toString());
-    this.category = CATEGORY.valueOf(json.getString(JSON_PROPERTIES.category.toString()));
 
     // set defaults for optional properties
     SEND_STATE sendState = SEND_STATE.pending;
@@ -124,13 +116,11 @@ public class Notification {
     this.uxState = uxState;
   }
 
-  public Notification(Content content) throws JSONException, CalDavException {
+  protected Notification(Content content) throws JSONException, CalDavException {
     this.id = UUID.fromString((String) content.getProperty(JSON_PROPERTIES.id.toString()));
     this.senderID = (String) content.getProperty(JSON_PROPERTIES.senderID.toString());
-    this.wrapper = new CalendarWrapper(new JSONObject((String) content.getProperty(JSON_PROPERTIES.calendarWrapper.toString())));
     this.sendDate = new ISO8601Date((String) content.getProperty(JSON_PROPERTIES.sendDate.toString()));
     this.dynamicListID = (String) content.getProperty(JSON_PROPERTIES.dynamicListID.toString());
-    this.category = CATEGORY.valueOf((String) content.getProperty(JSON_PROPERTIES.category.toString()));
 
     // set defaults for optional properties
     JSONObject uxState = new JSONObject();
@@ -168,28 +158,19 @@ public class Notification {
     return this.dynamicListID;
   }
 
-  public CalendarWrapper getWrapper() {
-    return this.wrapper;
-  }
-
-  public CATEGORY getCategory() {
-    return this.category;
-  }
-
   public JSONObject getUXState() {
     return this.uxState;
   }
 
   public void toContent(String storePath, Content content) throws JSONException {
     content.setProperty("sakai:messagestore", storePath);
+    content.setProperty(JSON_PROPERTIES.type.toString(), this.type.toString());
     content.setProperty(JSON_PROPERTIES.id.toString(), this.getId().toString());
     content.setProperty(JSON_PROPERTIES.senderID.toString(), this.getSenderID());
     content.setProperty(JSON_PROPERTIES.sendDate.toString(), this.getSendDate().toString());
     content.setProperty(JSON_PROPERTIES.sendState.toString(), this.getSendState().toString());
     content.setProperty(JSON_PROPERTIES.messageBox.toString(), this.getMessageBox().toString());
     content.setProperty(JSON_PROPERTIES.dynamicListID.toString(), this.getDynamicListID());
-    content.setProperty(JSON_PROPERTIES.calendarWrapper.toString(), this.getWrapper().toJSON().toString());
-    content.setProperty(JSON_PROPERTIES.category.toString(), this.getCategory().toString());
     content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
   }
 
@@ -205,12 +186,15 @@ public class Notification {
   @SuppressWarnings({"RedundantIfStatement"})
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || o.getClass().isAssignableFrom(Notification.class)) {
+      return false;
+    }
 
     Notification that = (Notification) o;
 
-    if (this.category != that.category) return false;
     if (this.dynamicListID != null ? !this.dynamicListID.equals(that.dynamicListID) : that.dynamicListID != null)
       return false;
     if (this.id != null ? !this.id.equals(that.id) : that.id != null) return false;
@@ -218,7 +202,6 @@ public class Notification {
     if (this.messageBox != that.messageBox) return false;
     if (this.sendDate != null ? !this.sendDate.equals(that.sendDate) : that.sendDate != null) return false;
     if (this.sendState != that.sendState) return false;
-    if (this.wrapper != null ? !this.wrapper.equals(that.wrapper) : that.wrapper != null) return false;
     if (this.uxState != null ? !this.uxState.toString().equals(that.uxState.toString()) : that.uxState != null)
       return false;
     return true;
@@ -232,8 +215,6 @@ public class Notification {
     result = 31 * result + (this.sendState != null ? this.sendState.hashCode() : 0);
     result = 31 * result + (this.messageBox != null ? this.messageBox.hashCode() : 0);
     result = 31 * result + (this.dynamicListID != null ? this.dynamicListID.hashCode() : 0);
-    result = 31 * result + (this.wrapper != null ? this.wrapper.hashCode() : 0);
-    result = 31 * result + (this.category != null ? this.category.hashCode() : 0);
     result = 31 * result + (this.uxState != null ? this.uxState.hashCode() : 0);
     return result;
   }

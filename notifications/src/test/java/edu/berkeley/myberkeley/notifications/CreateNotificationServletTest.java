@@ -76,7 +76,7 @@ public class CreateNotificationServletTest extends NotificationTests {
 
   @Test
   public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
-    String json = readNotificationFromFile();
+    String json = readCalendarNotificationFromFile();
     when(this.request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
             new ContainerRequestParameter(json, "utf-8"));
 

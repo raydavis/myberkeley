@@ -28,8 +28,13 @@ import java.io.InputStream;
 
 public abstract class NotificationTests extends Assert {
 
-  public String readNotificationFromFile() throws IOException {
-    InputStream in = getClass().getClassLoader().getResourceAsStream("notification.json");
+  public String readCalendarNotificationFromFile() throws IOException {
+    InputStream in = getClass().getClassLoader().getResourceAsStream("calendarNotification.json");
+    return IOUtils.readFully(in, "utf-8");
+  }
+
+  public String readMessageNotificationFromFile() throws IOException {
+    InputStream in = getClass().getClassLoader().getResourceAsStream("messageNotification.json");
     return IOUtils.readFully(in, "utf-8");
   }
 
