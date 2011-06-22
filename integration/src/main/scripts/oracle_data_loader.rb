@@ -354,12 +354,12 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
     end
 
     options[:bedeworkServer] = nil
-    opts.on("-bs", "--bedeworkserver [BEDEWORKSERVER]", "Bedework server") do |bs|
+    opts.on("--bedeworkserver [BEDEWORKSERVER]", "Bedework server") do |bs|
       options[:bedeworkServer] = bs
     end
 
     options[:bedeworkPort] = 8080
-    opts.on("-bp", "--bedeworkport [BEDEWORKPORT]", "Bedework server port") do |bp|
+    opts.on("--bedeworkport [BEDEWORKPORT]", "Bedework server port") do |bp|
       options[:bedeworkPort] = bp
     end
 
