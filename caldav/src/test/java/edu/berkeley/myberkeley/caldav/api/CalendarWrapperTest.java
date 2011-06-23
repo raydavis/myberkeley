@@ -114,9 +114,13 @@ public class CalendarWrapperTest extends CalDavTests {
   }
 
   @Test
-  public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException {
+  public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException, InterruptedException {
     CalendarWrapper original = getWrapper();
     JSONObject json = original.toJSON();
+    // ical4j sets the DTSTAMP of new Calendar instances to the datetime of the instance's creation.
+    // when deserializing from content we replace that default DTSTAMP with what's in our data. So here
+    // we sleep 1s to test that functionality.
+    Thread.sleep(1000);
     CalendarWrapper deserialized = new CalendarWrapper(json);
     assertEquals(original, deserialized);
     assertEquals(original.hashCode(), deserialized.hashCode());

@@ -35,6 +35,7 @@ import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.DateProperty;
 import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.DtStamp;
 import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Status;
@@ -67,6 +68,7 @@ public class CalendarWrapper implements Serializable {
   }
 
   public enum ICAL_DATA_PROPERTY_NAMES {
+    DTSTAMP,
     DTSTART,
     DUE,
     SUMMARY,
@@ -143,6 +145,24 @@ public class CalendarWrapper implements Serializable {
         this.component = new VToDo(startDate, due, summary);
       } else {
         throw new CalDavException("Unsupported component type " + componentName, null);
+      }
+
+      // ical4j sets the DTSTAMP of new Calendar instances to the datetime of the instance's creation.
+      // when deserializing from content we replace that default DTSTAMP with what's in our data.
+      try {
+        DateTime jsonDtStamp = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTAMP.toString())).getTime());
+
+        int dtStampIndex = 0;
+        for ( int i = 0; i < this.component.getProperties().size(); i++) {
+          Object o = this.getComponent().getProperties().get(i);
+          if ( o instanceof DtStamp ) {
+            dtStampIndex = i;
+            break;
+          }
+        }
+        this.component.getProperties().remove(dtStampIndex);
+        this.component.getProperties().add(dtStampIndex, new DtStamp(jsonDtStamp));
+      } catch (JSONException ignored) {
       }
 
       String uid = UUID.randomUUID().toString();

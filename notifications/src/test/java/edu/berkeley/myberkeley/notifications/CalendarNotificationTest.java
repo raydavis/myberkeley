@@ -65,15 +65,19 @@ public class CalendarNotificationTest extends NotificationTests {
   }
 
   @Test
-  public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException {
+  public void fromJSONToContentAndBackAgain() throws IOException, JSONException, CalDavException, InterruptedException {
     JSONObject originalJSON = new JSONObject(readCalendarNotificationFromFile());
-    JSONObject recipMap = new JSONObject();
-    recipMap.put("904715", new CalendarURI(new URI("foo", false), new Date()).toJSON());
     CalendarNotification notification = (CalendarNotification) NotificationFactory.getFromJSON(originalJSON);
     Content content = new Content("/some/path", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) Notification.RESOURCETYPE));
     notification.toContent("/some", content);
+
+    // ical4j sets the DTSTAMP of new Calendar instances to the datetime of the instance's creation.
+    // when deserializing from content we replace that default DTSTAMP with what's in our data. So here
+    // we sleep 1s to test that functionality.
+    Thread.sleep(1000);
+
     Notification notificationFromContent = NotificationFactory.getFromContent(content);
     assertEquals(notification, notificationFromContent);
   }
