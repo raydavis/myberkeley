@@ -115,7 +115,7 @@ public class NotificationEmailSender {
         LOGGER.info("Sent real email with outgoing message ID = " + messageID);
       } else {
         messageID = "sendEmail is false, email not sent";
-        LOGGER.info("sendEmail is false, not sending mail");
+        LOGGER.info("sendEmail is false, not actually sending mail");
       }
     } catch (AccessDeniedException e) {
       LOGGER.error("NotificationEmailSender failed", e);
@@ -227,11 +227,15 @@ public class NotificationEmailSender {
   }
 
   private void logEmail(MimeMessage mimeMessage) {
-    if (LOGGER.isDebugEnabled() && mimeMessage != null) {
+    if ((!this.sendEmail || LOGGER.isDebugEnabled()) && mimeMessage != null) {
       try {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         mimeMessage.writeTo(new FilterOutputStream(baos));
-        LOGGER.debug("Email content = " + baos.toString());
+        if (this.sendEmail) {
+          LOGGER.debug("Email content = " + baos.toString());
+        } else {
+          LOGGER.info("Email content = " + baos.toString());
+        }
       } catch (IOException e) {
         LOGGER.error("failed to log email", e);
       } catch (MessagingException e) {

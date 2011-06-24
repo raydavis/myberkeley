@@ -130,7 +130,7 @@ public class SendNotificationsJob implements Job {
       resultCount++;
       if (eligibleForSending(result, now)) {
         eligibleCount++;
-        LOGGER.debug("The time has come to send notification at path " + result.getPath());
+        LOGGER.info("The time has come to send notification at path " + result.getPath());
         sendNotification(result, session);
       }
     }
@@ -265,7 +265,7 @@ public class SendNotificationsJob implements Job {
       }
     }
 
-    LOGGER.debug("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+    LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
             + recipientLog.getRecipientToCalendarURIMap().toString(2));
     return true;
   }
