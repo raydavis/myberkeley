@@ -1,7 +1,7 @@
 {
   "sling:resourceType": "myberkeley/dynamicListContext",
   "myb-clauses": [
-    "/colleges/ENV DSGN/*",
+    "/colleges/NAT RES/*"
   ],
   "myb-filters": [
     "/student/*"

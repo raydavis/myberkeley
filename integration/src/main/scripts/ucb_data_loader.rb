@@ -23,7 +23,8 @@ module MyBerkeleyData
   ENV_PROD = 'prod'
   
   # Test data for development environments
-  TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
+  TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-students", "myb-cnr-students",
+    "myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
     "myb-ced-undergrads-and-grads-limited", "myb-ced-undergrads", "myb-cnr-undergrads-and-grads-agricultural", 
     "myb-cnr-grads-environmental", "myb-cnr-grads-nutritional", "myb-cnr-grads-plant", "myb-cnr-undergrads"]
   TEST_DEMOGRAPHICS = [{
@@ -46,9 +47,6 @@ module MyBerkeleyData
     "test-300859","test-300860","test-300861","test-300862","test-300863","test-300864","test-300865",
     "test-300866","test-300867","test-300868","test-300869","test-300870","test-300871","test-300872",
     "test-300873","test-300874","test-300875","test-300876","test-300877"]
-
-  # Still needed by dev/lib/myb/myb.api.security.js : security.isUserAnAdviser
-  TEST_ADVISER_GROUPS = ["myb-advisers-ced-students"]
 
   class UcbDataLoader
     TEST_USER_PREFIX = 'testuser'
@@ -117,9 +115,6 @@ module MyBerkeleyData
         if (loaded_user)
           TEST_DYNAMIC_LIST_CONTEXTS.each do |context_id|
             add_reader_to_context(loaded_user.name, context_id)
-          end
-          TEST_ADVISER_GROUPS.each do |group_id|
-            add_user_to_group(loaded_user.name, group_id)
           end
           loaded_users << loaded_user
         end
