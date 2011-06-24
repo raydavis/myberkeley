@@ -185,7 +185,7 @@ public class SendNotificationsJob implements Job {
         success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
       } else if (notification instanceof MessageNotification) {
         userSession = this.sparseRepository.loginAdministrative(notification.getSenderID());
-        success = sendMessageNotification((MessageNotification) notification, recipientLog, userIDs, userSession);
+        success = sendMessageNotification(result, (MessageNotification) notification, recipientLog, userIDs, userSession);
       }
 
     } catch (JSONException e) {
@@ -265,12 +265,12 @@ public class SendNotificationsJob implements Job {
       }
     }
 
-    LOGGER.info("Successfully sent notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+    LOGGER.info("Successfully sent calendar notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
             + recipientLog.getRecipientToCalendarURIMap().toString(2));
     return true;
   }
 
-  private boolean sendMessageNotification(MessageNotification notification, RecipientLog recipientLog, Collection<String> userIDs, Session session) throws JSONException {
+  private boolean sendMessageNotification(Content result, MessageNotification notification, RecipientLog recipientLog, Collection<String> userIDs, Session session) throws JSONException {
     // deliver notifications as regular sakai messages
 
     for (String userID : userIDs) {
@@ -297,12 +297,11 @@ public class SendNotificationsJob implements Job {
         JSONObject logEntry = new JSONObject();
         logEntry.put("messagePath", msg.getPath());
         recipientLog.getRecipientToCalendarURIMap().put(userID, logEntry);
-        LOGGER.debug("Sent MessageNotification to " + userID + "; local path " + msg.getPath());
-      } else {
-        LOGGER.debug("User " + userID + " already received message");
       }
-
     }
+
+    LOGGER.info("Successfully sent message notification; local path " + result.getPath() + "; recipientToCalendarURIMap = "
+            + recipientLog.getRecipientToCalendarURIMap().toString(2));
 
     return true;
   }
