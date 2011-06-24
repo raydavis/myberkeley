@@ -25,6 +25,7 @@ import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.servlets.OptingServlet;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
@@ -42,7 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 @SlingServlet(extensions = {"json"}, methods = {"GET", "POST"},
         resourceTypes = {DynamicListService.DYNAMIC_LIST_CONTEXT_RT},
         generateComponent = true, generateService = true)
-public class DynamicListQueryServlet extends SlingAllMethodsServlet {
+public class DynamicListQueryServlet extends SlingAllMethodsServlet implements OptingServlet {
   private static final long serialVersionUID = -4638092585830025716L;
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicListQueryServlet.class);
   @Reference
@@ -79,7 +80,7 @@ public class DynamicListQueryServlet extends SlingAllMethodsServlet {
     }
 
     // Get the criteria as a JSON string. This parameter is required!
-    String criteria = request.getRequestParameter("criteria").getString();
+    String criteria = request.getRequestParameter(DynamicListService.DYNAMIC_LIST_STORE_CRITERIA_PROP).getString();
 
     // WARNING: Dynamic List search bypasses normal access restrictions for the user session.
     // The raw user IDs returned by the Dynamic List service must not be included in
@@ -97,6 +98,10 @@ public class DynamicListQueryServlet extends SlingAllMethodsServlet {
       LOGGER.warn(e.getMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create the proper JSON structure.");
     }
+  }
+
+  public boolean accepts(SlingHttpServletRequest request) {
+    return (request.getRequestParameter(DynamicListService.DYNAMIC_LIST_STORE_CRITERIA_PROP) != null);
   }
 
 }
