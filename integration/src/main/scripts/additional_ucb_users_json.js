@@ -105,6 +105,23 @@
     },
     "106391": {
       "contexts" : ["myb-cnr-grads-plant"]
-    }
+    },
+    "8579":  {"contexts": ["myb-ced-undergrads"]},
+    "970218":  {"contexts": ["myb-ced-undergrads"]},
+    "305376":  {"contexts": ["myb-ced-undergrads"]},
+    "246868":  {"contexts": ["myb-ced-undergrads"]},
+    "2527":  {"contexts": ["myb-ced-grads-arch"]},
+    "89651":  {"contexts": ["myb-ced-grads-arch"]},
+    "83436":  {"contexts": ["myb-ced-grads-city"]},
+    "929976":  {"contexts": ["myb-ced-grads-landscape"]},
+    "301787":  {"contexts": ["myb-cnr-undergrads"]},
+    "116972":  {"contexts": ["myb-cnr-undergrads"]},
+    "241104":  {"contexts": ["myb-cnr-undergrads"]},
+    "4818":  {"contexts": ["myb-cnr-undergrads"]},
+    "246872":  {"contexts": ["myb-cnr-undergrads"]},
+    "233219":  {"contexts": ["myb-cnr-undergrads"]},
+    "213201":  {"contexts": ["myb-cnr-undergrads"]},
+    "2491":  {"contexts": ["myb-cnr-undergrads"]},
+    "220352":  {"contexts": ["myb-cnr-undergrads"]}
   }
 }
