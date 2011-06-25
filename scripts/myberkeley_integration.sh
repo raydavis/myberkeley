@@ -26,8 +26,8 @@ echo "trusted.hosts=http://localhost:$PORT" > working/load/org.sakaiproject.naka
 # start up 
 mvn -P runner -Dsling.start -Dsling.port=$PORT verify || { echo "Failed to start sling." ; stopAndExit ; }
 
-# wait a minute so sling can get going
-sleep 60;
+# wait 2 minutes so sling can get going
+sleep 120;
 
 # run myberkeley dataloader
 mvn -Dsling.loaddata -Dsling.port=$PORT -Dloaddata.server=http://localhost:$PORT/ -Dloaddata.password=admin integration-test || { echo "Integration-test failed." ; stopAndExit ; }
