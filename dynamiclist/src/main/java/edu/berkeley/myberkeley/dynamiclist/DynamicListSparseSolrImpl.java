@@ -121,6 +121,12 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
           AccessDeniedException, RepositoryException {
     String criteria = (String) list.getProperty(DynamicListService.DYNAMIC_LIST_STORE_CRITERIA_PROP);
     String contextName = (String) list.getProperty(DynamicListService.DYNAMIC_LIST_STORE_CONTEXT_PROP);
+
+    if ( criteria == null || contextName == null ) {
+      LOGGER.warn("Dynamic list at " + list.getPath() + " does not have context or criteria info, cannot perform search");
+      return new ArrayList<String>(0);
+    }
+
     javax.jcr.Session jcrSession = null;
 
     try {
