@@ -60,7 +60,7 @@ module MyBerkeleyData
       user_props = {}
       user_props['firstName'] = person_row.first_name.strip
       user_props['lastName'] = person_row.last_name.strip
-      user_props['email'] = make_email person_row
+      user_props['email'] = person_row.email_address
       determine_role user_props, person_row
       determine_college user_props, person_row
       determine_major user_props, person_row
@@ -169,15 +169,6 @@ module MyBerkeleyData
       end
     end
 
-    def make_email person_row
-      if (ENV_PROD.eql?@env)
-        email = person_row.email_address
-      elsif #obfuscate the email
-        email = "#{person_row.first_name.gsub(/\s*/,'').downcase}.#{person_row.last_name.gsub(/\s*/,'').downcase}@berkeley.edu"
-      end
-      return email
-    end
-
     def select_students_from_colleges(colleges)
       student_rows =  MyBerkeleyData::Student.find_by_sql(
         "select pi.STUDENT_LDAP_UID as LDAP_UID, pi.UG_GRAD_FLAG, pi.FIRST_NAME, pi.LAST_NAME,
@@ -188,7 +179,7 @@ module MyBerkeleyData
            sp.EDUC_LEVEL
            from BSPACE_STUDENT_MAJOR_VW sm join BSPACE_STUDENT_INFO_VW pi on pi.STUDENT_LDAP_UID = sm.LDAP_UID
            left join BSPACE_STUDENT_PORTAL_VW sp on pi.STUDENT_LDAP_UID = sp.LDAP_UID
-           where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or 
+           where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or
              sm.COLLEGE_ABBR3 in (#{colleges}) or sm.COLLEGE_ABBR4  in (#{colleges}))
            and pi.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
       )
@@ -220,8 +211,11 @@ module MyBerkeleyData
       end
     end
 
-    def load_user_from_row(person_row)
+    def load_user_from_row(person_row, fake_email=false)
       props = make_user_props(person_row)
+      if (fake_email)
+        props['email'] = "#{props['firstName'].gsub(/\s*/,'').downcase}.#{props['lastName'].gsub(/\s*/,'').downcase}@example.edu"
+      end
       person_uid = person_row.ldap_uid.to_i.to_s
       create_bedework_acct(person_uid)
       if (@user_password_key)
@@ -235,12 +229,13 @@ module MyBerkeleyData
       end
       user
     end
-    
+
     def load_all_students
+      fake_email = !(ENV_PROD.eql?@env)
       students = select_students_from_colleges(COLLEGES)
       @log.info("DB returned #{students.length} student records for colleges #{COLLEGES}")
       students.each do |s|
-        load_user_from_row(s)
+        load_user_from_row(s, fake_email)
       end
     end
 
