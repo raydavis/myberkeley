@@ -20,8 +20,8 @@
 
 package edu.berkeley.myberkeley.notifications.job;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
@@ -29,8 +29,11 @@ import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import edu.berkeley.myberkeley.notifications.NotificationTests;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.MultiPartEmail;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,15 +44,20 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
+import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.profile.ProfileService;
 import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import javax.jcr.RepositoryException;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -66,19 +74,36 @@ public class NotificationEmailSenderTest extends NotificationTests {
   @Mock
   private ContentManager contentManager;
 
+  @Mock
+  private Session adminSession;
+
+  @Mock
+  private javax.jcr.Session jcrSession;
+
+  @Mock
+  private ProfileService profileService;
+
+  @Mock
+  AuthorizableManager authMgr;
+
   public NotificationEmailSenderTest() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Before
-  public void setup() throws IOException, JSONException, CalDavException {
+  public void setup() throws IOException, JSONException, CalDavException, RepositoryException, StorageClientException {
     this.sender = new NotificationEmailSender();
     this.sender.repository = mock(Repository.class);
+    this.sender.slingRepository = mock(SlingRepository.class);
+    this.sender.profileService = this.profileService;
     this.notification = new CalendarNotification(new JSONObject(readCalendarNotificationFromFile()));
 
     this.sender.smtpServer = "localhost";
     this.sender.smtpPort = 25;
     this.sender.sendEmail = false;
+
+    when(this.sender.slingRepository.loginAdministrative(null)).thenReturn(this.jcrSession);
+    when(this.adminSession.getAuthorizableManager()).thenReturn(this.authMgr);
   }
 
   @Test
@@ -100,15 +125,14 @@ public class NotificationEmailSenderTest extends NotificationTests {
   }
 
   @Test
-  public void send() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException {
-    Session adminSession = mock(Session.class);
-    when(this.sender.repository.loginAdministrative()).thenReturn(adminSession);
-    when(adminSession.getContentManager()).thenReturn(this.contentManager);
+  public void send() throws StorageClientException, AccessDeniedException, IOException, JSONException, CalDavException, RepositoryException {
+    when(this.sender.repository.loginAdministrative()).thenReturn(this.adminSession);
+    when(this.adminSession.getContentManager()).thenReturn(this.contentManager);
 
-    Content firstRecip = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-            (Object) "user"));
-    firstRecip.setProperty("value", "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(firstRecip);
+    Authorizable senderAuthz = mock(Authorizable.class);
+    ValueMap senderProfileMap = buildProfileMap("chris@media.berkeley.edu");
+    when(this.authMgr.findAuthorizable("904715")).thenReturn(senderAuthz);
+    when(this.profileService.getProfileMap(senderAuthz, this.jcrSession)).thenReturn(senderProfileMap);
 
     Content participant = new Content("/participant1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
@@ -121,24 +145,27 @@ public class NotificationEmailSenderTest extends NotificationTests {
   }
 
   @Test(expected = EmailException.class)
-  public void buildEmailWithBogusSender() throws EmailException, StorageClientException, AccessDeniedException, MessagingException {
+  public void buildEmailWithBogusSender() throws EmailException, StorageClientException, AccessDeniedException, MessagingException, RepositoryException {
     List<String> recips = Arrays.asList("user@foo.com");
-    Content badSender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-            (Object) "user"));
-    badSender.setProperty("value", "not an email");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(badSender);
-    this.sender.buildEmail(this.notification, recips, this.contentManager);
+
+    Authorizable senderAuthz = mock(Authorizable.class);
+    ValueMap senderProfileMap = buildProfileMap("not an email");
+    when(this.authMgr.findAuthorizable("904715")).thenReturn(senderAuthz);
+    when(this.profileService.getProfileMap(senderAuthz, this.jcrSession)).thenReturn(senderProfileMap);
+
+    this.sender.buildEmail(this.notification, recips, this.adminSession, this.jcrSession);
   }
 
   @Test
-  public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException, MessagingException {
+  public void buildEmail() throws EmailException, StorageClientException, AccessDeniedException, MessagingException, RepositoryException {
     List<String> recips = Arrays.asList("joe@media.berkeley.edu", "not.an.email");
-    Content sender = new Content("/user1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-            (Object) "user"));
-    sender.setProperty("value", "chris@media.berkeley.edu");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.EMAIL_NODE_PATH)).thenReturn(sender);
 
-    MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.contentManager);
+    Authorizable senderAuthz = mock(Authorizable.class);
+    ValueMap senderProfileMap = buildProfileMap("chris@media.berkeley.edu");
+    when(this.authMgr.findAuthorizable("904715")).thenReturn(senderAuthz);
+    when(this.profileService.getProfileMap(senderAuthz, this.jcrSession)).thenReturn(senderProfileMap);
+
+    MultiPartEmail email = this.sender.buildEmail(this.notification, recips, this.adminSession, this.jcrSession);
     assertNotNull(email);
     assertEquals("chris@media.berkeley.edu", email.getFromAddress().getAddress());
     boolean senderInBCC = false;
@@ -151,4 +178,15 @@ public class NotificationEmailSenderTest extends NotificationTests {
     assertTrue(senderInBCC);
   }
 
+  private ValueMap buildProfileMap(String emailString) {
+    HashMap<String, Object> profile = new HashMap<String, Object>();
+    HashMap<String, Object> basic = new HashMap<String, Object>();
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    HashMap<String, Object> email = new HashMap<String, Object>();
+    email.put("value", emailString);
+    elements.put("email", email);
+    basic.put("elements", elements);
+    profile.put("basic", basic);
+    return new ValueMapDecorator(profile);
+  }
 }

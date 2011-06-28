@@ -36,7 +36,6 @@ import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.JobContext;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
@@ -70,15 +69,12 @@ public class SendNotificationsJob implements Job {
 
   final DynamicListService dynamicListService;
 
-  final SlingRepository slingRepository;
-
   final LiteMessagingService messagingService;
 
-  public SendNotificationsJob(Repository sparseRepository, SlingRepository slingRepository, NotificationEmailSender emailSender,
+  public SendNotificationsJob(Repository sparseRepository, NotificationEmailSender emailSender,
                               CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService,
                               LiteMessagingService messagingService) {
     this.sparseRepository = sparseRepository;
-    this.slingRepository = slingRepository;
     this.emailSender = emailSender;
     this.calDavConnectorProvider = calDavConnectorProvider;
     this.dynamicListService = dynamicListService;

@@ -43,7 +43,6 @@ import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.commons.scheduler.JobContext;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,10 +93,9 @@ public class SendNotificationsJobTest extends NotificationTests {
     CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
     NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
     DynamicListService dynamicListService = mock(DynamicListService.class);
-    SlingRepository slingRepository = mock(SlingRepository.class);
     LiteMessagingService messagingService = mock(LiteMessagingService.class);
 
-    this.job = new SendNotificationsJob(repo, slingRepository, emailSender, provider, dynamicListService, messagingService);
+    this.job = new SendNotificationsJob(repo, emailSender, provider, dynamicListService, messagingService);
 
     Content dynamicList = new Content("/a/path/to/a/dynamic/list", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,

@@ -28,7 +28,6 @@ import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.commons.scheduler.Job;
 import org.apache.sling.commons.scheduler.Scheduler;
-import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.message.LiteMessagingService;
@@ -50,9 +49,6 @@ public class SendNotificationsScheduler {
 
   @Reference
   protected Repository sparseRepository;
-
-  @Reference
-  protected SlingRepository slingRepository;
 
   @Reference
   protected Scheduler scheduler;
@@ -79,7 +75,7 @@ public class SendNotificationsScheduler {
     Dictionary<?, ?> props = componentContext.getProperties();
     Long pollInterval = OsgiUtil.toLong(props.get(PROP_POLL_INTERVAL_SECONDS), 60);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
-    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.slingRepository, this.emailSender, this.provider,
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.emailSender, this.provider,
             this.dynamicListService, this.messagingService);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");

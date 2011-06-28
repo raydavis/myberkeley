@@ -31,15 +31,20 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.jcr.api.SlingRepository;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.ClientPoolException;
 import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
+import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.profile.ProfileService;
 import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +59,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.Map;
 import javax.activation.DataSource;
+import javax.jcr.RepositoryException;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -71,7 +78,6 @@ public class NotificationEmailSender {
   private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
-  static final String EMAIL_NODE_PATH = "/basic/elements/email";
   static final String MYBERKELEY_PARTICIPANT_NODE_PATH = "/myberkeley/elements/participant";
 
   @Property(value = "localhost", label = "SMTP Server")
@@ -86,7 +92,13 @@ public class NotificationEmailSender {
   boolean sendEmail;
 
   @Reference
+  SlingRepository slingRepository;
+
+  @Reference
   Repository repository;
+
+  @Reference
+  ProfileService profileService;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEmailSender.class);
 
@@ -104,12 +116,13 @@ public class NotificationEmailSender {
 
   public String send(CalendarNotification notification, Collection<String> recipientIDs) {
     Session adminSession = null;
+    javax.jcr.Session slingSession = null;
     String messageID = null;
     try {
       adminSession = this.repository.loginAdministrative();
-      ContentManager contentManager = adminSession.getContentManager();
-      List<String> recipAddresses = getRecipientEmails(recipientIDs, contentManager);
-      MultiPartEmail email = buildEmail(notification, recipAddresses, contentManager);
+      slingSession = this.slingRepository.loginAdministrative(null);
+      List<String> recipAddresses = getRecipientEmails(recipientIDs, adminSession, slingSession);
+      MultiPartEmail email = buildEmail(notification, recipAddresses, adminSession, slingSession);
       if (this.sendEmail && !recipAddresses.isEmpty()) {
         messageID = email.sendMimeMessage();
         LOGGER.info("Sent real email with outgoing message ID = " + messageID);
@@ -125,6 +138,8 @@ public class NotificationEmailSender {
       LOGGER.error("NotificationEmailSender failed", e);
     } catch (MessagingException e) {
       LOGGER.error("NotificationEmailSender failed", e);
+    } catch (RepositoryException e) {
+      LOGGER.error("NotificationEmailSender failed", e);
     } finally {
       if (adminSession != null) {
         try {
@@ -133,15 +148,18 @@ public class NotificationEmailSender {
           LOGGER.error("NotificationEmailSender failed to log out of admin session", e);
         }
       }
+      if (slingSession != null) {
+        slingSession.logout();
+      }
     }
     return messageID;
   }
 
-  private List<String> getRecipientEmails(Collection<String> recipientIDs, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
+  private List<String> getRecipientEmails(Collection<String> recipientIDs, Session sparseSession, javax.jcr.Session jcrSession) throws StorageClientException, AccessDeniedException, RepositoryException {
     List<String> emails = new ArrayList<String>();
     for (String id : recipientIDs) {
-      if (isParticipant(id, contentManager)) {
-        emails.add(userIDToEmail(id, contentManager));
+      if (isParticipant(id, sparseSession.getContentManager())) {
+        emails.add(userIDToEmail(id, sparseSession, jcrSession));
       }
     }
     LOGGER.info("Sending email to the following recipients: " + emails);
@@ -157,22 +175,25 @@ public class NotificationEmailSender {
     return false;
   }
 
-  private String userIDToEmail(String id, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
-    String recipBasicProfilePath = LitePersonalUtils.getProfilePath(id) + EMAIL_NODE_PATH;
-    Content content = contentManager.get(recipBasicProfilePath);
-    if (content != null) {
-      return (String) content.getProperty("value");
-    }
-    return null;
+  private String userIDToEmail(String id, Session sparseSession, javax.jcr.Session jcrSession) throws StorageClientException, AccessDeniedException, RepositoryException {
+    AuthorizableManager authMgr = sparseSession.getAuthorizableManager();
+    Authorizable authz = authMgr.findAuthorizable(id);
+    ValueMap profile = this.profileService.getProfileMap(authz, jcrSession);
+    // TODO we depend heavily on the profile ValueMap structure being correct. we find our email addresses
+    // in the path /profile/basic/elements/email/value . This code will break when we revise our profile structure.
+    Map basic = (Map) profile.get("basic");
+    Map elements = (Map) basic.get("elements");
+    Map email = (Map) elements.get("email");
+    return (String) email.get("value");
   }
 
-  MultiPartEmail buildEmail(CalendarNotification notification, List<String> recipientEmails, ContentManager contentManager)
-          throws StorageClientException, AccessDeniedException, EmailException, MessagingException {
+  MultiPartEmail buildEmail(CalendarNotification notification, List<String> recipientEmails, Session sparseSession, javax.jcr.Session jcrSession)
+          throws StorageClientException, AccessDeniedException, EmailException, MessagingException, RepositoryException {
     MultiPartEmail email = new MultiPartEmail();
 
     // sender
     try {
-      String senderEmail = userIDToEmail(notification.getSenderID(), contentManager);
+      String senderEmail = userIDToEmail(notification.getSenderID(), sparseSession, jcrSession);
       email.setFrom(senderEmail);
       email.addBcc(senderEmail); // advisors get a bcc of the email too
     } catch (EmailException e) {
