@@ -17,25 +17,21 @@
     },
     "3060": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OWEN"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OWEN"]
     },
     "231693": {
     },
     "2040": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OLIVER"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OLIVER"]
     },
     "322279": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ELI"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ELI"]
     },
     "211159": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RAY"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RAY"]
     },
     "208861": {
         "groups" : [ "myb-staff"],
@@ -58,8 +54,7 @@
     },
     "904715": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/CHRIS"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/CHRIS"]
     },
     "675750": {
       "groups" : [ "myb-staff"],
@@ -67,8 +62,7 @@
     },
     "53791": {
       "groups" : [ "myb-staff"],
-      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"],
-      "contexts" : ["myb-ets-test"]
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"]
     },
     "18437": {
     },

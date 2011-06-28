@@ -20,6 +20,12 @@
   "myb-filters": [
     "/student/*"
   ],
+  "security:principals" : [
+    {
+      "name" : "myb-staff",
+      "isgroup" :"true"
+    }
+  ],
   "security:acl" : [
     {
       "principal" : "everyone",
@@ -31,6 +37,12 @@
       "principal" : "anonymous",
       "denied" : [
         "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-staff",
+      "granted" : [
+        "jcr:read"
       ]
     }
   ]
