@@ -132,7 +132,7 @@ module MyBerkeleyData
     end
 
     def make_adviser_props user_props #need to have firstName, lastName and email loaded already
-        user_props['role'] = ['Staff']
+        user_props['role'] = 'Staff'
     end
 
     def load_calnet_test_users
@@ -204,7 +204,6 @@ module MyBerkeleyData
       create_bedework_acct(username)
       if (!firstname.nil? and !lastname.nil?)
         data = add_profile_property(user_props, data)
-        data[":sakai:pages-template"] = "/var/templates/site/defaultuser"
       end
       result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), data)
       if (result.code.to_i > 299)
@@ -225,12 +224,34 @@ module MyBerkeleyData
       BASIC_PROFILE_PROPS.each do |prop|
         post_data[prop] = user_props[prop] if (!user_props[prop].nil?)
       end
+      post_data[":sakai:profile-import"] = getBasicProfileContent(user_props)
       return post_data
     end
 
-    def update_profile_properties(sling, target_user, user_props)
-      data = {}
-      return target_user.update_properties(sling, add_profile_property(user_props, data))
+    def update_profile_properties(sling, username, user_props)
+      data = getBasicProfileContent(user_props)
+      @sling.execute_post("#{@server}~#{username}/public/authprofile", {
+        ":operation" => "import",
+        ":contentType" => "json",
+        ":replace" => "true",
+        ":replaceProperties" => "true",
+        ":content" => getBasicProfileContent(user_props)
+      })
+    end
+
+    def getBasicProfileContent(user_props)
+      basicProps = []
+      BASIC_PROFILE_PROPS.each do |prop|
+        propval = user_props[prop]
+        if (!propval.nil?)
+          # Escape single quotes and backslashes
+          propval = propval.gsub(/\\|'/) { |c| "\\#{c}" }
+          basicProps.push("'#{prop}':{'value':'#{propval}'}")
+        end
+      end
+      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}},'access':'everybody'}}"
+      @log.info("profile string = #{profileContentString}")
+      return profileContentString
     end
 
     def load_user(username, user_props, password=nil)
@@ -250,7 +271,7 @@ module MyBerkeleyData
         else
           target_user = User.new username
         end
-      response = update_profile_properties @sling, target_user, user_props
+      response = update_profile_properties @sling, username, user_props
       if (response.code.to_i > 299)
         @log.error("Could not update user #{username}: #{response.code}, #{response.body}")
         return nil
