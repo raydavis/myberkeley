@@ -21,6 +21,7 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
@@ -95,33 +96,16 @@ public class NotificationEmailSenderTest extends NotificationTests {
     this.sender = new NotificationEmailSender();
     this.sender.repository = mock(Repository.class);
     this.sender.slingRepository = mock(SlingRepository.class);
-    this.sender.profileService = this.profileService;
+    this.sender.emailSender = new EmailSender();
+    this.sender.emailSender.profileService = this.profileService;
     this.notification = new CalendarNotification(new JSONObject(readCalendarNotificationFromFile()));
 
-    this.sender.smtpServer = "localhost";
-    this.sender.smtpPort = 25;
-    this.sender.sendEmail = false;
+    this.sender.emailSender.smtpServer = "localhost";
+    this.sender.emailSender.smtpPort = 25;
+    this.sender.emailSender.sendEmail = false;
 
     when(this.sender.slingRepository.loginAdministrative(null)).thenReturn(this.jcrSession);
     when(this.adminSession.getAuthorizableManager()).thenReturn(this.authMgr);
-  }
-
-  @Test
-  public void activate() throws Exception {
-    Dictionary<String, Object> dictionary = new Hashtable<String, Object>();
-    dictionary.put(NotificationEmailSender.SEND_EMAIL, true);
-    dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
-    dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
-    when(this.componentContext.getProperties()).thenReturn(dictionary);
-    this.sender.activate(this.componentContext);
-    assertTrue(this.sender.sendEmail);
-    assertEquals(this.sender.smtpPort, (Integer) 27);
-    assertEquals(this.sender.smtpServer, "anotherhost");
-  }
-
-  @Test
-  public void deactivate() throws Exception {
-    this.sender.deactivate(this.componentContext);
   }
 
   @Test
