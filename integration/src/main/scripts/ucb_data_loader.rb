@@ -40,6 +40,7 @@ module MyBerkeleyData
     }]
   TEST_EDUC_LEVEL_U = ["Freshman", "Senior", "Sophomore", "Junior"]
   TEST_EDUC_LEVEL_G = ["Masters", "Adv Doc", "Doctoral"]
+  TEST_NEW_TRFR_FLAG = ["N", "N", nil, "Y"]
   TEST_DEG_ABBREV_U = ["A.B.", "B.S."]
   TEST_DEG_ABBREV_G = ["M.A.", "PH.D.", "M.B.A.", "M.S.", "JURIS.D", "M.P.P."]
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
@@ -185,6 +186,8 @@ module MyBerkeleyData
             user_props['major'] = "DOUBLE : " + user_props['major'] + " ; " + "PSYCHOLOGY"
           end
         end
+        trfr = TEST_NEW_TRFR_FLAG[index % TEST_NEW_TRFR_FLAG.length]
+        user_props['myb-demographics'].push("/student/new_trfr_flag/#{trfr}") if (!trfr.nil?)
         return user_props
     end
 

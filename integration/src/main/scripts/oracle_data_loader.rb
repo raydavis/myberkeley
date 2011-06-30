@@ -111,6 +111,9 @@ module MyBerkeleyData
         if (!person_row.educ_level.nil?)
           myb_demographics.push("/student/educ_level/#{person_row.educ_level.strip}")
         end
+        if (!person_row.new_trfr_flag.nil?)
+          myb_demographics.push("/student/new_trfr_flag/#{person_row.new_trfr_flag.strip}")
+        end
         if (standing_val.nil?)
           @log.warn("Current student #{person_row.ldap_uid.to_i.to_s} has unrecognized UG_GRAD_FLAG #{person_row.ug_grad_flag}; no demographics")
         else
@@ -176,9 +179,10 @@ module MyBerkeleyData
            sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
            sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
            sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4,
-           sp.EDUC_LEVEL
+           sp.EDUC_LEVEL, st.NEW_TRFR_FLAG
            from BSPACE_STUDENT_MAJOR_VW sm join BSPACE_STUDENT_INFO_VW pi on pi.STUDENT_LDAP_UID = sm.LDAP_UID
            left join BSPACE_STUDENT_PORTAL_VW sp on pi.STUDENT_LDAP_UID = sp.LDAP_UID
+           left join BSPACE_STUDENT_TERM_VW st on pi.STUDENT_LDAP_UID = st.LDAP_UID
            where (sm.COLLEGE_ABBR in (#{colleges}) or sm.COLLEGE_ABBR2 in (#{colleges}) or
              sm.COLLEGE_ABBR3 in (#{colleges}) or sm.COLLEGE_ABBR4  in (#{colleges}))
            and pi.AFFILIATIONS like '%STUDENT-TYPE-REGISTERED%'"
@@ -195,10 +199,11 @@ module MyBerkeleyData
            sm.MAJOR_NAME, sm.MAJOR_TITLE, sm.COLLEGE_ABBR, sm.MAJOR_NAME2, sm.MAJOR_TITLE2, sm.COLLEGE_ABBR2,
            sm.MAJOR_NAME3, sm.MAJOR_TITLE3, sm.COLLEGE_ABBR3, sm.MAJOR_NAME4, sm.MAJOR_TITLE4, sm.COLLEGE_ABBR4,
            sm.MAJOR_CD, sm.MAJOR_CD2, sm.MAJOR_CD3, sm.MAJOR_CD4,
-           sp.EDUC_LEVEL
+           sp.EDUC_LEVEL, st.NEW_TRFR_FLAG
            from BSPACE_PERSON_INFO_VW pi
            left join BSPACE_STUDENT_MAJOR_VW sm on pi.LDAP_UID = sm.LDAP_UID
            left join BSPACE_STUDENT_PORTAL_VW sp on pi.LDAP_UID = sp.LDAP_UID
+           left join BSPACE_STUDENT_TERM_VW st on pi.LDAP_UID = st.LDAP_UID
            where pi.LDAP_UID = #{user_id}"
         )
         if (!persondata.empty?)
