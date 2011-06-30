@@ -44,12 +44,15 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.Security;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.util.ISO8601Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
@@ -101,12 +104,38 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
       String storePath = StorageClientUtils.newPath(home.getPath(), Notification.STORE_NAME);
       createStoreIfNecessary(session, contentManager, storePath);
 
-      Notification notification = NotificationFactory.getFromJSON(notificationJSON);
-      String notificationPath = StorageClientUtils.newPath(storePath, notification.getId().toString());
-      Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
-      notification.toContent(storePath, notificationContent);
-      contentManager.update(notificationContent);
-      LOGGER.debug("Saved a Notification;  data = {}", notificationContent);
+      Notification.MESSAGEBOX box = Notification.MESSAGEBOX.valueOf(notificationJSON.getString(Notification.JSON_PROPERTIES.messageBox.toString()));
+      if (Notification.MESSAGEBOX.drafts.equals(box)) {
+        // it's a draft, save it as raw JSON
+        UUID id = Notification.getNotificationID(notificationJSON);
+        String draftPath = StorageClientUtils.newPath(storePath, id.toString());
+        Content draftContent = createNotificationIfNecessary(contentManager, draftPath);
+        Iterator<String> keys = notificationJSON.keys();
+        while (keys.hasNext()) {
+          String key = keys.next();
+          Object val = notificationJSON.get(key);
+          if (val != null) {
+            try {
+              ISO8601Date date = new ISO8601Date(val.toString());
+              draftContent.setProperty(key, date.toString());
+            } catch (IllegalArgumentException ignored) {
+              draftContent.setProperty(key, val.toString());
+            }
+          }
+        }
+        draftContent.setProperty(Notification.JSON_PROPERTIES.id.toString(), id.toString());
+        draftContent.setProperty("sakai:messagestore", storePath);
+        contentManager.update(draftContent);
+      } else {
+        // it's not a draft, save it as a real Notification
+        Notification notification = NotificationFactory.getFromJSON(notificationJSON);
+        String notificationPath = StorageClientUtils.newPath(storePath, notification.getId().toString());
+        Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
+        notification.toContent(storePath, notificationContent);
+        contentManager.update(notificationContent);
+        LOGGER.debug("Saved a Notification;  data = {}", notificationContent);
+      }
+
 
     } catch (StorageClientException e) {
       throw new ServletException(e.getMessage(), e);

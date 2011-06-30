@@ -174,7 +174,7 @@ public abstract class Notification {
     content.setProperty(JSON_PROPERTIES.uxState.toString(), this.getUXState().toString());
   }
 
-  private static UUID getNotificationID(JSONObject notificationJSON) {
+  static UUID getNotificationID(JSONObject notificationJSON) {
     try {
       return UUID.fromString(notificationJSON.getString(Notification.JSON_PROPERTIES.id.toString()));
     } catch (JSONException ignored) {
