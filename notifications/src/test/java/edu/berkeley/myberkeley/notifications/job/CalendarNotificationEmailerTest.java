@@ -21,7 +21,6 @@
 package edu.berkeley.myberkeley.notifications.job;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
@@ -54,18 +53,16 @@ import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
-public class NotificationEmailSenderTest extends NotificationTests {
+public class CalendarNotificationEmailerTest extends NotificationTests {
 
-  private NotificationEmailSender sender;
+  private CalendarNotificationEmailer sender;
 
   private CalendarNotification notification;
 
@@ -87,13 +84,13 @@ public class NotificationEmailSenderTest extends NotificationTests {
   @Mock
   AuthorizableManager authMgr;
 
-  public NotificationEmailSenderTest() {
+  public CalendarNotificationEmailerTest() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Before
   public void setup() throws IOException, JSONException, CalDavException, RepositoryException, StorageClientException {
-    this.sender = new NotificationEmailSender();
+    this.sender = new CalendarNotificationEmailer();
     this.sender.repository = mock(Repository.class);
     this.sender.slingRepository = mock(SlingRepository.class);
     this.sender.emailSender = new EmailSender();
@@ -121,7 +118,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
     Content participant = new Content("/participant1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     participant.setProperty("value", "true");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + CalendarNotificationEmailer.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
 
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);

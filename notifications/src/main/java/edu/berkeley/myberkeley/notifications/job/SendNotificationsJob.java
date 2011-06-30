@@ -63,7 +63,7 @@ public class SendNotificationsJob implements Job {
 
   final Repository sparseRepository;
 
-  final NotificationEmailSender emailSender;
+  final CalendarNotificationEmailer calendarEmailer;
 
   final CalDavConnectorProvider calDavConnectorProvider;
 
@@ -71,11 +71,11 @@ public class SendNotificationsJob implements Job {
 
   final LiteMessagingService messagingService;
 
-  public SendNotificationsJob(Repository sparseRepository, NotificationEmailSender emailSender,
+  public SendNotificationsJob(Repository sparseRepository, CalendarNotificationEmailer calendarEmailer,
                               CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService,
                               LiteMessagingService messagingService) {
     this.sparseRepository = sparseRepository;
-    this.emailSender = emailSender;
+    this.calendarEmailer = calendarEmailer;
     this.calDavConnectorProvider = calDavConnectorProvider;
     this.dynamicListService = dynamicListService;
     this.messagingService = messagingService;
@@ -255,7 +255,7 @@ public class SendNotificationsJob implements Job {
     // send email
     boolean needsEmail = recipientLog.getEmailMessageID() == null;
     if (needsEmail) {
-      String messageID = this.emailSender.send(notification, userIDs);
+      String messageID = this.calendarEmailer.send(notification, userIDs);
       if (messageID != null) {
         recipientLog.setEmailMessageID(messageID);
       }

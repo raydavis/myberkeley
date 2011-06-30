@@ -54,7 +54,7 @@ public class SendNotificationsScheduler {
   protected Scheduler scheduler;
 
   @Reference
-  protected NotificationEmailSender emailSender;
+  protected CalendarNotificationEmailer emailSender;
 
   @Reference
   protected CalDavConnectorProvider provider;

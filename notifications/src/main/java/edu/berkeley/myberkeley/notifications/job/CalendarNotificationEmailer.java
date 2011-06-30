@@ -54,11 +54,11 @@ import javax.activation.DataSource;
 import javax.jcr.RepositoryException;
 import javax.mail.MessagingException;
 
-@Component(label = "MyBerkeley :: NotificationEmailSender",
+@Component(label = "MyBerkeley :: CalendarNotificationEmailer",
         description = "Sends emails for notifications",
         immediate = true, metatype = true)
-@Service(value = NotificationEmailSender.class)
-public class NotificationEmailSender {
+@Service(value = CalendarNotificationEmailer.class)
+public class CalendarNotificationEmailer {
 
   // Subject prefixes (each of them must end with a space character)
   private static final String SUBJECT_PREFIX_TASK = "[myB-task] ";
@@ -78,7 +78,7 @@ public class NotificationEmailSender {
   @Reference
   EmailSender emailSender;
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEmailSender.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CalendarNotificationEmailer.class);
 
   public String send(CalendarNotification notification, Collection<String> recipientIDs) {
     Session adminSession = null;
@@ -92,21 +92,21 @@ public class NotificationEmailSender {
       this.emailSender.send(email);
 
     } catch (AccessDeniedException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      LOGGER.error("CalendarNotificationEmailer failed", e);
     } catch (StorageClientException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      LOGGER.error("CalendarNotificationEmailer failed", e);
     } catch (EmailException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      LOGGER.error("CalendarNotificationEmailer failed", e);
     } catch (MessagingException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      LOGGER.error("CalendarNotificationEmailer failed", e);
     } catch (RepositoryException e) {
-      LOGGER.error("NotificationEmailSender failed", e);
+      LOGGER.error("CalendarNotificationEmailer failed", e);
     } finally {
       if (adminSession != null) {
         try {
           adminSession.logout();
         } catch (ClientPoolException e) {
-          LOGGER.error("NotificationEmailSender failed to log out of admin session", e);
+          LOGGER.error("CalendarNotificationEmailer failed to log out of admin session", e);
         }
       }
       if (slingSession != null) {

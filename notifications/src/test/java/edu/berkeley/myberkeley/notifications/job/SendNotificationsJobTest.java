@@ -91,7 +91,7 @@ public class SendNotificationsJobTest extends NotificationTests {
   public void setup() throws StorageClientException, AccessDeniedException, IOException, RepositoryException {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
-    NotificationEmailSender emailSender = mock(NotificationEmailSender.class);
+    CalendarNotificationEmailer emailSender = mock(CalendarNotificationEmailer.class);
     DynamicListService dynamicListService = mock(DynamicListService.class);
     LiteMessagingService messagingService = mock(LiteMessagingService.class);
 
@@ -130,7 +130,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     when(this.job.calDavConnectorProvider.getAdminConnector(RECIPIENT_ID)).thenReturn(connector);
     CalendarURI uri = new CalendarURI(new URI("/some/bedework/address", false), new Date());
     when(connector.putCalendar(Matchers.<Calendar>any())).thenReturn(uri);
-    when(this.job.emailSender.send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any())).thenReturn("12345");
+    when(this.job.calendarEmailer.send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any())).thenReturn("12345");
 
     when(this.cm.exists("a:123456/_myberkeley_notificationstore/notice1/" + RecipientLog.STORE_NAME)).thenReturn(false);
     Content logContent = mock(Content.class);
@@ -144,7 +144,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
+    verify(this.job.calendarEmailer).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -175,7 +175,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
     verify(this.job.messagingService).create(Matchers.<Session>any(), Matchers.<Map<String,Object>>any());
-    verify(this.job.emailSender, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
+    verify(this.job.calendarEmailer, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -216,7 +216,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
+    verify(this.job.calendarEmailer, times(0)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
   @Test
@@ -262,7 +262,7 @@ public class SendNotificationsJobTest extends NotificationTests {
     verify(this.cm).update(content);
     verify(this.cm).update(logContent);
     verify(this.adminSession).logout();
-    verify(this.job.emailSender, times(1)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
+    verify(this.job.calendarEmailer, times(1)).send(Matchers.<CalendarNotification>any(), Matchers.<List<String>>any());
   }
 
 }
