@@ -63,7 +63,9 @@ public class SendNotificationsJob implements Job {
 
   final Repository sparseRepository;
 
-  final NotificationEmailSender emailSender;
+  final CalendarNotificationEmailer calendarEmailer;
+
+  final ReceiptEmailer receiptEmailer;
 
   final CalDavConnectorProvider calDavConnectorProvider;
 
@@ -71,11 +73,13 @@ public class SendNotificationsJob implements Job {
 
   final LiteMessagingService messagingService;
 
-  public SendNotificationsJob(Repository sparseRepository, NotificationEmailSender emailSender,
+  public SendNotificationsJob(Repository sparseRepository, CalendarNotificationEmailer calendarEmailer,
+                              ReceiptEmailer receiptEmailer,
                               CalDavConnectorProvider calDavConnectorProvider, DynamicListService dynamicListService,
                               LiteMessagingService messagingService) {
     this.sparseRepository = sparseRepository;
-    this.emailSender = emailSender;
+    this.calendarEmailer = calendarEmailer;
+    this.receiptEmailer = receiptEmailer;
     this.calDavConnectorProvider = calDavConnectorProvider;
     this.dynamicListService = dynamicListService;
     this.messagingService = messagingService;
@@ -147,6 +151,7 @@ public class SendNotificationsJob implements Job {
     Notification notification;
     RecipientLog recipientLog;
     Session userSession = null;
+    Collection<String> userIDs = null;
 
     try {
       notification = NotificationFactory.getFromContent(result);
@@ -174,7 +179,7 @@ public class SendNotificationsJob implements Job {
         return;
       }
 
-      Collection<String> userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, adminSession);
+      userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, adminSession);
       LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
       if (notification instanceof CalendarNotification) {
@@ -210,6 +215,7 @@ public class SendNotificationsJob implements Job {
     if (success) {
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
       result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
+      this.receiptEmailer.send(notification, userIDs);
     }
 
     try {
@@ -255,7 +261,7 @@ public class SendNotificationsJob implements Job {
     // send email
     boolean needsEmail = recipientLog.getEmailMessageID() == null;
     if (needsEmail) {
-      String messageID = this.emailSender.send(notification, userIDs);
+      String messageID = this.calendarEmailer.send(notification, userIDs);
       if (messageID != null) {
         recipientLog.setEmailMessageID(messageID);
       }

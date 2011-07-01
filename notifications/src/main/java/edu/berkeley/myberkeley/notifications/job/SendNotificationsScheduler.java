@@ -54,7 +54,10 @@ public class SendNotificationsScheduler {
   protected Scheduler scheduler;
 
   @Reference
-  protected NotificationEmailSender emailSender;
+  protected CalendarNotificationEmailer calendarEmailer;
+
+  @Reference
+  protected ReceiptEmailer receiptEmailer;
 
   @Reference
   protected CalDavConnectorProvider provider;
@@ -75,8 +78,8 @@ public class SendNotificationsScheduler {
     Dictionary<?, ?> props = componentContext.getProperties();
     Long pollInterval = OsgiUtil.toLong(props.get(PROP_POLL_INTERVAL_SECONDS), 60);
     Map<String, Serializable> config = new HashMap<String, Serializable>();
-    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.emailSender, this.provider,
-            this.dynamicListService, this.messagingService);
+    final Job sendQueuedNoticeJob = new SendNotificationsJob(this.sparseRepository, this.calendarEmailer,
+            this.receiptEmailer, this.provider, this.dynamicListService, this.messagingService);
     try {
       LOGGER.debug("Activating SendNotificationsJob...");
       this.scheduler.addPeriodicJob(JOB_NAME, sendQueuedNoticeJob, config, pollInterval, false);

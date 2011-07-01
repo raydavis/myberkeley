@@ -53,18 +53,16 @@ import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
-public class NotificationEmailSenderTest extends NotificationTests {
+public class CalendarNotificationEmailerTest extends NotificationTests {
 
-  private NotificationEmailSender sender;
+  private CalendarNotificationEmailer sender;
 
   private CalendarNotification notification;
 
@@ -86,42 +84,25 @@ public class NotificationEmailSenderTest extends NotificationTests {
   @Mock
   AuthorizableManager authMgr;
 
-  public NotificationEmailSenderTest() {
+  public CalendarNotificationEmailerTest() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Before
   public void setup() throws IOException, JSONException, CalDavException, RepositoryException, StorageClientException {
-    this.sender = new NotificationEmailSender();
+    this.sender = new CalendarNotificationEmailer();
     this.sender.repository = mock(Repository.class);
     this.sender.slingRepository = mock(SlingRepository.class);
-    this.sender.profileService = this.profileService;
+    this.sender.emailSender = new EmailSender();
+    this.sender.emailSender.profileService = this.profileService;
     this.notification = new CalendarNotification(new JSONObject(readCalendarNotificationFromFile()));
 
-    this.sender.smtpServer = "localhost";
-    this.sender.smtpPort = 25;
-    this.sender.sendEmail = false;
+    this.sender.emailSender.smtpServer = "localhost";
+    this.sender.emailSender.smtpPort = 25;
+    this.sender.emailSender.sendEmail = false;
 
     when(this.sender.slingRepository.loginAdministrative(null)).thenReturn(this.jcrSession);
     when(this.adminSession.getAuthorizableManager()).thenReturn(this.authMgr);
-  }
-
-  @Test
-  public void activate() throws Exception {
-    Dictionary<String, Object> dictionary = new Hashtable<String, Object>();
-    dictionary.put(NotificationEmailSender.SEND_EMAIL, true);
-    dictionary.put(NotificationEmailSender.SMTP_PORT, 27);
-    dictionary.put(NotificationEmailSender.SMTP_SERVER, "anotherhost");
-    when(this.componentContext.getProperties()).thenReturn(dictionary);
-    this.sender.activate(this.componentContext);
-    assertTrue(this.sender.sendEmail);
-    assertEquals(this.sender.smtpPort, (Integer) 27);
-    assertEquals(this.sender.smtpServer, "anotherhost");
-  }
-
-  @Test
-  public void deactivate() throws Exception {
-    this.sender.deactivate(this.componentContext);
   }
 
   @Test
@@ -137,7 +118,7 @@ public class NotificationEmailSenderTest extends NotificationTests {
     Content participant = new Content("/participant1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
             (Object) "user"));
     participant.setProperty("value", "true");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + NotificationEmailSender.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
+    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + CalendarNotificationEmailer.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
 
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);
@@ -178,15 +159,4 @@ public class NotificationEmailSenderTest extends NotificationTests {
     assertTrue(senderInBCC);
   }
 
-  private ValueMap buildProfileMap(String emailString) {
-    HashMap<String, Object> profile = new HashMap<String, Object>();
-    HashMap<String, Object> basic = new HashMap<String, Object>();
-    HashMap<String, Object> elements = new HashMap<String, Object>();
-    HashMap<String, Object> email = new HashMap<String, Object>();
-    email.put("value", emailString);
-    elements.put("email", email);
-    basic.put("elements", elements);
-    profile.put("basic", basic);
-    return new ValueMapDecorator(profile);
-  }
 }
