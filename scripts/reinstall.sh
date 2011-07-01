@@ -27,6 +27,7 @@ echo "`date`: Stopping sling..." | $LOGIT
 mvn -B -e -Dsling.stop -P runner verify >>$LOG 2>&1 | $LOGIT
 echo "`date`: Cleaning sling directories..." | $LOGIT
 mvn -B -e -P runner -Dsling.purge clean >>$LOG 2>&1 | $LOGIT
+rm -rf ~/.m2/repository/edu/berkeley
 
 echo "`date`: Fetching new sources for myberkeley..." | $LOGIT
 git pull >>$LOG 2>&1
@@ -50,6 +51,9 @@ mvn -B -e clean install >>$LOG 2>&1
 
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -P runner verify >>$LOG 2>&1
+
+# wait 2 minutes so sling can get going
+sleep 120;
 
 echo "`date`: Redeploying UX..." | $LOGIT
 cd ../3akai-ux
