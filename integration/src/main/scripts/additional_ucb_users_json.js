@@ -80,6 +80,8 @@
     "760063": {
     },
     "871943": {
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/CARINA"]
     },
     "266945": {
       "groups" : [ "myb-staff"],
