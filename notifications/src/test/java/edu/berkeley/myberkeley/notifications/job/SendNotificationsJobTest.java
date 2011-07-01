@@ -92,10 +92,11 @@ public class SendNotificationsJobTest extends NotificationTests {
     Repository repo = mock(Repository.class);
     CalDavConnectorProvider provider = mock(CalDavConnectorProviderImpl.class);
     CalendarNotificationEmailer emailSender = mock(CalendarNotificationEmailer.class);
+    ReceiptEmailer receiptEmailer = mock(ReceiptEmailer.class);
     DynamicListService dynamicListService = mock(DynamicListService.class);
     LiteMessagingService messagingService = mock(LiteMessagingService.class);
 
-    this.job = new SendNotificationsJob(repo, emailSender, provider, dynamicListService, messagingService);
+    this.job = new SendNotificationsJob(repo, emailSender, receiptEmailer, provider, dynamicListService, messagingService);
 
     Content dynamicList = new Content("/a/path/to/a/dynamic/list", ImmutableMap.of(
             JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,

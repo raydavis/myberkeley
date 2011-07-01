@@ -20,11 +20,14 @@
 
 package edu.berkeley.myberkeley.notifications;
 
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.junit.Assert;
 import org.sakaiproject.nakamura.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 public abstract class NotificationTests extends Assert {
 
@@ -38,4 +41,15 @@ public abstract class NotificationTests extends Assert {
     return IOUtils.readFully(in, "utf-8");
   }
 
+  protected ValueMap buildProfileMap(String emailString) {
+    HashMap<String, Object> profile = new HashMap<String, Object>();
+    HashMap<String, Object> basic = new HashMap<String, Object>();
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    HashMap<String, Object> email = new HashMap<String, Object>();
+    email.put("value", emailString);
+    elements.put("email", email);
+    basic.put("elements", elements);
+    profile.put("basic", basic);
+    return new ValueMapDecorator(profile);
+  }
 }
