@@ -12,7 +12,6 @@
   <version>0.10-SNAPSHOT</version>
   <properties>
     <nakamura.version>0.11-SNAPSHOT</nakamura.version>
-    <ianproperty.version>1.0-SNAPSHOT</ianproperty.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -54,7 +53,7 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
-              <version>${ianproperty.version}</version>
+              <version>${nakamura.version}</version>
               <startLevel>15</startLevel>
             </bundle>
             <bundle>
