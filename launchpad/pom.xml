@@ -34,12 +34,6 @@
           </defaultBundleList>
           <additionalBundles>
             <bundle>
-              <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.root</artifactId>
-              <version>0.10-SNAPSHOT</version>
-              <startLevel>0</startLevel>
-            </bundle>
-            <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
               <version>${nakamura.version}</version>
@@ -54,12 +48,6 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.auth.cas</artifactId>
-              <version>${nakamura.version}</version>
-              <startLevel>15</startLevel>
-            </bundle>
-            <bundle>
-              <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.rootconfig</artifactId>
               <version>${nakamura.version}</version>
               <startLevel>15</startLevel>
             </bundle>
@@ -108,14 +96,6 @@
             </bundle>
           </additionalBundles>
           <bundleExclusions>
-            <bundle>
-              <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.uxloader</artifactId>
-            </bundle>
-            <bundle>
-              <groupId>org.apache.sling</groupId>
-              <artifactId>org.apache.sling.launchpad.content</artifactId>
-            </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr</artifactId>
