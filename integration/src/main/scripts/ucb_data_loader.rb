@@ -15,7 +15,7 @@ include SlingUsers
 
 module MyBerkeleyData
   BASIC_PROFILE_PROPS = [
-    'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
+    'firstName', 'lastName'
   ]
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   STUDENT_ROLES = ["Undergraduate Student", "Graduate Student", "Student"]
