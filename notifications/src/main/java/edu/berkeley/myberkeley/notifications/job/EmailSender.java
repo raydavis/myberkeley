@@ -109,9 +109,9 @@ public class EmailSender {
     AuthorizableManager authMgr = sparseSession.getAuthorizableManager();
     Authorizable authz = authMgr.findAuthorizable(id);
     ValueMap profile = this.profileService.getProfileMap(authz, jcrSession);
-    // TODO we depend heavily on the profile ValueMap structure being correct. we find our email addresses
-    // in the path /profile/basic/elements/email/value . This code will break when we revise our profile structure.
-    Map basic = (Map) profile.get("basic");
+    // note that we depend heavily on the profile ValueMap structure being correct. we find our email addresses
+    // in the path /profile/email/elements/email/value . This code will break if/when we revise our profile structure.
+    Map basic = (Map) profile.get("email");
     Map elements = (Map) basic.get("elements");
     Map email = (Map) elements.get("email");
     return (String) email.get("value");
