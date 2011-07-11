@@ -245,7 +245,7 @@ module MyBerkeleyData
         ":contentType" => "json",
         ":replace" => "false",
         ":replaceProperties" => "false",
-        ":content" => "{'institutional':{},'email':{},'access':'everybody'}"
+        ":content" => "{'institutional':{},'email':{}}"
           }
       @log.info("creating empty nonbasic profile nodes, data = #{data}")
       result = @sling.execute_post("#{@server}~#{user.name}/public/authprofile", data)
@@ -255,13 +255,19 @@ module MyBerkeleyData
 
       result = @sling.execute_post("#{home_url}/public/authprofile/institutional.modifyAce.html", {
         "principalId" => "anonymous",
-        "privilege@jcr:read" => "denied"
+        "privilege@jcr:all" => "denied"
       })
       @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
 
       result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
           "principalId" => "everyone",
-          "privilege@jcr:read" => "denied"
+          "privilege@jcr:all" => "denied"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
+          "principalId" => "anonymous",
+          "privilege@jcr:all" => "denied"
       })
       @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
 
@@ -297,7 +303,7 @@ module MyBerkeleyData
         end
       end
 
-      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}},'access':'everybody'}}"
+      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}}}}"
       return profileContentString
     end
 
@@ -321,9 +327,9 @@ module MyBerkeleyData
         end
       end
 
-      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}},'access':'everybody'}"
-      profileContentString += ",'email':{'elements':{'email':{'value':'#{user_props['email']}'}},'access':'everybody'}"
-      profileContentString += ",'institutional':{'elements':{#{institutionalProps.join(",")}},'access':'everybody'}}"
+      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}}}"
+      profileContentString += ",'email':{'elements':{'email':{'value':'#{user_props['email']}'}}}"
+      profileContentString += ",'institutional':{'elements':{#{institutionalProps.join(",")}}}}"
       return profileContentString
     end
 
