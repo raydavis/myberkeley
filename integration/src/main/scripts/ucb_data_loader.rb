@@ -24,9 +24,7 @@ module MyBerkeleyData
   
   # Test data for development environments
   TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-students", "myb-cnr-students",
-    "myb-ced-grads-arch", "myb-ced-grads-city", "myb-ced-grads-landscape", 
-    "myb-ced-undergrads-and-grads-limited", "myb-ced-undergrads", "myb-cnr-undergrads-and-grads-agricultural", 
-    "myb-cnr-grads-environmental", "myb-cnr-grads-nutritional", "myb-cnr-grads-plant", "myb-cnr-undergrads"]
+    "myb-ets-test"]
   TEST_DEMOGRAPHICS = [{
       "college" => "ENV DSGN",
       "undergradMajors" => [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED", "LANDSCAPE ARCH", "URBAN STUDIES" ],
