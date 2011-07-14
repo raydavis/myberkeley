@@ -43,13 +43,13 @@ public abstract class NotificationTests extends Assert {
 
   protected ValueMap buildProfileMap(String emailString) {
     HashMap<String, Object> profile = new HashMap<String, Object>();
-    HashMap<String, Object> basic = new HashMap<String, Object>();
-    HashMap<String, Object> elements = new HashMap<String, Object>();
     HashMap<String, Object> email = new HashMap<String, Object>();
-    email.put("value", emailString);
-    elements.put("email", email);
-    basic.put("elements", elements);
-    profile.put("basic", basic);
+    HashMap<String, Object> elements = new HashMap<String, Object>();
+    HashMap<String, Object> emailValue = new HashMap<String, Object>();
+    emailValue.put("value", emailString);
+    elements.put("email", emailValue);
+    email.put("elements", elements);
+    profile.put("email", email);
     return new ValueMapDecorator(profile);
   }
 }

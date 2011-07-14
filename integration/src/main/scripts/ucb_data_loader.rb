@@ -15,8 +15,12 @@ include SlingUsers
 
 module MyBerkeleyData
   BASIC_PROFILE_PROPS = [
-    'email', 'firstName', 'lastName', 'role', 'department', 'college', 'major'
+    'firstName', 'lastName'
   ]
+  INSTITUTIONAL_PROFILE_PROPS = [
+    'role', 'college', 'major'
+  ]
+
   UG_GRAD_FLAG_MAP = {:U => 'Undergraduate Student', :G => 'Graduate Student'}
   STUDENT_ROLES = ["Undergraduate Student", "Graduate Student", "Student"]
   COLLEGE_ABBR_TO_PROFILE = { "ENV DSGN" => "College of Environmental Design", "NAT RES" => "College of Natural Resources" }
@@ -204,13 +208,15 @@ module MyBerkeleyData
       lastname = user_props['lastName']
       create_bedework_acct(username)
       if (!firstname.nil? and !lastname.nil?)
-        data = add_profile_property(user_props, data)
+        data = add_basic_profile(user_props, data)
       end
       result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), data)
+      @log.info("creating basic profile, data = #{data}")
       if (result.code.to_i > 299)
-        @log.info "Error creating user"
+        @log.info "Error creating user, result = #{result.code}"
         return nil
       end
+      add_nonbasic_profile_subnodes(@sling, user)
       if (STUDENT_ROLES.include?(user_props["role"]))
         apply_student_aces(user)
       else
@@ -218,10 +224,11 @@ module MyBerkeleyData
       end
       apply_demographic(username, user_props)
       create_bedework_acct(username)
+      update_profile_properties(@sling, username, user_props)
       return user
     end
 
-    def add_profile_property(user_props, post_data)
+    def add_basic_profile(user_props, post_data)
       BASIC_PROFILE_PROPS.each do |prop|
         post_data[prop] = user_props[prop] if (!user_props[prop].nil?)
       end
@@ -229,14 +236,57 @@ module MyBerkeleyData
       return post_data
     end
 
+    def add_nonbasic_profile_subnodes(sling, user)
+      # create and lock down the institutional and email sections of profile.
+      # this is unique to myBerkeley.
+      data = { ":operation" => "import",
+        ":contentType" => "json",
+        ":replace" => "false",
+        ":replaceProperties" => "false",
+        ":content" => "{'institutional':{},'email':{}}"
+          }
+      @log.info("creating empty nonbasic profile nodes, data = #{data}")
+      result = @sling.execute_post("#{@server}~#{user.name}/public/authprofile", data)
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+      home_url = @sling.url_for(user.home_path_for @sling)
+
+      result = @sling.execute_post("#{home_url}/public/authprofile/institutional.modifyAce.html", {
+        "principalId" => "anonymous",
+        "privilege@jcr:all" => "denied"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
+          "principalId" => "everyone",
+          "privilege@jcr:all" => "denied"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
+          "principalId" => "anonymous",
+          "privilege@jcr:all" => "denied"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
+          "principalId" => user.name,
+          "privilege@jcr:read" => "granted"
+      })
+      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
+
+    end
+
     def update_profile_properties(sling, username, user_props)
-      data = getBasicProfileContent(user_props)
+      profileContent = getProfileContent(user_props)
+      @log.info("updating profile, data = #{profileContent}")
+
       @sling.execute_post("#{@server}~#{username}/public/authprofile", {
         ":operation" => "import",
         ":contentType" => "json",
         ":replace" => "true",
         ":replaceProperties" => "true",
-        ":content" => getBasicProfileContent(user_props)
+        ":content" => profileContent
       })
     end
 
@@ -250,8 +300,34 @@ module MyBerkeleyData
           basicProps.push("'#{prop}':{'value':'#{propval}'}")
         end
       end
-      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}},'access':'everybody'}}"
-      @log.info("profile string = #{profileContentString}")
+
+      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}}}}"
+      return profileContentString
+    end
+
+    def getProfileContent(user_props)
+      basicProps = []
+      BASIC_PROFILE_PROPS.each do |prop|
+        propval = user_props[prop]
+        if (!propval.nil?)
+          # Escape single quotes and backslashes
+          propval = propval.gsub(/\\|'/) { |c| "\\#{c}" }
+          basicProps.push("'#{prop}':{'value':'#{propval}'}")
+        end
+      end
+      institutionalProps = []
+      INSTITUTIONAL_PROFILE_PROPS.each do |prop|
+        propval = user_props[prop]
+        if (!propval.nil?)
+          # Escape single quotes and backslashes
+          propval = propval.gsub(/\\|'/) { |c| "\\#{c}" }
+          institutionalProps.push("'#{prop}':{'value':'#{propval}'}")
+        end
+      end
+
+      profileContentString = "{'basic':{'elements':{#{basicProps.join(",")}}}"
+      profileContentString += ",'email':{'elements':{'email':{'value':'#{user_props['email']}'}}}"
+      profileContentString += ",'institutional':{'elements':{#{institutionalProps.join(",")}}}}"
       return profileContentString
     end
 
