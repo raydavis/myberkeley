@@ -217,11 +217,6 @@ module MyBerkeleyData
         return nil
       end
       add_nonbasic_profile_subnodes(@sling, user)
-      if (STUDENT_ROLES.include?(user_props["role"]))
-        apply_student_aces(user)
-      else
-        apply_adviser_aces(user)
-      end
       apply_demographic(username, user_props)
       create_bedework_acct(username)
       update_profile_properties(@sling, username, user_props)
@@ -369,29 +364,6 @@ module MyBerkeleyData
           response = http.request(req)
         }
       end
-    end
-
-    def apply_student_aces(student)
-      home_url = @sling.url_for(student.home_path_for @sling)
-      result = @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => "everyone",
-        "privilege@jcr:read" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-      result = @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => "anonymous",
-        "privilege@jcr:read" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-    end
-
-    def apply_adviser_aces(adviser)
-      home_url = @sling.url_for(adviser.home_path_for @sling)
-      result = @sling.execute_post("#{home_url}.modifyAce.html", {
-        "principalId" => "anonymous",
-        "privilege@jcr:read" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
     def apply_demographic(uid, user_props)
