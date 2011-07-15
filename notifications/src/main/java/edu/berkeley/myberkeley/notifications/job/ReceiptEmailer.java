@@ -109,8 +109,8 @@ public class ReceiptEmailer {
     }
 
     // body and subject
-    email.setSubject("myBerkeley delivered a notification");
-    StringBuilder msg = new StringBuilder("myBerkeley delivered a notification to the following students at ");
+    email.setSubject("CalCentral delivered a notification");
+    StringBuilder msg = new StringBuilder("CalCentral delivered a notification to the following students at ");
     msg.append(DATE_FORMAT.format(new Date())).append(":\n\n");
 
     for ( String recip : recipientEmails ) {
