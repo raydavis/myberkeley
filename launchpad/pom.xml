@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.11-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
   <name>MyBerkeley executable</name>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.11-SNAPSHOT</version>
   <properties>
     <nakamura.version>0.11-SNAPSHOT</nakamura.version>
     <ianproperty.version>1.0-SNAPSHOT</ianproperty.version>
@@ -42,7 +42,7 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.11-SNAPSHOT</version>
               <startLevel>1</startLevel>
             </bundle>
             <bundle>
@@ -72,19 +72,19 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.11-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.11-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.notifications</artifactId>
-              <version>0.10-SNAPSHOT</version>
+              <version>0.11-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <!-- MYB-597 -->
