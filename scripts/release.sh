@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# This script will change -SNAPSHOT version numbers to quasi-release versions for myberkeley and all its
+# constituent projects (nakamura, solr, sparse, 3akai-ux). It won't do any git work for you.
+
+# syntax:
+# ./release.sh SOURCE_DIR NAKAMURA_VERSION IAN_VERSION UX_VERSION TAG
+
+# example:
+# ./release.sh ~/merge/0.3 0.11 1.0 0.7 20110718TEST
+
 set -o nounset
 set -o errexit
 source_root=$1
