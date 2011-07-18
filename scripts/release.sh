@@ -20,7 +20,7 @@ ux_version=$4
 tag=$5
 
 cd $source_root/nakamura
-listofpoms=`find . -name pom.xml -exec grep -l SNAPSHOT {} \;| egrep -v ".git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
+listofpoms=`find . -name pom.xml -or -name list.xml -exec grep -l SNAPSHOT {} \;| egrep -v ".git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
 
 echo "-----------------------------------------------------------"
 echo "Creating tagged version of nakamura: $nakamura_version-$tag"
@@ -38,6 +38,18 @@ echo "-----------------------------------------------------------"
 echo "Creating tagged version of sparsemap and solr: $ian_version-$tag"
 listofpomswithversion=`grep -l $ian_version-SNAPSHOT $listofpoms`
 for i in $listofpomswithversion
+do
+  sed "s/$ian_version-SNAPSHOT/$ian_version-$tag/" $i > $i.new
+  mv $i.new $i
+done
+
+cd $source_root/nakamura
+listxml=`find . -name list.xml -exec grep -l SNAPSHOT {} \;| egrep -v "nakamura|.git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
+
+echo "-----------------------------------------------------------"
+echo "Updating list.xml with new versions of sparsemap and solr: $ian_version-$tag"
+listxmlwithversion=`grep -l $ian_version-SNAPSHOT $listofpoms`
+for i in $listxmlwithversion
 do
   sed "s/$ian_version-SNAPSHOT/$ian_version-$tag/" $i > $i.new
   mv $i.new $i
