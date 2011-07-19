@@ -20,7 +20,7 @@ ux_version=$4
 tag=$5
 
 cd $source_root
-listofpoms=`find . -name pom.xml -or -name list.xml -exec grep -l SNAPSHOT {} \;| egrep -v ".git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
+listofpoms=`find . -name pom.xml -exec grep -l SNAPSHOT {} \;| egrep -v ".git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
 
 echo "-----------------------------------------------------------"
 pomswithnakversion=`grep -l $nakamura_version-SNAPSHOT $listofpoms`
@@ -32,11 +32,8 @@ do
   mv $i.new $i
 done
 
-cd $source_root
-listofpomsexcludingnakamura=`find . -name pom.xml -exec grep -l SNAPSHOT {} \;| egrep -v "nakamura|.git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
-
 echo "-----------------------------------------------------------"
-pomswithianversion=`grep -l $ian_version-SNAPSHOT $listofpomsexcludingnakamura`
+pomswithianversion=`grep -l $ian_version-SNAPSHOT $listofpoms`
 echo "Creating tagged version of sparsemap and solr: $ian_version-$tag."
 echo "POMS: $pomswithianversion"
 for i in $pomswithianversion
@@ -47,7 +44,7 @@ done
 
 echo "-----------------------------------------------------------"
 echo "Creating tagged version of ux: $ux_version-$tag"
-pomswithuxversion=`grep -l $ux_version-SNAPSHOT $listofpomsexcludingnakamura`
+pomswithuxversion=`grep -l $ux_version-SNAPSHOT $listofpoms`
 echo "POMS: $pomswithuxversion"
 for i in $pomswithuxversion
 do
@@ -59,23 +56,21 @@ cd $source_root/nakamura
 listxmls=`find . -name list.xml -exec grep -l SNAPSHOT {} \;| egrep -v ".git|do_release.sh|target|binary/release|uxloader/src/main/resources|last-release|cachedir"`
 
 echo "-----------------------------------------------------------"
+listxmlswithnakversion=`grep -l $nakamura_version-SNAPSHOT $listxmls`
+echo "Updating list.xml with new version of nakamura: $nakamura_version-$tag."
+echo "list.xmls: $listxmlswithnakversion"
+for i in $listxmlswithnakversion
+do
+  sed "s/$nakamura_version-SNAPSHOT/$nakamura_version-$tag/" $i > $i.new
+  mv $i.new $i
+done
+
+echo "-----------------------------------------------------------"
 echo "Updating list.xml with new versions of sparsemap and solr: $ian_version-$tag."
-listxmlswithversion=`grep -l $ian_version-SNAPSHOT $listxmls`
-echo "list.xmls: $listxmlswithversion"
-for i in $listxmlswithversion
+listxmlswithianversion=`grep -l $ian_version-SNAPSHOT $listxmls`
+echo "list.xmls: $listxmlswithianversion"
+for i in $listxmlswithianversion
 do
  sed "s/$ian_version-SNAPSHOT/$ian_version-$tag/" $i > $i.new
  mv $i.new $i
 done
-
-echo "-----------------------------------------------------------"
-
-echo "Remaining SNAPSHOT versions in the release"
-echo "=================================================="
-grep -C5 SNAPSHOT $listofpoms
-echo "=================================================="
-
-
-
-
-
