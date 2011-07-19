@@ -1,4 +1,4 @@
-define(["/dev/configuration/config.js"], function(config) {
+define(["config/config"], function(config) {
     config.isDev = true;
 
     // Tracking and statistics
