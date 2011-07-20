@@ -57,7 +57,7 @@ sleep 120;
 
 echo "`date`: Redeploying UX..." | $LOGIT
 cd ../3akai-ux
-mvn clean install
+mvn clean install -P sakai-release
 mvn -B -e -Dsling.user=admin -Dsling.password=$SLING_PASSWORD org.apache.sling:maven-sling-plugin:install-file \
   -Dsling.file=./target/org.sakaiproject.nakamura.uxloader-myberkeley-0.7-SNAPSHOT.jar
 
