@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script to reinstall myberkeley on portal-dev/portal-qa, while preserving content repository
+# script to reinstall myberkeley on calcentral-dev/calcentral-qa, while preserving content repository
 
 if [ -z "$1" ]; then
     echo "Usage: $0 source_root sling_password logfile"
@@ -47,7 +47,7 @@ echo "------------------------------------------" | $LOGIT
 cd ../myberkeley
 
 echo "`date`: Doing clean install..." | $LOGIT
-mvn -B -e clean install >>$LOG 2>&1 
+mvn -B -e clean install >>$LOG 2>&1
 
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -P runner verify >>$LOG 2>&1

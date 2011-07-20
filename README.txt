@@ -104,7 +104,7 @@ this will load data to the default server - http://localhost:8080/, using passwo
 
 or to load data to another server, run
 mvn -Dsling.loaddata -Dloaddata.server=${server} -Dloaddata.password=${password} integration-test
-where ${server} should be replaced with a full server URL such as https://portal-dev.berkeley.edu/
+where ${server} should be replaced with a full server URL such as https://calcentral-dev.berkeley.edu/
 NOTE: the trailing slash on the server URL is required
 
 All users will be given the password "testuser".
@@ -113,6 +113,6 @@ All users will be given the password "testuser".
 members, letting us test CAS authentication. When running MyBerkeley on your own
 computer, you can log in at:
 https://auth-test.berkeley.edu/cas/login?service=http://localhost:8080/dev/index.html
-When running at portal-dev, you can use:
-https://auth-test.berkeley.edu/cas/login?service=https://portal-dev.berkeley.edu/dev/index.html
+When running at calcentral-dev, you can use:
+https://auth-test.berkeley.edu/cas/login?service=https://calcentral-dev.berkeley.edu/dev/index.html
 
