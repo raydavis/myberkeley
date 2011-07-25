@@ -236,8 +236,8 @@ module MyBerkeleyData
       # this is unique to myBerkeley.
       data = { ":operation" => "import",
         ":contentType" => "json",
-        ":replace" => "false",
-        ":replaceProperties" => "false",
+        ":replace" => "true",
+        ":replaceProperties" => "true",
         ":content" => "{'institutional':{},'email':{}}"
           }
       @log.info("creating empty nonbasic profile nodes, data = #{data}")
