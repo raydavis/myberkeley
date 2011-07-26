@@ -98,6 +98,7 @@ public abstract class CalDavTests extends Assert {
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     calendar.getComponents().add(tz);
     DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+    due.setTimeZone(registry.getTimeZone("Europe/London"));
     VToDo vtodo = new VToDo(due, due, summary);
     vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
     vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
