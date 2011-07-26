@@ -74,6 +74,8 @@ public class EmailSender {
     this.smtpPort = OsgiUtil.toInteger(props.get(SMTP_PORT), 25);
     this.smtpServer = OsgiUtil.toString(props.get(SMTP_SERVER), "");
     this.sendEmail = OsgiUtil.toBoolean(props.get(SEND_EMAIL), false);
+    LOGGER.info("EmailSender started up; sendEmail = " + this.sendEmail + "; smtpPort = "
+            + this.smtpPort + "; smtpServer = " + this.smtpServer);
   }
 
   @SuppressWarnings({"UnusedParameters"})
