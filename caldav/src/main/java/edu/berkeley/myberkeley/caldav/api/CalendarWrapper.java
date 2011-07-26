@@ -27,7 +27,9 @@ import net.fortuna.ical4j.model.Date;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.PropertyList;
+import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
@@ -134,14 +136,14 @@ public class CalendarWrapper implements Serializable {
       String summary = icalData.getString(ICAL_DATA_PROPERTY_NAMES.SUMMARY.toString());
       DateTime startDate = new DateTime();
       try {
-        startDate = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString())).getTime());
+        startDate = getDateTimeFromJSON(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTART.toString()), registry);
       } catch (JSONException ignored) {
       }
 
       if (Component.VEVENT.equals(componentName)) {
         this.component = new VEvent(startDate, summary);
       } else if (Component.VTODO.equals(componentName)) {
-        DateTime due = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString())).getTime());
+        DateTime due = getDateTimeFromJSON(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DUE.toString()), registry);
         this.component = new VToDo(startDate, due, summary);
       } else {
         throw new CalDavException("Unsupported component type " + componentName, null);
@@ -150,12 +152,12 @@ public class CalendarWrapper implements Serializable {
       // ical4j sets the DTSTAMP of new Calendar instances to the datetime of the instance's creation.
       // when deserializing from content we replace that default DTSTAMP with what's in our data.
       try {
-        DateTime jsonDtStamp = new DateTime(new ISO8601Date(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTAMP.toString())).getTime());
+        DateTime jsonDtStamp = getDateTimeFromJSON(icalData.getString(ICAL_DATA_PROPERTY_NAMES.DTSTAMP.toString()), registry);
 
         int dtStampIndex = 0;
-        for ( int i = 0; i < this.component.getProperties().size(); i++) {
+        for (int i = 0; i < this.component.getProperties().size(); i++) {
           Object o = this.getComponent().getProperties().get(i);
-          if ( o instanceof DtStamp ) {
+          if (o instanceof DtStamp) {
             dtStampIndex = i;
             break;
           }
@@ -290,6 +292,14 @@ public class CalendarWrapper implements Serializable {
   public boolean isArchived() {
     PropertyList propList = this.component.getProperties(Property.CATEGORIES);
     return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
+  }
+
+  private DateTime getDateTimeFromJSON(String json, TimeZoneRegistry registry) {
+    ISO8601Date dateISO8601 = new ISO8601Date(json);
+    DateTime ret = new DateTime();
+    ret.setTime(dateISO8601.getTimeInMillis());
+    ret.setTimeZone(registry.getTimeZone("Europe/London")); // assume input is GMT
+    return ret;
   }
 
   @Override
