@@ -105,8 +105,8 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
       createStoreIfNecessary(session, contentManager, storePath);
 
       Notification.MESSAGEBOX box = Notification.MESSAGEBOX.valueOf(notificationJSON.getString(Notification.JSON_PROPERTIES.messageBox.toString()));
-      if (Notification.MESSAGEBOX.drafts.equals(box)) {
-        // it's a draft, save it as raw JSON
+      if (Notification.MESSAGEBOX.drafts.equals(box) || Notification.MESSAGEBOX.trash.equals(box)) {
+        // it's a draft or trash, save it as raw JSON
         UUID id = Notification.getNotificationID(notificationJSON);
         String draftPath = StorageClientUtils.newPath(storePath, id.toString());
         Content draftContent = createNotificationIfNecessary(contentManager, draftPath);
