@@ -256,7 +256,21 @@ module MyBerkeleyData
       # Delete demographic.
       user_props = {"myb-demographics"  => []}
       @ucb_data_loader.apply_demographic account_uid, user_props
-      # TODO Change user's ACL?
+      
+      # Delete obsolete profile sections.
+      res = @sling.execute_post(@sling.url_for("~#{account_uid}/public/authprofile/email.profile.json"), {
+        ":operation" => "import",
+        ":contentType" => "json",
+        ":removeTree" => "true",
+        ":content" => '{"elements":{}}'
+      })
+      res = @sling.execute_post(@sling.url_for("~#{account_uid}/public/authprofile/institutional.profile.json"), {
+        ":operation" => "import",
+        ":contentType" => "json",
+        ":removeTree" => "true",
+        ":content" => '{"elements":{}}'
+      })
+      
       @remaining_accounts.delete(account_uid)
     end
 
@@ -370,7 +384,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl = MyBerkeleyData::OracleDataLoader.new options
 
   odl.collect_integrated_accounts
-  odl.load_all_students
+#  odl.load_all_students
   odl.load_additional_accounts
   odl.drop_stale_accounts
 
