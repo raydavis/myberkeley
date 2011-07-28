@@ -384,7 +384,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl = MyBerkeleyData::OracleDataLoader.new options
 
   odl.collect_integrated_accounts
-#  odl.load_all_students
+  odl.load_all_students
   odl.load_additional_accounts
   odl.drop_stale_accounts
 
