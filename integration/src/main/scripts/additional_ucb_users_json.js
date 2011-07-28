@@ -3,11 +3,15 @@
     "226144" : {
     },
     "238382": {
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/BERNIE"]
     },
     "163402": {
     },
     "6576": {
-      "contexts" : [ "myb-ced-students", "myb-cnr-students"]
+      "contexts" : [ "myb-ced-students", "myb-cnr-students"],
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/TONY"]
     },
     "592722": {
     },
@@ -87,6 +91,10 @@
       "groups" : [ "myb-staff"],
       "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DAPHNE"]
     },
+    "175137": {
+        "groups" : [ "myb-staff"],
+        "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/CHARMAINE"]
+      },
     "324838": {
       "contexts" : ["myb-cnr-students"]
     },

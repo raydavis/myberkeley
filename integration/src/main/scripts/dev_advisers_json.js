@@ -138,10 +138,15 @@
         "email": "carinaboo@berkeley.edu"
     },
     "266945": {
-      "lastName": "Ogle",
-      "firstName": "Daphne",
-      "email": "daphne@media.berkeley.edu"
-    },
+        "lastName": "Ogle",
+        "firstName": "Daphne",
+        "email": "daphne@media.berkeley.edu"
+      },
+    "175137": {
+        "lastName": "Falcao",
+        "firstName": "Charmaine D.",
+        "email": "charmainefalcao@berkeley.edu"
+      },
     "324838": {
         "lastName": "O'Connor",
         "firstName": "Olga",
