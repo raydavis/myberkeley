@@ -109,22 +109,29 @@ public class ReceiptEmailer {
     }
 
     // body and subject
-    email.setSubject("CalCentral delivered a notification");
-    StringBuilder msg = new StringBuilder("CalCentral delivered a notification to the following students at ");
+    StringBuilder msg;
+    if ( notification instanceof CalendarNotification ) {
+      CalendarNotification calendarNotification = (CalendarNotification) notification;
+      if (calendarNotification.getWrapper().getComponent() instanceof VToDo) {
+        email.setSubject("CalCentral delivered a task notification");
+        msg = new StringBuilder("CalCentral delivered a task notification to the following students at ");
+      } else {
+        email.setSubject("CalCentral delivered an event notification");
+        msg = new StringBuilder("CalCentral delivered an event notification to the following students at ");
+      }
+    } else {
+      email.setSubject("CalCentral delivered a message");
+      msg = new StringBuilder("CalCentral delivered a message to the following students at ");
+    }
+
     msg.append(DATE_FORMAT.format(new Date())).append(":\n\n");
 
     for ( String recip : recipientEmails ) {
       msg.append(recip).append("\n");
     }
 
-    msg.append("\nThe notification was");
     if ( notification instanceof CalendarNotification ) {
       CalendarNotification calendarNotification = (CalendarNotification) notification;
-      if (calendarNotification.getWrapper().getComponent() instanceof VToDo) {
-        msg.append(" a task.");
-      } else {
-        msg.append(" an event.");
-      }
       msg.append("\nSubject: ");
       msg.append(calendarNotification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
       msg.append("\nBody: ");
@@ -132,7 +139,6 @@ public class ReceiptEmailer {
 
     } else {
       MessageNotification msgNotification = (MessageNotification) notification;
-      msg.append(" a message.");
       msg.append("\nSubject: ");
       msg.append(msgNotification.getSubject());
       msg.append("\nBody: ");
