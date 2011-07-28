@@ -61,10 +61,10 @@ import javax.mail.MessagingException;
 public class CalendarNotificationEmailer {
 
   // Subject prefixes (each of them must end with a space character)
-  private static final String SUBJECT_PREFIX_TASK = "[myB-task] ";
-  private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[myB-task-required] ";
-  private static final String SUBJECT_PREFIX_EVENT = "[myB-event] ";
-  private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[myB-event-required] ";
+  private static final String SUBJECT_PREFIX_TASK = "[CalCentral Task] ";
+  private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[CalCentral Task] ";
+  private static final String SUBJECT_PREFIX_EVENT = "[CalCentral Event] ";
+  private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[CalCentral Event] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
   static final String MYBERKELEY_PARTICIPANT_NODE_PATH = "/myberkeley/elements/participant";
