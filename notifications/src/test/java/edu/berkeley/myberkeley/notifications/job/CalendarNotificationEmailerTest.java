@@ -115,11 +115,6 @@ public class CalendarNotificationEmailerTest extends NotificationTests {
     when(this.authMgr.findAuthorizable("904715")).thenReturn(senderAuthz);
     when(this.profileService.getProfileMap(senderAuthz, this.jcrSession)).thenReturn(senderProfileMap);
 
-    Content participant = new Content("/participant1", ImmutableMap.of(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-            (Object) "user"));
-    participant.setProperty("value", "true");
-    when(this.contentManager.get(LitePersonalUtils.getProfilePath("904715") + CalendarNotificationEmailer.MYBERKELEY_PARTICIPANT_NODE_PATH)).thenReturn(participant);
-
     List<String> recipients = Arrays.asList("904715");
     this.sender.send(this.notification, recipients);
 

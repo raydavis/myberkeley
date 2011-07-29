@@ -67,8 +67,6 @@ public class CalendarNotificationEmailer {
   private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[CalCentral Event] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
-  static final String MYBERKELEY_PARTICIPANT_NODE_PATH = "/myberkeley/elements/participant";
-
   @Reference
   SlingRepository slingRepository;
 
@@ -119,21 +117,10 @@ public class CalendarNotificationEmailer {
   private List<String> getRecipientEmails(Collection<String> recipientIDs, Session sparseSession, javax.jcr.Session jcrSession) throws StorageClientException, AccessDeniedException, RepositoryException {
     List<String> emails = new ArrayList<String>();
     for (String id : recipientIDs) {
-      if (isParticipant(id, sparseSession.getContentManager())) {
-        emails.add(this.emailSender.userIDToEmail(id, sparseSession, jcrSession));
-      }
+      emails.add(this.emailSender.userIDToEmail(id, sparseSession, jcrSession));
     }
     LOGGER.info("Sending email to the following recipients: " + emails);
     return emails;
-  }
-
-  private boolean isParticipant(String id, ContentManager contentManager) throws StorageClientException, AccessDeniedException {
-    String participantPath = LitePersonalUtils.getProfilePath(id) + MYBERKELEY_PARTICIPANT_NODE_PATH;
-    Content content = contentManager.get(participantPath);
-    if (content != null) {
-      return Boolean.valueOf((String) content.getProperty("value"));
-    }
-    return false;
   }
 
   MultiPartEmail buildEmail(CalendarNotification notification, List<String> recipientEmails, Session sparseSession, javax.jcr.Session jcrSession)
