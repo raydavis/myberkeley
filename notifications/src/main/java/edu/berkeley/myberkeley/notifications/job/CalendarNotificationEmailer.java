@@ -23,6 +23,7 @@ package edu.berkeley.myberkeley.notifications.job;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import net.fortuna.ical4j.data.CalendarOutputter;
+import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.mail.EmailException;
@@ -36,9 +37,6 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
-import org.sakaiproject.nakamura.api.lite.content.Content;
-import org.sakaiproject.nakamura.api.lite.content.ContentManager;
-import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +58,6 @@ import javax.mail.MessagingException;
 @Service(value = CalendarNotificationEmailer.class)
 public class CalendarNotificationEmailer {
 
-  // Subject prefixes (each of them must end with a space character)
-  private static final String SUBJECT_PREFIX_TASK = "[CalCentral Task] ";
-  private static final String SUBJECT_PREFIX_TASK_REQUIRED = "[CalCentral Task] ";
-  private static final String SUBJECT_PREFIX_EVENT = "[CalCentral Event] ";
-  private static final String SUBJECT_PREFIX_EVENT_REQUIRED = "[CalCentral Event] ";
   private static final String REMINDER_RECIPIENT = "reminder-recipient:;";
 
   @Reference
@@ -147,14 +140,56 @@ public class CalendarNotificationEmailer {
       }
     }
 
-    // body and subject
-    email.setMsg(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
-    String subjectPrefix = getSubjectPrefix(notification);
-    email.setSubject(subjectPrefix + " " + notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
+    boolean isTask = notification.getWrapper().getComponent() instanceof VToDo;
+    String type = "Task";
+
+    // subject line
+    StringBuilder subject = new StringBuilder("[CalCentral");
+    if (isTask) {
+      subject.append(" task] You have a new task titled \"");
+    } else {
+      type = "Event";
+      subject.append(" event] You have a new event titled \"");
+    }
+
+    subject.append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
+    subject.append("\"");
+    email.setSubject(subject.toString());
+
+    // email body
+    StringBuilder msg = new StringBuilder("This is an automated message from CalCentral.\n\n");
+    if (isTask) {
+      msg.append("A new task has been added to your My Tasks widget:\n\n");
+    } else {
+      msg.append("A new event has been added to your My Events widget:\n\n");
+    }
+
+    msg.append(type).append(" Subject: ").append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue()).append("\n");
+    msg.append(type).append(" Body: ").append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue()).append("\n\n");
+
+    msg.append("To view this ").append(type).append(" in CalCentral:\n\n");
+    msg.append("* Log on to CalCentral at http://calcentral.berkeley.edu \n" +
+            "* On the top menu, click Me. \n");
+
+    if (isTask) {
+      msg.append("* If necessary, scroll down to see your My Tasks widget. \n" +
+              "* Click on a task's title to see details about that task.\n\n");
+      msg.append("If you have a standards-compliant calendar system, you can add this " +
+              "task by opening the enclosed file whose name ends with \".ics.\" ");
+      msg.append(" You can keep your task list current by checking off tasks in your CalCentral My Tasks widget as you complete them.");
+    } else {
+      msg.append("* If necessary, scroll down to see your My Events widget. \n" +
+              "* Click on an event's title to see details about that event.\n\n");
+      msg.append("If you have a standards-compliant calendar system, you can add this " +
+              "event by opening the enclosed file whose name ends with \".ics.\" ");
+    }
+    msg.append("\n\n");
+
+    email.setMsg(msg.toString());
 
     // attach .ics file
     CalendarDatasource datasource = new CalendarDatasource(notification.getWrapper());
-    email.attach(datasource, datasource.getName(), ".ics calendar file");
+    email.attach(datasource, "CalCentral-" + datasource.getName(), ".ics calendar file");
 
     this.emailSender.prepareMessage(email);
 
@@ -162,22 +197,6 @@ public class CalendarNotificationEmailer {
     email.getMimeMessage().addHeader("To", REMINDER_RECIPIENT);
 
     return email;
-  }
-
-  private String getSubjectPrefix(CalendarNotification notification) {
-    if (notification.getWrapper().isRequired()) {
-      if (notification.getWrapper().getComponent() instanceof VToDo) {
-        return SUBJECT_PREFIX_TASK_REQUIRED;
-      } else {
-        return SUBJECT_PREFIX_EVENT_REQUIRED;
-      }
-    } else {
-      if (notification.getWrapper().getComponent() instanceof VToDo) {
-        return SUBJECT_PREFIX_TASK;
-      } else {
-        return SUBJECT_PREFIX_EVENT;
-      }
-    }
   }
 
   private class CalendarDatasource implements DataSource {
