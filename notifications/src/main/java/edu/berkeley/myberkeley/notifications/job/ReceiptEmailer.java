@@ -112,16 +112,16 @@ public class ReceiptEmailer {
     if ( notification instanceof CalendarNotification ) {
       CalendarNotification calendarNotification = (CalendarNotification) notification;
       if (calendarNotification.getWrapper().getComponent() instanceof VToDo) {
-        email.setSubject("CalCentral delivered your task");
+        email.setSubject("CalCentral has delivered your task");
         msg.append("CalCentral delivered this task:");
       } else {
         type = "Event";
-        email.setSubject("CalCentral delivered your event");
+        email.setSubject("CalCentral has delivered your event");
         msg.append("CalCentral delivered this event:");
       }
     } else {
       type = "Message";
-      email.setSubject("CalCentral delivered your message");
+      email.setSubject("CalCentral has delivered your message");
       msg.append("CalCentral delivered this message:");
     }
 
