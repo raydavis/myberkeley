@@ -1,6 +1,5 @@
 package edu.berkeley.myberkeley.notifications.job;
 
-import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import edu.berkeley.myberkeley.notifications.MessageNotification;
 import edu.berkeley.myberkeley.notifications.Notification;
@@ -17,12 +16,10 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
-import org.sakaiproject.nakamura.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -109,41 +106,55 @@ public class ReceiptEmailer {
     }
 
     // body and subject
-    StringBuilder msg;
+    StringBuilder msg = new StringBuilder("This is an automated message from CalCentral.\n\n");
+    String type = "Task";
+
     if ( notification instanceof CalendarNotification ) {
       CalendarNotification calendarNotification = (CalendarNotification) notification;
       if (calendarNotification.getWrapper().getComponent() instanceof VToDo) {
-        email.setSubject("CalCentral delivered a task notification");
-        msg = new StringBuilder("CalCentral delivered a task notification to the following students at ");
+        email.setSubject("CalCentral delivered your task");
+        msg.append("CalCentral delivered this task:");
       } else {
-        email.setSubject("CalCentral delivered an event notification");
-        msg = new StringBuilder("CalCentral delivered an event notification to the following students at ");
+        type = "Event";
+        email.setSubject("CalCentral delivered your event");
+        msg.append("CalCentral delivered this event:");
       }
     } else {
-      email.setSubject("CalCentral delivered a message");
-      msg = new StringBuilder("CalCentral delivered a message to the following students at ");
+      type = "Message";
+      email.setSubject("CalCentral delivered your message");
+      msg.append("CalCentral delivered this message:");
     }
 
+    msg.append("\n");
+
+    if ( notification instanceof CalendarNotification ) {
+      CalendarNotification calendarNotification = (CalendarNotification) notification;
+      msg.append("\n").append(type).append(" Subject: ");
+      msg.append(calendarNotification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
+      msg.append("\n").append(type).append(" Body: ");
+      msg.append(calendarNotification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
+
+    } else {
+      MessageNotification msgNotification = (MessageNotification) notification;
+      msg.append("\n").append(type).append(" Subject: ");
+      msg.append(msgNotification.getSubject());
+      msg.append("\n").append(type).append(" Body: ");
+      msg.append(msgNotification.getBody());
+    }
+
+    msg.append("\n\nto the following student(s) at ");
     msg.append(DATE_FORMAT.format(new Date())).append(":\n\n");
 
     for ( String recip : recipientEmails ) {
       msg.append(recip).append("\n");
     }
 
-    if ( notification instanceof CalendarNotification ) {
-      CalendarNotification calendarNotification = (CalendarNotification) notification;
-      msg.append("\nSubject: ");
-      msg.append(calendarNotification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
-      msg.append("\nBody: ");
-      msg.append(calendarNotification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue());
+    msg.append("\n\nTo see all of the tasks, events and messages you've created: \n\n" +
+            "  * Log on to CalCentral at http://calcentral.berkeley.edu \n" +
+            "  * On the top menu, click Me. \n" +
+            "  * On the left navigation menu, click My Notifications. \n" +
+            "  * Choose Drafts, Queue, Archive or Trash.\n\n");
 
-    } else {
-      MessageNotification msgNotification = (MessageNotification) notification;
-      msg.append("\nSubject: ");
-      msg.append(msgNotification.getSubject());
-      msg.append("\nBody: ");
-      msg.append(msgNotification.getBody());
-    }
     email.setMsg(msg.toString());
     this.emailSender.prepareMessage(email);
 
