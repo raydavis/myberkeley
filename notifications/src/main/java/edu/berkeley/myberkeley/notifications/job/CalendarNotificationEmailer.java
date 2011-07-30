@@ -80,7 +80,7 @@ public class CalendarNotificationEmailer {
       slingSession = this.slingRepository.loginAdministrative(null);
       List<String> recipAddresses = getRecipientEmails(recipientIDs, adminSession, slingSession);
       MultiPartEmail email = buildEmail(notification, recipAddresses, adminSession, slingSession);
-      this.emailSender.send(email);
+      messageID = this.emailSender.send(email);
 
     } catch (AccessDeniedException e) {
       LOGGER.error("CalendarNotificationEmailer failed", e);
