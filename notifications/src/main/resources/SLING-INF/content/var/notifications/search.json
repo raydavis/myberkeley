@@ -3,5 +3,10 @@
   "sakai:propertyprovider" : "Notification",
   "sakai:resultprocessor":"Notification",
   "sling:resourceType": "sakai/sparse-search",
-  "sakai:title": "Notifications"
+  "sakai:title": "Notifications",
+  "sakai:query-template-options": {
+      "sort": "${sortOn} ${sortOrder}"
+  },
+  "sortOn": "_created",
+  "sortOrder": "asc"
 }
