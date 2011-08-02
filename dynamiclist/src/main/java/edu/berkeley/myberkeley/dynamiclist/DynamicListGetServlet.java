@@ -6,6 +6,7 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
@@ -51,14 +52,39 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
 
     JSONWriter writer = new JSONWriter(response.getWriter());
     writer.setTidy(isTidy(request));
+
+    int page = 0;
+    int items = 10;
+
+    RequestParameter pageParam = request.getRequestParameter("page");
+    if (pageParam != null) {
+      try {
+        page = Integer.valueOf(pageParam.toString());
+      } catch (NumberFormatException ignored) {
+
+      }
+    }
+
+    RequestParameter itemsParam = request.getRequestParameter("items");
+    if (itemsParam != null) {
+      try {
+        items = Integer.valueOf(itemsParam.toString());
+      } catch (NumberFormatException ignored) {
+
+      }
+    }
+
     response.setContentType("application/json");
     response.setCharacterEncoding(CharEncoding.UTF_8);
 
     try {
-      List<Content> lists = findLists(content, session.getContentManager());
+      List<Content> lists = new ArrayList<Content>();
+      int total = findLists(lists, content, session.getContentManager(), page, items);
 
       if (isStore(content)) {
         writer.object();
+        writer.key("total");
+        writer.value(total);
       }
 
       for (Content list : lists) {
@@ -110,21 +136,30 @@ public class DynamicListGetServlet extends SlingSafeMethodsServlet {
     return DynamicListService.DYNAMIC_LIST_STORE_RT.equals(resourceType);
   }
 
-  private List<Content> findLists(Content parent, ContentManager contentManager) throws StorageClientException {
-    List<Content> nodes = new ArrayList<Content>();
+  private int findLists(List<Content> nodes, Content parent, ContentManager contentManager, int page, int items) throws StorageClientException {
+    int totalLists = 0;
     if (isStore(parent)) {
+      int currentPage = 0;
+      int listsSeen = 0;
       Iterator<Content> lists = contentManager.listChildren(parent.getPath());
-      while (lists.hasNext()) {
+      while (lists.hasNext() ) {
         Content list = lists.next();
         String resourceType = (String) list.getProperty("sling:resourceType");
         if (DynamicListService.DYNAMIC_LIST_RT.equals(resourceType)) {
-          nodes.add(list);
+          listsSeen++;
+          totalLists++;
+          if ( currentPage == page && nodes.size() < items ) {
+            nodes.add(list);
+          }
+        }
+        if ( listsSeen % items == 0 ) {
+          currentPage++;
         }
       }
     } else {
       nodes.add(parent);
     }
-    return nodes;
+    return totalLists;
   }
 
 }
