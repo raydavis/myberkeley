@@ -168,8 +168,7 @@ public class CalendarNotificationEmailer {
     msg.append(type).append(" Body: ").append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue()).append("\n\n");
 
     msg.append("To view this ").append(type).append(" in CalCentral:\n\n");
-    msg.append("* Log on to CalCentral at http://calcentral.berkeley.edu \n" +
-            "* On the top menu, click Me. \n");
+    msg.append("* Log on to CalCentral at http://calcentral.berkeley.edu \n");
 
     if (isTask) {
       msg.append("* If necessary, scroll down to see your My Tasks widget. \n" +
