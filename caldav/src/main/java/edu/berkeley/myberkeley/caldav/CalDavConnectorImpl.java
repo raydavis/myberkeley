@@ -36,6 +36,8 @@ import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
+import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -48,6 +50,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.MultiStatus;
 import org.apache.jackrabbit.webdav.MultiStatusResponse;
@@ -67,13 +70,17 @@ import org.apache.jackrabbit.webdav.security.Privilege;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ucar.unidata.util.DateUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -220,7 +227,23 @@ public class CalDavConnectorImpl implements CalDavConnector {
 
     Filter vcalComp = new Filter("VCALENDAR");
     Filter subcomponent = new Filter(Component.VTODO);
-    subcomponent.setTimeRange(new TimeRange(new DateTime(0), new DateTime()));
+
+    Date midnightTomorrow = DateUtils.addDays(new Date(), 1);
+    midnightTomorrow = DateUtils.setHours(midnightTomorrow, 0);
+    midnightTomorrow = DateUtils.setMinutes(midnightTomorrow, 0);
+    midnightTomorrow = DateUtils.setSeconds(midnightTomorrow, 0);
+    midnightTomorrow = DateUtils.setMilliseconds(midnightTomorrow, 0);
+    DateFormat utcFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+    TimeZoneRegistry registry = new CalendarBuilder().getRegistry();
+    TimeZone gmt = registry.getTimeZone("Europe/London");
+    try {
+      DateTime endTime = new DateTime(utcFormat.format(midnightTomorrow), gmt);
+      subcomponent.setTimeRange(new TimeRange(new DateTime(0), endTime));
+      LOGGER.info("End time for overdue task search = " + endTime.toString());
+    } catch (ParseException ignored) {
+      // won't happen since we formatted the date ourselves
+    }
+
     vcalComp.setCompFilter(Arrays.asList(subcomponent));
     ReportInfo reportInfo = new CalendarQueryReportInfo(new RequestCalendarData(), vcalComp);
 
