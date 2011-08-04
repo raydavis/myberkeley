@@ -148,65 +148,74 @@ public class SendNotificationsJob implements Job {
   private void sendNotification(Content result, Session adminSession) throws IOException {
 
     boolean success = false;
-    Notification notification;
-    RecipientLog recipientLog;
+    Notification notification = null;
+    RecipientLog recipientLog = null;
     Session userSession = null;
     Collection<String> userIDs = null;
+    String errMsg = null;
 
     try {
       notification = NotificationFactory.getFromContent(result);
       recipientLog = new RecipientLog(result.getPath(), adminSession);
     } catch (JSONException e) {
-      LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
-      return;
+      errMsg = "Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper";
+      LOGGER.error(errMsg, e);
     } catch (CalDavException e) {
-      LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
-      return;
+      errMsg = "Notification at path " + result.getPath() + " has invalid calendar data";
+      LOGGER.error(errMsg, e);
     } catch (AccessDeniedException e) {
-      LOGGER.error("Got error fetching log for notification at path " + result.getPath(), e);
-      return;
+      errMsg = "Got error fetching log for notification at path " + result.getPath();
+      LOGGER.error(errMsg, e);
     } catch (StorageClientException e) {
-      LOGGER.error("Got error fetching log for notification at path " + result.getPath(), e);
-      return;
+      errMsg = "Got error fetching log for notification at path " + result.getPath();
+      LOGGER.error(errMsg, e);
     }
 
-    try {
+    if (notification != null && recipientLog != null) {
+      try {
 
-      Content dynamicList = adminSession.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
-      if (dynamicList == null) {
-        LOGGER.error("Dynamic list is null for notification at path " + result.getPath()
-                + "; dynamic list path = " + notification.getDynamicListID());
-        return;
-      }
+        Content dynamicList = adminSession.getContentManager().get(PathUtils.toUserContentPath(notification.getDynamicListID()));
+        if (dynamicList == null) {
+          errMsg = "Dynamic list is null for notification at path " + result.getPath()
+                  + "; dynamic list path = " + notification.getDynamicListID();
+          LOGGER.error(errMsg);
+        } else {
 
-      userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, adminSession);
-      LOGGER.info("Dynamic list includes these user ids: " + userIDs);
+          userIDs = this.dynamicListService.getUserIdsForNode(dynamicList, adminSession);
+          LOGGER.info("Dynamic list includes these user ids: " + userIDs);
 
-      if (notification instanceof CalendarNotification) {
-        success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
-      } else if (notification instanceof MessageNotification) {
-        userSession = this.sparseRepository.loginAdministrative(notification.getSenderID());
-        success = sendMessageNotification(result, (MessageNotification) notification, recipientLog, userIDs, userSession);
-      }
-
-    } catch (JSONException e) {
-      LOGGER.error("Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper", e);
-    } catch (BadRequestException e) {
-      LOGGER.error("Got bad request from CalDav server trying to post notification at path " + result.getPath(), e);
-    } catch (CalDavException e) {
-      LOGGER.error("Notification at path " + result.getPath() + " has invalid calendar data", e);
-    } catch (RepositoryException e) {
-      LOGGER.error("Got repo exception processing notification at path " + result.getPath(), e);
-    } catch (StorageClientException e) {
-      LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
-    } catch (AccessDeniedException e) {
-      LOGGER.error("Got error fetching filter criteria for notification at path " + result.getPath(), e);
-    } finally {
-      if (userSession != null) {
-        try {
-          userSession.logout();
-        } catch (ClientPoolException e) {
-          LOGGER.error("SendNotificationsJob failed to log out of user session", e);
+          if (notification instanceof CalendarNotification) {
+            success = sendCalendarNotification(result, (CalendarNotification) notification, recipientLog, userIDs);
+          } else if (notification instanceof MessageNotification) {
+            userSession = this.sparseRepository.loginAdministrative(notification.getSenderID());
+            success = sendMessageNotification(result, (MessageNotification) notification, recipientLog, userIDs, userSession);
+          }
+        }
+      } catch (JSONException e) {
+        errMsg = "Notification at path " + result.getPath() + " has invalid JSON for calendarWrapper";
+        LOGGER.error(errMsg, e);
+      } catch (BadRequestException e) {
+        errMsg = "Got bad request from CalDav server trying to post notification at path " + result.getPath();
+        LOGGER.error(errMsg, e);
+      } catch (CalDavException e) {
+        errMsg = "Notification at path " + result.getPath() + " has invalid calendar data";
+        LOGGER.error(errMsg, e);
+      } catch (RepositoryException e) {
+        errMsg = "Got repo exception processing notification at path " + result.getPath();
+        LOGGER.error(errMsg, e);
+      } catch (StorageClientException e) {
+        errMsg = "Got StorageClientException fetching filter criteria for notification at path " + result.getPath();
+        LOGGER.error(errMsg, e);
+      } catch (AccessDeniedException e) {
+        errMsg = "Got AccessDeniedException fetching filter criteria for notification at path " + result.getPath();
+        LOGGER.error(errMsg, e);
+      } finally {
+        if (userSession != null) {
+          try {
+            userSession.logout();
+          } catch (ClientPoolException e) {
+            LOGGER.error("SendNotificationsJob failed to log out of user session", e);
+          }
         }
       }
     }
@@ -216,10 +225,16 @@ public class SendNotificationsJob implements Job {
       result.setProperty(Notification.JSON_PROPERTIES.messageBox.toString(), Notification.MESSAGEBOX.archive.toString());
       result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.sent.toString());
       this.receiptEmailer.send(notification, userIDs);
+    } else {
+      // mark it errored so we don't try to send it again
+      result.setProperty(Notification.JSON_PROPERTIES.errMsg.toString(), errMsg);
+      result.setProperty(Notification.JSON_PROPERTIES.sendState.toString(), Notification.SEND_STATE.error.toString());
     }
 
     try {
-      recipientLog.update(adminSession.getContentManager());
+      if (recipientLog != null) {
+        recipientLog.update(adminSession.getContentManager());
+      }
       adminSession.getContentManager().update(result);
     } catch (AccessDeniedException e) {
       LOGGER.error("Got access denied saving notification at path " + result.getPath(), e);

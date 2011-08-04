@@ -43,7 +43,8 @@ public abstract class Notification {
 
   public enum SEND_STATE {
     pending,
-    sent
+    sent,
+    error
   }
 
   @SuppressWarnings({"UnusedDeclaration"})
@@ -68,7 +69,8 @@ public abstract class Notification {
       }
     },
     dynamicListID,
-    uxState
+    uxState,
+    errMsg
   }
 
   protected TYPE type;
