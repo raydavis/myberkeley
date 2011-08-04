@@ -228,16 +228,16 @@ public class CalDavConnectorImpl implements CalDavConnector {
     Filter vcalComp = new Filter("VCALENDAR");
     Filter subcomponent = new Filter(Component.VTODO);
 
-    Date midnightTomorrow = DateUtils.addDays(new Date(), 1);
-    midnightTomorrow = DateUtils.setHours(midnightTomorrow, 0);
-    midnightTomorrow = DateUtils.setMinutes(midnightTomorrow, 0);
-    midnightTomorrow = DateUtils.setSeconds(midnightTomorrow, 0);
-    midnightTomorrow = DateUtils.setMilliseconds(midnightTomorrow, 0);
+    Date midnightToday = new Date();
+    midnightToday = DateUtils.setHours(midnightToday, 0);
+    midnightToday = DateUtils.setMinutes(midnightToday, 0);
+    midnightToday = DateUtils.setSeconds(midnightToday, 0);
+    midnightToday = DateUtils.setMilliseconds(midnightToday, 0);
     DateFormat utcFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
     TimeZoneRegistry registry = new CalendarBuilder().getRegistry();
     TimeZone gmt = registry.getTimeZone("Europe/London");
     try {
-      DateTime endTime = new DateTime(utcFormat.format(midnightTomorrow), gmt);
+      DateTime endTime = new DateTime(utcFormat.format(midnightToday), gmt);
       subcomponent.setTimeRange(new TimeRange(new DateTime(0), endTime));
       LOGGER.info("End time for overdue task search = " + endTime.toString());
     } catch (ParseException ignored) {
