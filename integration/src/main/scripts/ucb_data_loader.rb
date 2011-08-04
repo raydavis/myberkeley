@@ -129,8 +129,7 @@ module MyBerkeleyData
         username = user[0]
         user_props = user[1]
         make_adviser_props user_props
-        # This will return nil if the user already exists.
-        loaded_user = create_user_with_props username, user_props
+        (loaded_user, new_user) = load_user username, user_props
         return loaded_user
     end
 
@@ -146,7 +145,7 @@ module MyBerkeleyData
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_student_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
-        loaded_calnet_test_user = load_user uid, user_props
+        (loaded_calnet_test_user, new_user) = load_user uid, user_props
         apply_demographic uid, user_props
         i = i + 1
       end
@@ -327,14 +326,18 @@ module MyBerkeleyData
     end
 
     def load_user(username, user_props, password=nil)
-      target_user = create_user_with_props username, user_props, password
-
-      # if user exists, they will not be (re)created but props may be updated
-      if (target_user.nil?)
-        puts "user #{username} not created, may already exist, attempting to update properties of user: #{user_props.inspect}"
+      res = @sling.execute_get(@sling.url_for("system/userManager/user.exists.html"), {
+        "userid" => username
+      })
+      new_user = (res.code == "404")
+      if (new_user)
+        target_user = create_user_with_props username, user_props, password
+      else
+        # if user exists, they will not be (re)created but props may be updated
+        puts "user #{username} already exists, attempting to update properties of user: #{user_props.inspect}"
         target_user = update_user(username, user_props)
       end
-      return target_user
+      return target_user, new_user
     end
 
     def update_user(username, user_props, password=nil)

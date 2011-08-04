@@ -30,6 +30,10 @@ module MyBerkeleyData
       @oracle_sid = options[:oraclesid]
 
       @remaining_accounts = []
+      @new_users = []
+      @dropped_accounts = []
+      @renewed_accounts = []
+      @synchronized_accounts = []
 
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
@@ -228,9 +232,19 @@ module MyBerkeleyData
       else
         user_password = "testuser"
       end
-      user = @ucb_data_loader.load_user person_uid, props, user_password
+      (user, new_user) = @ucb_data_loader.load_user(person_uid, props, user_password)
       if (@remaining_accounts.include?(person_uid))
+        @synchronized_accounts.push(person_uid)
         @remaining_accounts.delete(person_uid)
+      else
+        if (new_user)
+          @new_users.push(person_uid)
+        else
+          demog = props["myb-demographics"]
+          if (!demog.nil? && !demog.empty?)
+            @renewed_accounts.push(person_uid)
+          end
+        end
       end
       user
     end
@@ -245,7 +259,6 @@ module MyBerkeleyData
     end
 
     def drop_stale_accounts
-      @log.info("Remaining accounts = #{@remaining_accounts.inspect}")
       iterating_copy = Array.new(@remaining_accounts)
       iterating_copy.each do |account_uid|
         drop_account(account_uid)
@@ -270,7 +283,8 @@ module MyBerkeleyData
         ":removeTree" => "true",
         ":content" => '{"elements":{}}'
       })
-      
+
+      @dropped_accounts.push(account_uid)
       @remaining_accounts.delete(account_uid)
     end
 
@@ -298,6 +312,7 @@ module MyBerkeleyData
           demographics = user_props["demographics"]
           if (!demographics.nil?)
             # WARNING: This will wipe out any existing campus demographics.
+            @renewed_accounts.delete(user_id)
             @ucb_data_loader.apply_demographic(user_id, {"myb-demographics" => demographics})
           end
         end
@@ -315,6 +330,13 @@ module MyBerkeleyData
           response = http.request(req)
         }
       end
+    end
+    
+    def report_activity
+      @log.info("Synchronized #{@synchronized_accounts.length} existing accounts")
+      @log.info("Added #{@new_users.length} new users: #{@new_users.inspect}")
+      @log.info("Renewed #{@renewed_accounts.length} synchronizations: #{@renewed_accounts.inspect}")
+      @log.info("Dropped #{@dropped_accounts.length} synchronizations: #{@dropped_accounts.inspect}")
     end
 
   end
@@ -387,5 +409,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl.load_all_students
   odl.load_additional_accounts
   odl.drop_stale_accounts
+  odl.report_activity
 
 end
