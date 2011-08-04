@@ -101,9 +101,11 @@ public class GetIntegratedUserIdsServlet extends SlingSafeMethodsServlet {
       JSONWriter write = new JSONWriter(response.getWriter());
       write.object().key("userIds").array();
       for (Content demographicNode : demographicNodes) {
-        String path = demographicNode.getPath();
-        String userId = PathUtils.getAuthorizableId(path);
-        write.value(userId);
+        if (demographicNode.hasProperty(DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP)) {
+          String path = demographicNode.getPath();
+          String userId = PathUtils.getAuthorizableId(path);
+          write.value(userId);
+        }
       }
       write.endArray().endObject();
     } catch (StorageClientException e) {
