@@ -3,18 +3,23 @@
 # script to reinstall myberkeley on calcentral-dev/calcentral-qa, while preserving content repository
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 source_root sling_password logfile"
+    echo "Usage: $0 source_root logfile"
     exit;
 fi
 
 SRC_LOC=$1
-SLING_PASSWORD=$2
-LOG=$3
 
-if [ -z "$3" ]; then
-    LOG=/dev/null
+INPUT_FILE="$SRC_LOC/.build.cf"
+if [ -f $INPUT_FILE ]; then
+  SLING_PASSWORD=`awk -F"=" '/APPLICATION_PASSWORD/ {print $2}' $INPUT_FILE`
+else
+  SLING_PASSWORD='admin'
 fi
 
+LOG=$2
+if [ -z "$2" ]; then
+    LOG=/dev/null
+fi
 LOGIT="tee -a $LOG"
 
 echo "=========================================" | $LOGIT
