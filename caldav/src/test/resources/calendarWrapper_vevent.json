@@ -5,12 +5,13 @@
   "isRequired":true,
   "isArchived":false,
   "isCompleted":false,
+  "isRead":true,
   "icalData":{
     "DTSTAMP":"2011-03-31T15:15:06-07:00",
     "DTSTART":"2011-04-11T15:15:06-07:00",
     "SUMMARY":"a test event",
     "UID":"e86bd618-bdc4-4881-8407-158e4bba7570",
-    "CATEGORIES":["MyBerkeley-Required","MyBerkeley-Archived"],
+    "CATEGORIES":["MyBerkeley-Required","MyBerkeley-Archived","MyBerkeley-Read"],
     "DESCRIPTION":"this is the description, it is long enough to wrap at the ical specified standard 75th column",
     "LOCATION":"My desk"
   }

@@ -27,7 +27,6 @@ import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
@@ -243,6 +242,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
       boolean isArchived = thisItem.getBoolean("isArchived");
       boolean isCompleted = thisItem.getBoolean("isCompleted");
+      boolean isRead = thisItem.getBoolean("isRead");
       if (isArchived) {
         component.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
       } else {
@@ -254,7 +254,11 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
       } else {
         component.getProperties().remove(Status.VTODO_COMPLETED);
       }
-
+      if (isRead) {
+        component.getProperties().add(CalDavConnector.MYBERKELEY_READ);
+      } else {
+        component.getProperties().remove(CalDavConnector.MYBERKELEY_READ);
+      }
       connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar());
     }
   }

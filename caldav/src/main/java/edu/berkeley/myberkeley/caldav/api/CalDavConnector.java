@@ -30,6 +30,7 @@ import java.util.List;
 public interface CalDavConnector {
   Categories MYBERKELEY_REQUIRED = new Categories("MyBerkeley-Required");
   Categories MYBERKELEY_ARCHIVED = new Categories("MyBerkeley-Archived");
+  Categories MYBERKELEY_READ = new Categories("MyBerkeley-Read");
 
   CalendarURI putCalendar(Calendar calendar) throws CalDavException, IOException;
 
