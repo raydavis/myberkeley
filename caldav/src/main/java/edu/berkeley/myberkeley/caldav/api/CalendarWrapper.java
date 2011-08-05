@@ -66,7 +66,6 @@ public class CalendarWrapper implements Serializable {
     isRequired,
     isCompleted,
     isArchived,
-    isRead,
     icalData
   }
 
@@ -221,7 +220,6 @@ public class CalendarWrapper implements Serializable {
     boolean isRequired = false;
     boolean isArchived = false;
     boolean isCompleted = false;
-    boolean isRead = false;
 
     PropertyList propertyList = this.component.getProperties();
     for (Object o : propertyList) {
@@ -243,9 +241,6 @@ public class CalendarWrapper implements Serializable {
         if (CalDavConnector.MYBERKELEY_REQUIRED.getValue().equals(value)) {
           isRequired = true;
         }
-        if (CalDavConnector.MYBERKELEY_READ.getValue().equals(value)) {
-          isRead = true;
-        }
       }
       icalData.put(property.getName(), value);
     }
@@ -259,7 +254,6 @@ public class CalendarWrapper implements Serializable {
     json.put(JSON_PROPERTY_NAMES.isRequired.toString(), isRequired);
     json.put(JSON_PROPERTY_NAMES.isArchived.toString(), isArchived);
     json.put(JSON_PROPERTY_NAMES.isCompleted.toString(), isCompleted);
-    json.put(JSON_PROPERTY_NAMES.isRead.toString(), isRead);
     json.put(JSON_PROPERTY_NAMES.icalData.toString(), icalData);
     return json;
   }
@@ -299,11 +293,6 @@ public class CalendarWrapper implements Serializable {
     PropertyList propList = this.component.getProperties(Property.CATEGORIES);
     return propList != null && propList.contains(CalDavConnector.MYBERKELEY_ARCHIVED);
   }
-
-  public boolean isRead() {
-      PropertyList propList = this.component.getProperties(Property.CATEGORIES);
-      return propList != null && propList.contains(CalDavConnector.MYBERKELEY_READ);
-    }
 
   private DateTime getDateTimeFromJSON(String json, TimeZoneRegistry registry) {
     ISO8601Date dateISO8601 = new ISO8601Date(json);

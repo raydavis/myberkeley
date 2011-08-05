@@ -70,7 +70,6 @@ public class CalendarWrapperTest extends CalDavTests {
     assertTrue(wrapper.isCompleted());
     assertTrue(wrapper.isArchived());
     assertTrue(wrapper.isRequired());
-    assertFalse(wrapper.isRead());
   }
 
   @Test
@@ -112,7 +111,6 @@ public class CalendarWrapperTest extends CalDavTests {
     assertNotNull(wrapper.getComponent().getProperty(Property.LOCATION));
     // check for nondestructive deserialization
     assertEquals(wrapper, new CalendarWrapper(wrapper.toJSON()));
-    assertTrue(wrapper.isRead());
   }
 
   @Test
