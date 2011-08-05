@@ -2,21 +2,25 @@
   {
     "uri":"/cal1",
     "isCompleted":true,
-    "isArchived":true
+    "isArchived":true,
+    "isRead":false
   },
   {
     "uri":"/cal2",
     "isCompleted":false,
-    "isArchived":true
+    "isArchived":true,
+    "isRead":false
   },
   {
     "uri":"/cal3",
     "isCompleted":true,
-    "isArchived":false
+    "isArchived":false,
+    "isRead":false
   },
   {
     "uri":"/cal4",
     "isCompleted":false,
-    "isArchived":false
+    "isArchived":false,
+    "isRead":false
   }
 ]
