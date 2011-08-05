@@ -17,8 +17,24 @@ require 'sling/sling'
 require 'sling/users'
 require 'ucb_data_loader'
 
+## Block sling.rb's monkeying with form values.
+module Net::HTTPHeader
+  def encode_kvpair(k, vs)
+    if vs.nil? or vs == '' then
+      "#{urlencode(k)}="
+    elsif vs.kind_of?(Array)
+      # In Ruby 1.8.7, Array(string-with-newlines) will split the string
+      # after each embedded newline.
+      Array(vs).map {|v| "#{urlencode(k)}=#{urlencode(v.to_s)}" }
+    else
+      "#{urlencode(k)}=#{urlencode(vs.to_s)}"
+    end
+  end
+end
+
 module MyBerkeleyData
   COLLEGES = "'ENV DSGN', 'NAT RES'"
+  CALCENTRAL_TEAM_GROUP = "CalCentral-Team"
   class OracleDataLoader
     attr_reader :ucb_data_loader
 
@@ -337,6 +353,27 @@ module MyBerkeleyData
       @log.info("Added #{@new_users.length} new users: #{@new_users.inspect}")
       @log.info("Renewed #{@renewed_accounts.length} synchronizations: #{@renewed_accounts.inspect}")
       @log.info("Dropped #{@dropped_accounts.length} synchronizations: #{@dropped_accounts.inspect}")
+      res = @sling.execute_get(@sling.url_for("~#{CALCENTRAL_TEAM_GROUP}.json"))
+      if (res.code == "200")
+        messagebody = "* Synchronized #{@synchronized_accounts.length} existing accounts\n" +
+          "* Added #{@new_users.length} new users\n" +
+          "* Renewed #{@renewed_accounts.length} synchronizations\n" +
+          "* Dropped #{@dropped_accounts.length} synchronizations\n"
+        subjectline = Time.now.strftime("%Y-%m-%d") + " Oracle account updates"
+        res = @sling.execute_post(@sling.url_for("~admin/message.create.html"), {
+          "sakai:type" => "internal", 
+          "sakai:sendstate" => "pending", 
+          "sakai:messagebox" => "outbox", 
+          "sakai:to" => "internal:#{CALCENTRAL_TEAM_GROUP}", 
+          "sakai:from" => "admin", 
+          "sakai:subject" => subjectline, 
+          "sakai:body" => messagebody, 
+          "sakai:category" => "message"
+        })
+        if (res.code != "200")
+          @log.warn("Not able to send status update: #{res.code}, #{res.body}")
+        end
+      end
     end
 
   end
