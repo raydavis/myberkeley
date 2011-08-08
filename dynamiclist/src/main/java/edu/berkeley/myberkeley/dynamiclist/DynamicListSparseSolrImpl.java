@@ -102,7 +102,7 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
         LOGGER.warn("AT PAGE SIZE LIMIT!");
       }
       for (SolrDocument solrDocument : resultList) {
-        LOGGER.info("  solrDocument=" + solrDocument.getFieldValuesMap());
+        LOGGER.debug("  solrDocument=" + solrDocument.getFieldValuesMap());
         String fullPath = (String) solrDocument.getFirstValue("path");
         String userId = PathUtils.getAuthorizableId(fullPath);
         matchingIds.add(userId);
