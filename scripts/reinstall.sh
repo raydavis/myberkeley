@@ -12,8 +12,10 @@ SRC_LOC=$1
 INPUT_FILE="$SRC_LOC/.build.cf"
 if [ -f $INPUT_FILE ]; then
   SLING_PASSWORD=`awk -F"=" '/APPLICATION_PASSWORD/ {print $2}' $INPUT_FILE`
+  SHARED_SECRET=`awk -F"=" '/SHARED_SECRET/ {print $2}' $INPUT_FILE`
 else
   SLING_PASSWORD='admin'
+  SHARED_SECRET='SHARED_SECRET_CHANGE_ME_IN_PRODUCTION'
 fi
 
 LOG=$2
@@ -33,6 +35,14 @@ mvn -B -e -Dsling.stop -P runner verify >>$LOG 2>&1 | $LOGIT
 echo "`date`: Cleaning sling directories..." | $LOGIT
 mvn -B -e -P runner -Dsling.purge clean >>$LOG 2>&1 | $LOGIT
 rm -rf ~/.m2/repository/edu/berkeley
+
+# put the shared secret into config file
+SERVER_PROT_CFG=./working/load/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.config
+if [ -f $SERVER_PROT_CFG ]; then
+  grep -v trusted\.secret= $SERVER_PROT_CFG > $SERVER_PROT_CFG.new
+  echo "trusted.secret=\"$SHARED_SECRET\"" >> $SERVER_PROT_CFG.new
+  mv -f $SERVER_PROT_CFG.new $SERVER_PROT_CFG
+fi
 
 echo "`date`: Fetching new sources for myberkeley..." | $LOGIT
 git pull >>$LOG 2>&1
