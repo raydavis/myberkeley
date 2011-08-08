@@ -348,17 +348,37 @@ module MyBerkeleyData
       end
     end
     
+    def get_student_count(dynamicListContext, collegeId)
+      res = @sling.execute_get(@sling.url_for("var/myberkeley/dynamiclists/#{dynamicListContext}.json"), {
+        "criteria" => "{ANY:['/colleges/#{collegeId}/standings/grad','/colleges/#{collegeId}/standings/undergrad']}"
+      })
+      if (res.code == "200")
+        return (JSON.parse(res.body))["count"]
+      else
+        @log.warn("Not able to check number of students: #{res.code}, #{res.body}")
+        return "Unknown"
+      end
+   end
+    
     def report_activity
       @log.info("Synchronized #{@synchronized_accounts.length} existing accounts")
       @log.info("Added #{@new_users.length} new users: #{@new_users.inspect}")
       @log.info("Renewed #{@renewed_accounts.length} synchronizations: #{@renewed_accounts.inspect}")
       @log.info("Dropped #{@dropped_accounts.length} synchronizations: #{@dropped_accounts.inspect}")
+      # Wait for indexing.
+      sleep(4)
+      cedStudentCount = get_student_count("myb-ced-students", 'ENV DSGN')
+      cnrStudentCount = get_student_count("myb-cnr-students", 'NAT RES')
+      @log.info("#{cedStudentCount} CED Students")
+      @log.info("#{cnrStudentCount} CNR Students")
       res = @sling.execute_get(@sling.url_for("~#{CALCENTRAL_TEAM_GROUP}.json"))
       if (res.code == "200")
         messagebody = "* Synchronized #{@synchronized_accounts.length} existing accounts\n" +
           "* Added #{@new_users.length} new users\n" +
           "* Renewed #{@renewed_accounts.length} synchronizations\n" +
-          "* Dropped #{@dropped_accounts.length} synchronizations\n"
+          "* Dropped #{@dropped_accounts.length} synchronizations\n" +
+          "* #{cedStudentCount} CED Students\n" +
+          "* #{cnrStudentCount} CNR Students\n"
         subjectline = Time.now.strftime("%Y-%m-%d") + " Oracle account updates"
         res = @sling.execute_post(@sling.url_for("~admin/message.create.html"), {
           "sakai:type" => "internal", 
