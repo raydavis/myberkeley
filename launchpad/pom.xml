@@ -53,12 +53,6 @@
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.core-myberkeley</artifactId>
-              <version>${ianproperty.version}</version>
-              <startLevel>15</startLevel>
-            </bundle>
-            <bundle>
-              <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
               <version>${ianproperty.version}</version>
               <startLevel>15</startLevel>
@@ -102,10 +96,6 @@
             </bundle>
           </additionalBundles>
           <bundleExclusions>
-            <bundle>
-              <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.core</artifactId>
-            </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr</artifactId>
