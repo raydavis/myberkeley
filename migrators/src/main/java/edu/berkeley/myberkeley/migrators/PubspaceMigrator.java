@@ -54,6 +54,7 @@ public class PubspaceMigrator {
       int page = 0;
       int processed = 0;
       int upgradeable = 0;
+      int upgraded = 0;
 
       // Search for all users and page through em
       SolrServer server = solrServerService.getServer();
@@ -71,6 +72,7 @@ public class PubspaceMigrator {
         SolrDocumentList resultDocs = response.getResults();
 
         for (SolrDocument doc : resultDocs) {
+          boolean dirty = false;
           String id = (String) doc.get("id");
           processed++;
 
@@ -101,26 +103,31 @@ public class PubspaceMigrator {
                   JSONObject email = profile.getJSONObject("email");
                   if (!email.has("_view")) {
                     email.put("_view", "private");
+                    dirty = true;
                   }
 
                   JSONObject inst = profile.getJSONObject("institutional");
                   if (!inst.has("_view")) {
                     inst.put("_view", "everyone");
+                    dirty = true;
                   }
 
                   JSONObject about = profile.getJSONObject("aboutme");
                   if (!about.has("_view")) {
                     about.put("_view", "everyone");
+                    dirty = true;
                   }
 
                   JSONObject locations = profile.getJSONObject("locations");
                   if (!locations.has("_view")) {
                     locations.put("_view", "everyone");
+                    dirty = true;
                   }
 
                   JSONObject publications = profile.getJSONObject("publications");
                   if (!publications.has("_view")) {
                     publications.put("_view", "everyone");
+                    dirty = true;
                   }
 
                 } catch (JSONException ignored) {
@@ -133,9 +140,12 @@ public class PubspaceMigrator {
               } catch (JSONException ignored) {
               }
 
-              pubspace.setProperty("structure0", pubspaceJSON.toString());
-              cm.update(pubspace);
-              LOG.info("Successfully updated user " + id + " pubspace at path " + pubspace.getPath());
+              if (dirty) {
+                pubspace.setProperty("structure0", pubspaceJSON.toString());
+                cm.update(pubspace);
+                LOG.info("Successfully updated user " + id + " pubspace at path " + pubspace.getPath());
+                upgraded++;
+              }
 
             }
           }
@@ -147,7 +157,7 @@ public class PubspaceMigrator {
         LOG.info("Processed {} of {}.", processed, totalResults);
       }
 
-      LOG.info("Of {} total users, {} had upgradeable pubspace nodes", totalResults, upgradeable);
+      LOG.info("Of " + totalResults + " total users, " + upgradeable + " had pubspace nodes, and " + upgraded + " needed upgrades");
 
     } catch (AccessDeniedException e) {
       LOG.error("Got permission denied accessing object, which should be impossible since this is an admin session", e);
