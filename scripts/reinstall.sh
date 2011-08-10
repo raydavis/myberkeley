@@ -39,6 +39,7 @@ mvn -B -e -Dsling.stop -P runner verify >>$LOG 2>&1 | $LOGIT
 echo "`date`: Cleaning sling directories..." | $LOGIT
 mvn -B -e -P runner -Dsling.purge clean >>$LOG 2>&1 | $LOGIT
 rm -rf ~/.m2/repository/edu/berkeley
+rm -rf ~/.m2/repository/org/sakaiproject
 
 echo "`date`: Fetching new sources for myberkeley..." | $LOGIT
 git pull >>$LOG 2>&1
