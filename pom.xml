@@ -30,6 +30,7 @@
         <module>dynamiclist</module>
         <module>caldav</module>
         <module>notifications</module>
+        <module>migrators</module>
         <module>ojdbc5</module>
       </modules>
     </profile>
