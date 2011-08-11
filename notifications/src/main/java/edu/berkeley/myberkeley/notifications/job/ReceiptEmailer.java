@@ -152,7 +152,7 @@ public class ReceiptEmailer {
     msg.append("\n\nTo see all of the tasks, events and messages you've created: \n\n" +
             "  * Log on to CalCentral at http://calcentral.berkeley.edu \n" +
             "  * On the top menu, click Me. \n" +
-            "  * On the left navigation menu, click My Notifications. \n" +
+            "  * On the left navigation menu, click Notifications. \n" +
             "  * Choose Drafts, Queue, Archive or Trash.\n\n");
 
     email.setMsg(msg.toString());
