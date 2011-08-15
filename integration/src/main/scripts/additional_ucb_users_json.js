@@ -110,7 +110,7 @@
     "106391": {
       "contexts" : ["myb-cnr-students"]
     },
-    "8579":  {"contexts": ["myb-ced-students"]},
+    "8579":  {"contexts": ["myb-cnr-students"]},
     "970218":  {"contexts": ["myb-ced-students"]},
     "305376":  {"contexts": ["myb-ced-students"]},
     "246868":  {"contexts": ["myb-ced-students"]},
