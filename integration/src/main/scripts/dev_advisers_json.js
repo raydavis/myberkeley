@@ -147,6 +147,16 @@
         "firstName": "Charmaine D.",
         "email": "charmainefalcao@berkeley.edu"
       },
+    "730057": {
+        "lastName": "Rothrauff",
+        "firstName": "Lisa",
+        "email": "lisa@media.berkeley.edu"
+      },
+    "5698": {
+        "lastName": "Blackstone",
+        "firstName": "Angela",
+        "email": "angel@berkeley.edu"
+      },
     "324838": {
         "lastName": "O'Connor",
         "firstName": "Olga",
