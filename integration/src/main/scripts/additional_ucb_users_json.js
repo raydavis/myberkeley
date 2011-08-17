@@ -141,13 +141,14 @@
     "83436":  {"contexts": ["myb-ced-students"]},
     "929976":  {"contexts": ["myb-ced-students"]},
     "301787":  {"contexts": ["myb-cnr-students"]},
-    "116972":  {"contexts": ["myb-cnr-students"]},
+    "116972":  {"contexts": ["myb-ced-students"]},
     "241104":  {"contexts": ["myb-cnr-students"]},
     "4818":  {"contexts": ["myb-cnr-students"]},
     "246872":  {"contexts": ["myb-cnr-students"]},
     "233219":  {"contexts": ["myb-cnr-students"]},
     "213201":  {"contexts": ["myb-cnr-students"]},
     "2491":  {"contexts": ["myb-cnr-students"]},
-    "220352":  {"contexts": ["myb-cnr-students"]}
+    "220352":  {"contexts": ["myb-cnr-students"]},
+    "892973":  {"contexts": ["myb-ced-students"]}
   }
 }
