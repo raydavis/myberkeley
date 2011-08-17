@@ -94,7 +94,29 @@
     "175137": {
         "groups" : [ "myb-staff"],
         "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/CHARMAINE"]
-      },
+    },
+    "730057": {
+    },
+    "5698": {
+    },
+    "863980": {
+    },
+    "874431": {
+    },
+    "871743": {
+    },
+    "752481": {
+    },
+    "862928": {
+    },
+    "763286": {
+    },
+    "234064": {
+    },
+    "873558": {
+    },
+    "758428": {
+    },
     "324838": {
       "contexts" : ["myb-cnr-students"]
     },
@@ -110,7 +132,7 @@
     "106391": {
       "contexts" : ["myb-cnr-students"]
     },
-    "8579":  {"contexts": ["myb-ced-students"]},
+    "8579":  {"contexts": ["myb-cnr-students"]},
     "970218":  {"contexts": ["myb-ced-students"]},
     "305376":  {"contexts": ["myb-ced-students"]},
     "246868":  {"contexts": ["myb-ced-students"]},

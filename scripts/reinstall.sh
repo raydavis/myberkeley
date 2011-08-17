@@ -17,10 +17,8 @@ if [ -f $INPUT_FILE ]; then
 else
   SLING_PASSWORD='admin'
   SHARED_SECRET='SHARED_SECRET_CHANGE_ME_IN_PRODUCTION'
-  CONFIG_FILE_DIR="localhost"
+  CONFIG_FILE_DIR=''
 fi
-
-CONFIG_FILES="$SRC_LOC/myberkeley/configs/$CONFIG_FILE_DIR/load"
 
 LOG=$2
 if [ -z "$2" ]; then
@@ -58,21 +56,26 @@ echo "------------------------------------------" | $LOGIT
 
 cd ../myberkeley
 
-echo "Updating local configuration files..." | $LOGIT
+if [ -z "$CONFIG_FILE_DIR" ]; then
+  echo "Not updating local configuration files..." | $LOGIT
+else
+  CONFIG_FILES="$SRC_LOC/myberkeley/configs/$CONFIG_FILE_DIR/load"
+  echo "Updating local configuration files..." | $LOGIT
 
-# put the shared secret into config file
-SERVER_PROT_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.config
-if [ -f $SERVER_PROT_CFG ]; then
-  grep -v trusted\.secret= $SERVER_PROT_CFG > $SERVER_PROT_CFG.new
-  echo "trusted.secret=\"$SHARED_SECRET\"" >> $SERVER_PROT_CFG.new
-  mv -f $SERVER_PROT_CFG.new $SERVER_PROT_CFG
+  # put the shared secret into config file
+  SERVER_PROT_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.config
+  if [ -f $SERVER_PROT_CFG ]; then
+    grep -v trusted\.secret= $SERVER_PROT_CFG > $SERVER_PROT_CFG.new
+    echo "trusted.secret=\"$SHARED_SECRET\"" >> $SERVER_PROT_CFG.new
+    mv -f $SERVER_PROT_CFG.new $SERVER_PROT_CFG
+  fi
+
+  rm $SRC_LOC/myberkeley/working/load/*
+  cp -f $CONFIG_FILES/* $SRC_LOC/myberkeley/working/load
 fi
 
-rm $SRC_LOC/myberkeley/working/load/*
-cp -f $CONFIG_FILES/* $SRC_LOC/myberkeley/working/load
-
-echo "`date`: Doing clean install..." | $LOGIT
-mvn -B -e clean install >>$LOG 2>&1
+echo "`date`: Doing clean..." | $LOGIT
+mvn -B -e clean >>$LOG 2>&1
 
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -P runner verify >>$LOG 2>&1
@@ -81,10 +84,7 @@ mvn -B -e -Dsling.start -P runner verify >>$LOG 2>&1
 sleep 120;
 
 echo "`date`: Redeploying UX..." | $LOGIT
-cd ../3akai-ux
-mvn clean install -P sakai-release
-mvn -B -e -Dsling.user=admin -Dsling.password=$SLING_PASSWORD org.apache.sling:maven-sling-plugin:install-file \
-  -Dsling.file=./target/org.sakaiproject.nakamura.uxloader-myberkeley-0.7-SNAPSHOT.jar
+mvn -B -e -P runner -Dsling.install-ux -Dsling.password=$SLING_PASSWORD clean verify
 
 echo | $LOGIT
 echo "`date`: Reinstall complete." | $LOGIT

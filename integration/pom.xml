@@ -147,6 +147,57 @@
       </plugins>
     </build>
   </profile>
+  <profile>
+    <id>install-ux</id>
+    <activation>
+      <property>
+        <name>sling.install-ux</name>
+      </property>
+    </activation>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <executions>
+          <execution>
+            <id>fetch-ux</id>
+            <phase>generate-sources</phase>
+            <goals>
+            <goal>copy</goal>
+            </goals>
+            <configuration>
+            <artifactItems>
+              <artifactItem>
+                <groupId>org.sakaiproject.nakamura</groupId>
+                <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
+                <version>0.7-SNAPSHOT</version>
+                <outputDirectory>${project.build.directory}/ux</outputDirectory>
+              </artifactItem>
+            </artifactItems>
+            </configuration>
+          </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.sling</groupId>
+          <artifactId>maven-sling-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>install-bundle</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>install</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <bundleFileName>${project.build.directory}/ux/org.sakaiproject.nakamura.uxloader-myberkeley-0.7-SNAPSHOT.jar</bundleFileName>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
+  </profile>
  </profiles>
   <build>
     <plugins>

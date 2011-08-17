@@ -147,6 +147,16 @@
         "firstName": "Charmaine D.",
         "email": "charmainefalcao@berkeley.edu"
       },
+    "730057": {
+        "lastName": "Rothrauff",
+        "firstName": "Lisa",
+        "email": "lisa@media.berkeley.edu"
+      },
+    "5698": {
+        "lastName": "Blackstone",
+        "firstName": "Angela",
+        "email": "angel@berkeley.edu"
+      },
     "324838": {
         "lastName": "O'Connor",
         "firstName": "Olga",
@@ -177,7 +187,7 @@
         "email": "rocio_s@berkeley.edu",
         "college" : "College of Natural Resources"
     },
-    "8579": {"firstName": "Donna L.", "lastName": "SYMON", "email": "donnas@berkeley.edu", "college": "College of Environmental Design"},
+    "8579": {"firstName": "Donna L.", "lastName": "SYMON", "email": "donnas@berkeley.edu", "college": "College of Natural Resources"},
     "970218": {"firstName": "Lauren", "lastName": "Roscoe", "email": "lroscoe@berkeley.edu", "college": "College of Environmental Design"},
     "305376": {"firstName": "Lisa", "lastName": "Thomas", "email": "lathoma@berkeley.edu", "college": "College of Environmental Design"},
     "246868": {"firstName": "Rachel", "lastName": "Klein", "email": "rachelk@berkeley.edu", "college": "College of Environmental Design"},

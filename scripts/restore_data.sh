@@ -27,7 +27,7 @@ echo "drop database nakamura;" | $MYSQL
 
 echo "create database nakamura default character set 'utf8';" | $MYSQL
 
-mvn -P runner -Dsling.start -Dsling.include.nakamura=$SRC_LOC/launchpad/src/main/resources/nakamura.properties verify
+mvn -P runner -Dsling.start -Dmyb.sling.config=$SRC_LOC/scripts/mysql verify
 
 mvn -P runner -Dsling.stop verify
 
