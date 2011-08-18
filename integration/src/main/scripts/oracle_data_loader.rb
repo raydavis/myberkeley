@@ -165,10 +165,12 @@ module MyBerkeleyData
 
     # Modeled after bSpace's EduAffliationsMapper
     def determine_role(user_props, person_row)
-      user_props['role'] = if !person_row.ug_grad_flag.nil?
-        UG_GRAD_FLAG_MAP[person_row.ug_grad_flag.strip.to_sym]
-      elsif person_row.affiliations.include?("STUDENT-TYPE-REGISTERED")
-        "Student" # There are 730 of these in the DB
+      user_props['role'] = if person_row.affiliations.include?("STUDENT-TYPE-REGISTERED")
+        if !person_row.ug_grad_flag.nil?
+          UG_GRAD_FLAG_MAP[person_row.ug_grad_flag.strip.to_sym]
+        else 
+          "Student" # There are 730 of these in the DB
+        end
       elsif person_row.affiliations.include?("EMPLOYEE-TYPE-ACADEMIC")
         "Instructor"
       elsif person_row.affiliations.include?("EMPLOYEE-TYPE-STAFF")
