@@ -53,11 +53,8 @@ module MyBerkeleyData
 
       @env = options[:runenv]
       @user_password_key = options[:userpwdkey]
-      @sling = Sling.new(options[:appserver], true)
-      real_admin = User.new("admin", options[:adminpwd])
-      @sling.switch_user(real_admin)
-      @sling.do_login
       @ucb_data_loader = MyBerkeleyData::UcbDataLoader.new(options[:appserver], options[:adminpwd])
+      @sling = @ucb_data_loader.sling
 
       @bedeworkServer = options[:bedeworkServer]
       @bedeworkPort = options[:bedeworkPort]
@@ -168,7 +165,7 @@ module MyBerkeleyData
       user_props['role'] = if person_row.affiliations.include?("STUDENT-TYPE-REGISTERED")
         if !person_row.ug_grad_flag.nil?
           UG_GRAD_FLAG_MAP[person_row.ug_grad_flag.strip.to_sym]
-        else 
+        else
           "Student" # There are 730 of these in the DB
         end
       elsif person_row.affiliations.include?("EMPLOYEE-TYPE-ACADEMIC")
@@ -287,7 +284,7 @@ module MyBerkeleyData
       # Delete demographic.
       user_props = {"myb-demographics"  => []}
       @ucb_data_loader.apply_demographic account_uid, user_props
-      
+
       # Delete obsolete profile sections.
       res = @sling.execute_post(@sling.url_for("~#{account_uid}/public/authprofile/email.profile.json"), {
         ":operation" => "import",
@@ -349,7 +346,7 @@ module MyBerkeleyData
         }
       end
     end
-    
+
     def get_student_count(dynamicListContext, collegeId)
       res = @sling.execute_get(@sling.url_for("var/myberkeley/dynamiclists/#{dynamicListContext}.json"), {
         "criteria" => "{ANY:['/colleges/#{collegeId}/standings/grad','/colleges/#{collegeId}/standings/undergrad']}"
@@ -361,7 +358,7 @@ module MyBerkeleyData
         return "Unknown"
       end
    end
-    
+
     def report_activity
       @log.info("Synchronized #{@synchronized_accounts.length} existing accounts")
       @log.info("Added #{@new_users.length} new users: #{@new_users.inspect}")
@@ -383,13 +380,13 @@ module MyBerkeleyData
           "* #{cnrStudentCount} CNR Students\n"
         subjectline = Time.now.strftime("%Y-%m-%d") + " Oracle account updates"
         res = @sling.execute_post(@sling.url_for("~admin/message.create.html"), {
-          "sakai:type" => "internal", 
-          "sakai:sendstate" => "pending", 
-          "sakai:messagebox" => "outbox", 
-          "sakai:to" => "internal:#{CALCENTRAL_TEAM_GROUP}", 
-          "sakai:from" => "admin", 
-          "sakai:subject" => subjectline, 
-          "sakai:body" => messagebody, 
+          "sakai:type" => "internal",
+          "sakai:sendstate" => "pending",
+          "sakai:messagebox" => "outbox",
+          "sakai:to" => "internal:#{CALCENTRAL_TEAM_GROUP}",
+          "sakai:from" => "admin",
+          "sakai:subject" => subjectline,
+          "sakai:body" => messagebody,
           "sakai:category" => "message"
         })
         if (res.code != "200")

@@ -25,7 +25,7 @@ module MyBerkeleyData
   STUDENT_ROLES = ["Undergraduate Student", "Graduate Student", "Student"]
   COLLEGE_ABBR_TO_PROFILE = { "ENV DSGN" => "College of Environmental Design", "NAT RES" => "College of Natural Resources" }
   ENV_PROD = 'prod'
-  
+
   # Test data for development environments
   TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-students", "myb-cnr-students",
     "myb-ets-test"]
@@ -35,8 +35,8 @@ module MyBerkeleyData
       "gradMajors" => [ "ARCHITECTURE", "CITY REGIONAL PLAN", "DESIGN", "LIMITED", "LAND ARCH & ENV PLAN", "URBAN DESIGN" ]
     }, {
       "college" => "NAT RES",
-      "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO", 
-        "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT", 
+      "undergradMajors" => [ "AGR & RES ECON", "CONSERV&RSRC STUDIES", "ENV ECON & POLICY", "ENVIR SCIENCES", "FOREST & NATURAL RES", "GENETICS & PLANT BIO",
+        "MICROBIAL BIOLOGY", "MOL ENV BIOLOGY", "MOLECULAR TOXICOLOGY", "NUTR SCI-DIETETICS", "NUTR SCI-PHYS & MET", "NUTRITION SCIENCE", "SOCIETY&ENVIRONMENT",
         "UNDECLARED", "VISTOR-NON-UC CAMPUS" ],
       "gradMajors" => [ "AGR & RES ECON", "AGRICULTURAL CHEM", "COMP BIOCHEMISTRY", "ENV SCI POL AND MGMT", "FORESTRY", "PLANT BIOLOGY", "RANGE MANAGEMENT" ]
     }]
@@ -52,6 +52,7 @@ module MyBerkeleyData
     "test-300873","test-300874","test-300875","test-300876","test-300877"]
 
   class UcbDataLoader
+    attr_reader :sling
     TEST_USER_PREFIX = 'testuser'
 
     @env = nil
@@ -265,7 +266,7 @@ module MyBerkeleyData
 
       result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
           "principalId" => user.name,
-          "privilege@jcr:read" => "granted"
+          "privilege@jcr:all" => "granted"
       })
       @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
 
@@ -274,7 +275,6 @@ module MyBerkeleyData
     def update_profile_properties(sling, username, user_props)
       profileContent = getProfileContent(user_props)
       @log.info("updating profile, data = #{profileContent}")
-
       @sling.execute_post("#{@server}~#{username}/public/authprofile", {
         ":operation" => "import",
         ":contentType" => "json",
