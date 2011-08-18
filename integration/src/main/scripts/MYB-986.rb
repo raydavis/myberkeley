@@ -16,7 +16,9 @@ require 'ucb_data_loader'
 def fix_MYB_986_email_protection(sling, username)
   res = sling.execute_get(sling.url_for("~#{username}/public/authprofile/email.acl.json"))
   acls = JSON.parse(res.body)
-  if (1 == acls[username]["granted"].length)
+  if (acls[username].nil?)
+    @log.warn("No access controls on authprofile/email for #{username}")
+  elsif (1 == acls[username]["granted"].length)
     @log.info("About to fix permissions for #{username}")
     result = @sling.execute_post(sling.url_for("~#{username}/public/authprofile/email.modifyAce.html"), {
       "principalId" => username,
