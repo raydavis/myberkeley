@@ -8,7 +8,8 @@
     "238382": {
       "lastName": "Geuy",
       "firstName": "Bernadette",
-      "email": "BernadetteG@berkeley.edu"
+      "email": "BernadetteG@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/BERNIE"]
     },
     "163402": {
       "lastName": "Scronce",
@@ -18,7 +19,8 @@
     "6576": {
       "lastName": "Christopher",
       "firstName": "Tony",
-      "email": "tonyc@berkeley.edu"
+      "email": "tonyc@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/TONY"]
     },
     "592722": {
       "lastName": "Ellison",
@@ -27,12 +29,14 @@
     "892685": {
       "lastName": "Shumikhin",
       "firstName": "Roman V",
-      "email": "roman@berkeley.edu"
+      "email": "roman@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/ROMAN"]
     },
     "3060": {
       "lastName": "McGrath",
       "firstName": "Owen",
-      "email": "owen@media.berkeley.edu"
+      "email": "owen@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OWEN"]
     },
     "231693": {
       "lastName": "Holtzman",
@@ -42,32 +46,38 @@
     "2040": {
       "lastName": "Heyer",
       "firstName": "Oliver",
-      "email": "oliver@media.berkeley.edu"
+      "email": "oliver@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OLIVER"]
     },
     "322279": {
       "lastName": "Cochran",
       "firstName": "Eli",
-      "email": "eli@media.berkeley.edu"
+      "email": "eli@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ELI"]
     },
     "211159": {
       "lastName": "Davis",
       "firstName": "Ray",
-      "email": "ray@media.berkeley.edu"
+      "email": "ray@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RAY"]
     },
     "208861": {
       "lastName": "Bloodworth",
       "firstName": "Allison",
-      "email": "abloodworth@berkeley.edu"
+      "email": "abloodworth@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ALLISON"]
     },
     "271592": {
       "lastName": "King",
       "firstName": "John F.",
-      "email": "johnk@media.berkeley.edu"
+      "email": "johnk@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/JOHN"]
     },
     "95509": {
       "lastName": "Chan",
       "firstName": "Kevin",
-      "email": "kevin@media.berkeley.edu"
+      "email": "kevin@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/KEVIN"]
     },
     "758029": {
       "lastName": "Boo",
@@ -90,17 +100,20 @@
     "904715": {
       "lastName": "Tweney",
       "firstName": "Chris",
-      "email": "chris@media.berkeley.edu"
+      "email": "chris@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/CHRIS"]
     },
     "675750": {
       "lastName": "Hollowgrass",
       "firstName": "Rachel",
-      "email": "rhollow@berkeley.edu"
+      "email": "rhollow@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RACHEL"]
     },
     "53791": {
       "lastName": "Kawase",
       "firstName": "Darlene",
-      "email": "dkawase@berkeley.edu"
+      "email": "dkawase@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"]
     },
     "18437": {
       "lastName": "German",
@@ -114,7 +127,8 @@
     "323487": {
       "lastName": "Hays",
       "firstName": "Jon",
-      "email": "jonmhays@media.berkeley.edu"
+      "email": "jonmhays@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/JON"]
     },
     "80818": {
       "lastName": "Hancock",
@@ -135,17 +149,20 @@
     "871943": {
         "lastName": "Boo",
         "firstName": "Carina Geobio",
-        "email": "carinaboo@berkeley.edu"
+        "email": "carinaboo@berkeley.edu",
+        "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/CARINA"]
     },
     "266945": {
         "lastName": "Ogle",
         "firstName": "Daphne",
-        "email": "daphne@media.berkeley.edu"
+        "email": "daphne@media.berkeley.edu",
+        "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DAPHNE"]
       },
     "175137": {
         "lastName": "Falcao",
         "firstName": "Charmaine D.",
-        "email": "charmainefalcao@berkeley.edu"
+        "email": "charmainefalcao@berkeley.edu",
+        "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/CHARMAINE"]
       },
     "730057": {
         "lastName": "Rothrauff",
@@ -196,7 +213,7 @@
     "83436": {"firstName": "Yerdua (Yeri)", "lastName": "Caesar-Kaptoech", "email": "ycaesark@berkeley.edu", "college": "College of Environmental Design"},
     "929976": {"firstName": "Tony L", "lastName": "Tieu", "email": "tonytieu@berkeley.edu", "college": "College of Environmental Design"},
     "116972": {"firstName": "Donna", "lastName": "Vivar", "email": "dvivar@berkeley.edu", "college": "College of Environmental Design"},
-    "892973": {"firstName": "Clayton", "lastName": "Hall", "email": "clayh@berkeley.edu", "college": "College of Environmental Design"}, 
+    "892973": {"firstName": "Clayton", "lastName": "Hall", "email": "clayh@berkeley.edu", "college": "College of Environmental Design"},
     "301787": {"firstName": "Carina", "lastName": "Galicia", "email": "cgalicia@berkeley.edu", "college": "College of Natural Resources"},
     "241104": {"firstName": "Eva", "lastName": "Wong", "email": "evaw@berkeley.edu", "college": "College of Natural Resources"},
     "4818": {"firstName": "Gail", "lastName": "VAWTER", "email": "gvawter@berkeley.edu", "college": "College of Natural Resources"},
