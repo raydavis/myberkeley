@@ -42,7 +42,7 @@ module MyBerkeleyData
     }]
   TEST_EDUC_LEVEL_U = ["Freshman", "Senior", "Sophomore", "Junior"]
   TEST_EDUC_LEVEL_G = ["Masters", "Adv Doc", "Doctoral"]
-  TEST_NEW_TRFR_FLAG = ["N", "N", nil, "Y"]
+  TEST_NEW_TRFR_FLAG = ["N", "Y", nil]
   TEST_DEG_ABBREV_U = ["A.B.", "B.S."]
   TEST_DEG_ABBREV_G = ["M.A.", "PH.D.", "M.B.A.", "M.S.", "JURIS.D", "M.P.P."]
   CALNET_TEST_USER_IDS = ["test-300846","test-300847","test-300848","test-300849","test-300850","test-300851",
