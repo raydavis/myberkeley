@@ -169,6 +169,11 @@
         "firstName": "Lisa",
         "email": "lisa@media.berkeley.edu"
       },
+    "741134": {
+        "lastName": "White",
+        "firstName": "Bobby (Angela)",
+        "email": "bobby@media.berkeley.edu"
+    },
     "5698": {
         "lastName": "Blackstone",
         "firstName": "Angela",
