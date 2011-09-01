@@ -29,7 +29,7 @@ public class PubspaceMigrator {
 
   private static final Logger LOG = LoggerFactory.getLogger(PubspaceMigrator.class);
 
-  private static final int PAGE_SIZE = 25;
+  private static final int PAGE_SIZE = 4000;
 
   @Reference
   Repository repository;
@@ -91,52 +91,28 @@ public class PubspaceMigrator {
               try {
                 pubspaceJSON = new JSONObject(prop);
                 profile = pubspaceJSON.getJSONObject("profile");
-                if (profile != null) {
-                  LOG.debug("We have a valid public/pubspace/structure0/profile for user " + id + ": " + profile.toString(2));
-                }
               } catch (JSONException e) {
                 LOG.error("Malformed json encountered in pubspace for user " + id, e);
               }
 
               if (profile != null) {
                 try {
-                  JSONObject email = profile.getJSONObject("email");
-                  if (!email.has("_view")) {
-                    email.put("_view", "private");
-                    dirty = true;
-                  }
-
-                  JSONObject inst = profile.getJSONObject("institutional");
-                  if (!inst.has("_view")) {
-                    inst.put("_view", "everyone");
-                    dirty = true;
-                  }
-
-                  JSONObject about = profile.getJSONObject("aboutme");
-                  if (!about.has("_view")) {
-                    about.put("_view", "everyone");
-                    dirty = true;
-                  }
-
                   JSONObject locations = profile.getJSONObject("locations");
-                  if (!locations.has("_view")) {
-                    locations.put("_view", "everyone");
+                  if (!locations.has("_reorderOnly") || !locations.getBoolean("_reorderOnly")) {
+                    locations.put("_reorderOnly", Boolean.TRUE);
                     dirty = true;
                   }
-
-                  JSONObject publications = profile.getJSONObject("publications");
-                  if (!publications.has("_view")) {
-                    publications.put("_view", "everyone");
-                    dirty = true;
-                  }
-
                 } catch (JSONException ignored) {
 
                 }
               }
 
               try {
-                LOG.debug("pubspace JSON for user " + id + " after changes: " + pubspaceJSON.toString(2));
+                if (dirty) {
+                  LOG.debug("pubspace JSON for user " + id + " after changes: " + pubspaceJSON.toString(2));
+                } else {
+                  LOG.debug("pubspace JSON for user " + id + " does not need changing: " + pubspaceJSON.toString(2));
+                }
               } catch (JSONException ignored) {
               }
 

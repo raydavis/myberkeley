@@ -198,6 +198,47 @@
       </plugins>
     </build>
   </profile>
+  <!--
+    After the migration completes, delete the migrators bundle
+    from the "load" directory:
+      rm working/load/edu.berkeley.myberkeley.migrators-0.11-SNAPSHOT.jar
+  -->
+  <profile>
+    <id>migrate</id>
+    <activation>
+      <property>
+        <name>sling.migrate</name>
+      </property>
+    </activation>
+    <build>
+     <plugins>
+       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>install-migrator</id>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>edu.berkeley.myberkeley.migrators</includeArtifactIds>
+              <outputDirectory>${sakai3.home}/load</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+       </plugin>
+     </plugins>
+    </build>
+    <dependencies>
+      <dependency>
+        <groupId>edu.berkeley.myberkeley</groupId>
+        <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
+        <version>0.11-SNAPSHOT</version>
+        <scope>runtime</scope>
+      </dependency>
+    </dependencies>
+  </profile>
  </profiles>
   <build>
     <plugins>
