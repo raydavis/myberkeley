@@ -282,7 +282,7 @@
                 <copy verbose="true" file="${myb.sling.config}/nakamura.properties"
                   todir="${sakai3.home}/sling" overwrite="false"/>
                 <copy verbose="true" file="${myb.sling.config}/JDBCStorageClientPool.config"
-                  todir="${sakai3.home}/sling/config/org/sakaiproject/nakamura/lite/storage/jdbc" overwrite="false"/>
+                  todir="${sakai3.home}/sling/config/org/sakaiproject/nakamura/lite/storage/jdbc" overwrite="true"/>
               </tasks>
             </configuration>
             <goals>
