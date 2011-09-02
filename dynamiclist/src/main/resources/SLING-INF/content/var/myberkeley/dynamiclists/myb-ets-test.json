@@ -3,20 +3,8 @@
   "myb-clauses": [
     "/colleges/ETS TEST/standings/undergrad",
     "/colleges/ETS TEST/standings/grad",
-    "/colleges/ETS TEST/standings/grad/majors/ALLISON",
-    "/colleges/ETS TEST/standings/grad/majors/CHRIS",
-    "/colleges/ETS TEST/standings/grad/majors/DAPHNE",
-    "/colleges/ETS TEST/standings/grad/majors/DARLENE",
-    "/colleges/ETS TEST/standings/grad/majors/ELI",
-    "/colleges/ETS TEST/standings/grad/majors/JOHN",
-    "/colleges/ETS TEST/standings/grad/majors/CARINA",
-    "/colleges/ETS TEST/standings/undergrad/majors/JON",
-    "/colleges/ETS TEST/standings/undergrad/majors/KEVIN",
-    "/colleges/ETS TEST/standings/undergrad/majors/OLIVER",
-    "/colleges/ETS TEST/standings/undergrad/majors/OWEN",
-    "/colleges/ETS TEST/standings/undergrad/majors/RACHEL",
-    "/colleges/ETS TEST/standings/undergrad/majors/RAY",
-    "/colleges/ETS TEST/standings/undergrad/majors/ROMAN"
+    "/colleges/ETS TEST/standings/grad/majors/*",
+    "/colleges/ETS TEST/standings/undergrad/majors/*"
   ],
   "myb-filters": [
     "/student/*"
