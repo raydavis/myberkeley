@@ -50,13 +50,9 @@
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.solr</artifactId>
+      <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
       <version>1.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-core</artifactId>
-      <version>4.0.1040465</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -68,9 +64,9 @@
       <artifactId>org.apache.felix.scr.annotations</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.apache.sling</groupId>
-        <artifactId>org.apache.sling.commons.json</artifactId>
-        <version>2.0.5-20100823</version>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.commons.json</artifactId>
+      <version>2.0.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
