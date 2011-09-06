@@ -226,6 +226,13 @@
     "233219": {"firstName": "Kimberly", "lastName": "JOHNSON", "email": "kcj@berkeley.edu", "college": "College of Natural Resources"},
     "213201": {"firstName": "MELISSA", "lastName": "PON", "email": "mpon@berkeley.edu", "college": "College of Natural Resources"},
     "2491": {"firstName": "Susan M.", "lastName": "KISHI", "email": "kishi@berkeley.edu", "college": "College of Natural Resources"},
-    "220352": {"firstName": "Trey", "lastName": "Patridge", "email": "trey@berkeley.edu", "college": "College of Natural Resources"}
+    "220352": {"firstName": "Trey", "lastName": "Patridge", "email": "trey@berkeley.edu", "college": "College of Natural Resources"},
+    "409005": {"firstName": "Sara", "lastName": "Quigley", "email": "saraquigley@berkeley.edu"},
+    "163082": {"firstName": "Susan", "lastName": "Cass", "email": "scass@berkeley.edu", "college": "College of Environmental Design"},
+    "755671": {"firstName": "Jennifer R", "lastName": "Wolch", "college": "College of Environmental Design"},
+    "1667": {"firstName": "J. Keith", "lastName": "Gilless", "email": "gilless@berkeley.edu", "college": "College of Natural Resources"},
+    "206538": {"firstName": "Adrienne", "lastName": "Hink", "email": "ahink@berkeley.edu", "college": "College of Environmental Design"},
+    "161702": {"firstName": "Phyllis", "lastName": "Orrick", "email": "phylliso@berkeley.edu"},
+    "4887": {"firstName": "Richard A.", "lastName": "Walker", "email": "walker@berkeley.edu", "college": "College of Environmental Design"}
   }
 }

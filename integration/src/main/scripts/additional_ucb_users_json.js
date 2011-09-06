@@ -151,6 +151,13 @@
     "213201":  {"contexts": ["myb-cnr-students"]},
     "2491":  {"contexts": ["myb-cnr-students"]},
     "220352":  {"contexts": ["myb-cnr-students"]},
-    "892973":  {"contexts": ["myb-ced-students"]}
+    "892973":  {"contexts": ["myb-ced-students"]},
+    "409005":  {},
+    "163082":  {},
+    "755671":  {},
+    "1667":  {},
+    "206538":  {},
+    "161702":  {},
+    "4887":  {}
   }
 }
