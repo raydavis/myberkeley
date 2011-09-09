@@ -3,13 +3,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.integration</artifactId>
   <name>MyBerkeley integration runner and data loader</name>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>pom</packaging>
   <properties>
    <sling.include.nakamura>${project.parent.basedir}/working/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
@@ -171,7 +171,7 @@
               <artifactItem>
                 <groupId>org.sakaiproject.nakamura</groupId>
                 <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-                <version>0.7-SNAPSHOT</version>
+                <version>1.0.0</version>
                 <outputDirectory>${project.build.directory}/ux</outputDirectory>
               </artifactItem>
             </artifactItems>
@@ -192,7 +192,7 @@
             </execution>
           </executions>
           <configuration>
-            <bundleFileName>${project.build.directory}/ux/org.sakaiproject.nakamura.uxloader-myberkeley-0.7-SNAPSHOT.jar</bundleFileName>
+            <bundleFileName>${project.build.directory}/ux/org.sakaiproject.nakamura.uxloader-myberkeley-1.0.0.jar</bundleFileName>
           </configuration>
         </plugin>
       </plugins>
@@ -201,7 +201,7 @@
   <!--
     After the migration completes, delete the migrators bundle
     from the "load" directory:
-      rm working/load/edu.berkeley.myberkeley.migrators-0.11-SNAPSHOT.jar
+      rm working/load/edu.berkeley.myberkeley.migrators-1.0.0.jar
   -->
   <profile>
     <id>migrate</id>
@@ -234,7 +234,7 @@
       <dependency>
         <groupId>edu.berkeley.myberkeley</groupId>
         <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
-        <version>0.11-SNAPSHOT</version>
+        <version>1.0.1</version>
         <scope>runtime</scope>
       </dependency>
     </dependencies>
@@ -257,7 +257,7 @@
             <artifactItem>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.testscripts</artifactId>
-            <version>0.11-SNAPSHOT</version>
+            <version>1.0.0</version>
             <outputDirectory>${project.build.directory}/nakamura-testscripts</outputDirectory>
             </artifactItem>
           </artifactItems>
@@ -349,7 +349,7 @@
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
       <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-      <version>0.11-SNAPSHOT</version>
+      <version>1.0.1</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

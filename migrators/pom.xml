@@ -16,11 +16,11 @@
   <parent>
     <groupId>edu.berkeley.myberkeley</groupId>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
-    <version>0.11-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
   <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
   <packaging>bundle</packaging>
-  <version>0.11-SNAPSHOT</version>
+  <version>1.0.1</version>
   <name>MyBerkeley: Migrators</name>
   <description>Bundle of components that will convert old content to new schemas.</description>
   <build>
@@ -46,12 +46,12 @@
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.core</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.1-20110830</version>
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
       <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.commons.json</artifactId>
-      <version>2.0.5-SNAPSHOT</version>
+      <version>2.0.5-20110812</version>
     </dependency>
   </dependencies>
 </project>
