@@ -20,6 +20,11 @@
     <loaddata.password>admin</loaddata.password>
     <caldav.skiptests>true</caldav.skiptests>
   </properties>
+  <scm>
+    <connection>scm:git:git://github.com/ets-berkeley-edu/myberkeley.git</connection>
+    <developerConnection>scm:git:git://git@github.com/ets-berkeley-edu/myberkeley.git</developerConnection>
+    <url>http://github.com/ets-berkeley-edu/myberkeley/</url>
+  </scm>
   <profiles>
     <profile>
       <id>myberkeleycode</id>
