@@ -72,11 +72,6 @@ else
 
   rm $SRC_LOC/myberkeley/working/load/*
   cp -f $CONFIG_FILES/* $SRC_LOC/myberkeley/working/load
-
-  if [ -d $SRC_LOC/myberkeley/working/sling/config ]; then
-    echo "Removing old sling/config files..." | $LOGIT
-    rm -rf $SRC_LOC/myberkeley/working/sling/config
-  fi
 fi
 
 echo "`date`: Doing clean..." | $LOGIT
