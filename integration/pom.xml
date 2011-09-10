@@ -201,7 +201,7 @@
   <!--
     After the migration completes, delete the migrators bundle
     from the "load" directory:
-      rm working/load/edu.berkeley.myberkeley.migrators-1.0.0.jar
+      rm working/load/edu.berkeley.myberkeley.migrators-1.0.1.jar
   -->
   <profile>
     <id>migrate</id>
