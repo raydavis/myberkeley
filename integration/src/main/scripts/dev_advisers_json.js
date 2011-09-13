@@ -233,6 +233,7 @@
     "1667": {"firstName": "J. Keith", "lastName": "Gilless", "email": "gilless@berkeley.edu", "college": "College of Natural Resources"},
     "206538": {"firstName": "Adrienne", "lastName": "Hink", "email": "ahink@berkeley.edu", "college": "College of Environmental Design"},
     "161702": {"firstName": "Phyllis", "lastName": "Orrick", "email": "phylliso@berkeley.edu"},
-    "4887": {"firstName": "Richard A.", "lastName": "Walker", "email": "walker@berkeley.edu", "college": "College of Environmental Design"}
+    "4887": {"firstName": "Richard A.", "lastName": "Walker", "email": "walker@berkeley.edu", "college": "College of Environmental Design"},
+    "973803": {"firstName": "Christine L", "lastName": "Tobolski", "email": "ctobolski@berkeley.edu", "college": "College of Natural Resources"}
   }
 }
