@@ -238,7 +238,7 @@ module MyBerkeleyData
     def load_user_from_row(person_row, fake_email=false)
       props = make_user_props(person_row)
       if (fake_email)
-        props['email'] = "#{props['firstName'].gsub(/\s*/,'').downcase}.#{props['lastName'].gsub(/\s*/,'').downcase}@example.edu"
+        props['email'] = "#{props['firstName'].gsub(/[\s']*/,'').downcase}.#{props['lastName'].gsub(/[\s']*/,'').downcase}@example.edu"
       end
       person_uid = person_row.ldap_uid.to_i.to_s
       create_bedework_acct(person_uid)
