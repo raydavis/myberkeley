@@ -202,7 +202,9 @@ module MyBerkeleyData
       end
       data = { ":name" => user.name,
               "pwd" => user.password,
-              "pwdConfirm" => user.password
+              "pwdConfirm" => user.password,
+              "locale" => "en_US",
+              "timezone" => "America/Los_Angeles"
       }
       firstname = user_props['firstName']
       lastname = user_props['lastName']
