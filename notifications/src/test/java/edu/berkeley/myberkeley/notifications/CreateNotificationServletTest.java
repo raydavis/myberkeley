@@ -28,6 +28,8 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.commons.json.JSONException;
+import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -44,6 +46,8 @@ import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -75,7 +79,7 @@ public class CreateNotificationServletTest extends NotificationTests {
   }
 
   @Test
-  public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException {
+  public void doPost() throws ServletException, IOException, StorageClientException, AccessDeniedException, JSONException {
     String json = readCalendarNotificationFromFile();
     when(this.request.getRequestParameter(CreateNotificationServlet.POST_PARAMS.notification.toString())).thenReturn(
             new ContainerRequestParameter(json, "utf-8"));
@@ -103,11 +107,20 @@ public class CreateNotificationServletTest extends NotificationTests {
     when(contentManager.get(storePath)).thenReturn(
             new Content(storePath, new HashMap<String, Object>()));
 
-    String notificationPath = StorageClientUtils.newPath(storePath, "b6455aa7-1cf4-4839-8a90-62dc352648f4");
+    String id = "b6455aa7-1cf4-4839-8a90-62dc352648f4";
+    String notificationPath = StorageClientUtils.newPath(storePath, id);
     when(contentManager.get(notificationPath)).thenReturn(
             new Content(notificationPath, new HashMap<String, Object>()));
 
-    this.servlet.doPost(this.request, this.response);
+    StringWriter stringWriter = new StringWriter();
+    PrintWriter printWriter = new PrintWriter(stringWriter);
+    when(response.getWriter()).thenReturn(printWriter);
 
+    this.servlet.doPost(this.request, this.response);
+    printWriter.flush();
+
+    JSONObject responseBody = new JSONObject(stringWriter.toString());
+    assertNotNull(responseBody);
+    assertEquals(id, responseBody.getString("id"));
   }
 }

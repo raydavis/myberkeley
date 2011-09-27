@@ -32,6 +32,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.apache.sling.commons.json.io.JSONWriter;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
@@ -105,9 +106,10 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
       createStoreIfNecessary(session, contentManager, storePath);
 
       Notification.MESSAGEBOX box = Notification.MESSAGEBOX.valueOf(notificationJSON.getString(Notification.JSON_PROPERTIES.messageBox.toString()));
+      final UUID id;
       if (Notification.MESSAGEBOX.drafts.equals(box) || Notification.MESSAGEBOX.trash.equals(box)) {
         // it's a draft or trash, save it as raw JSON
-        UUID id = Notification.getNotificationID(notificationJSON);
+        id = Notification.getNotificationID(notificationJSON);
         String draftPath = StorageClientUtils.newPath(storePath, id.toString());
         Content draftContent = createNotificationIfNecessary(contentManager, draftPath);
         Iterator<String> keys = notificationJSON.keys();
@@ -129,14 +131,17 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
       } else {
         // it's not a draft, save it as a real Notification
         Notification notification = NotificationFactory.getFromJSON(notificationJSON);
-        String notificationPath = StorageClientUtils.newPath(storePath, notification.getId().toString());
+        id = notification.getId();
+        String notificationPath = StorageClientUtils.newPath(storePath, id.toString());
         Content notificationContent = createNotificationIfNecessary(contentManager, notificationPath);
         notification.toContent(storePath, notificationContent);
         contentManager.update(notificationContent);
         LOGGER.debug("Saved a Notification;  data = {}", notificationContent);
       }
-
-
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      JSONWriter jsonWriter = new JSONWriter(response.getWriter());
+      jsonWriter.object().key("id").value(id.toString()).endObject();
     } catch (StorageClientException e) {
       throw new ServletException(e.getMessage(), e);
     } catch (AccessDeniedException ade) {
