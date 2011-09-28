@@ -138,7 +138,7 @@ public class CreateNotificationServlet extends SlingAllMethodsServlet {
         contentManager.update(notificationContent);
         LOGGER.debug("Saved a Notification;  data = {}", notificationContent);
       }
-      response.setContentType("text/plain");
+      response.setContentType("application/json");
       response.setCharacterEncoding("UTF-8");
       JSONWriter jsonWriter = new JSONWriter(response.getWriter());
       jsonWriter.object().key("id").value(id.toString()).endObject();
