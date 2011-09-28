@@ -230,8 +230,14 @@
         <version>2.4</version>
         <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>org.sakaiproject.nakamura</groupId>
+        <artifactId>org.sakaiproject.nakamura.core</artifactId>
+        <version>1.1-20110928</version>
+        <scope>compile</scope>
+      </dependency>
     </dependencies>
-    </dependencyManagement>
+  </dependencyManagement>
   <distributionManagement>
     <snapshotRepository>
       <id>myberkeley-snapshots</id>
