@@ -32,12 +32,10 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-scr-plugin</artifactId>
-        <version>1.4.4</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.5</version>
         <configuration>
           <skip>${caldav.skiptests}</skip>
         </configuration>
@@ -74,38 +72,24 @@
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-          <version>1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.core</artifactId>
-          <scope>provided</scope>
       </dependency>
       <dependency>
           <groupId>org.sakaiproject.nakamura</groupId>
           <artifactId>org.sakaiproject.nakamura.user</artifactId>
-          <version>1.1-SNAPSHOT</version>
-          <scope>provided</scope>
       </dependency>
 
     <!-- OSGi -->
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.core</artifactId>
-      <version>1.2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.osgi.compendium</artifactId>
-      <version>1.2.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>javax.servlet</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.jackrabbit</groupId>
@@ -133,14 +117,10 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.5.10</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>1.5.10</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- jms -->
@@ -150,8 +130,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
-      <scope>test</scope>
     </dependency>
 
     <!--  Tests -->
@@ -186,8 +164,6 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
-      <scope>provided</scope>
     </dependency>
 
   </dependencies>
