@@ -3,16 +3,15 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
   <name>MyBerkeley executable</name>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.2</version>
   <properties>
-    <nakamura.version>1.1-SNAPSHOT</nakamura.version>
-    <ianproperty.version>1.0</ianproperty.version>
+    <nakamura.version>1.0.2</nakamura.version>
   </properties>
   <packaging>jar</packaging>
   <build>
@@ -42,7 +41,7 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
-              <version>1.0.2-SNAPSHOT</version>
+              <version>1.0.2</version>
               <startLevel>1</startLevel>
             </bundle>
             <bundle>
@@ -54,13 +53,13 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
-              <version>${ianproperty.version}</version>
+              <version>${nakamura.version}</version>
               <startLevel>15</startLevel>
             </bundle>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-              <version>1.1-SNAPSHOT</version>
+              <version>1.0.2</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
@@ -72,19 +71,19 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-              <version>1.0.2-SNAPSHOT</version>
+              <version>1.0.2</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
-              <version>1.0.2-SNAPSHOT</version>
+              <version>1.0.2</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.notifications</artifactId>
-              <version>1.0.2-SNAPSHOT</version>
+              <version>1.0.2</version>
               <startLevel>30</startLevel>
             </bundle>
             <!-- MYB-597 -->
