@@ -13,10 +13,6 @@ require 'ucb_data_loader'
 @log = Logger.new(STDOUT)
 @log.level = Logger::DEBUG
 
-def output_email(sling, username)
-  puts "#{email}\n"
-end
-
 def collect_accounts(sling, username, lists)
   res = sling.execute_get(sling.url_for("~#{username}/_myberkeley-demographic.2.json"))
   if (res.code.to_i > 299)
@@ -54,17 +50,28 @@ def collect_accounts(sling, username, lists)
   end
 end
 
+def print_if_participant(sling, username)
+  res = sling.execute_get(sling.url_for("~#{username}/public/authprofile.profile.4.json"))
+  if (res.code.to_i > 299)
+    @log.error("#{res.code} / #{res.body}")
+    return
+  end
+  profile = JSON.parse(res.body)
+  if (!profile["myberkeley"].nil? && !profile["myberkeley"]["elements"]["participant"].nil?)
+    participantValue = profile["myberkeley"]["elements"]["participant"]["value"]
+    if (participantValue == "true")
+      emailSection = profile["email"]
+      if (!emailSection.nil? && !emailSection["elements"].nil?)
+        email = emailSection["elements"]["email"]["value"]
+        puts "#{email}\n"
+      end
+    end
+  end
+end
+
 @ucb_data_loader = MyBerkeleyData::UcbDataLoader.new(ARGV[0], ARGV[1])
 @sling = @ucb_data_loader.sling
 remaining_accounts = @ucb_data_loader.get_all_ucb_accounts
-email_lists = {}
 remaining_accounts.each do |account_uid|
-  collect_accounts(@sling, account_uid, email_lists)
-end
-email_lists.each do |college_name, emails|
-  puts "#{college_name}\n"
-  emails.each do |email|
-    puts "#{email}\n"
-  end
-  puts "\n"
+  print_if_participant(@sling, account_uid)
 end
