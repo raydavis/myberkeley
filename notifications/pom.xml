@@ -3,13 +3,13 @@
     <parent>
         <artifactId>edu.berkeley.myberkeley.base</artifactId>
         <groupId>edu.berkeley.myberkeley</groupId>
-        <version>1.0.2</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.berkeley.myberkeley</groupId>
     <artifactId>edu.berkeley.myberkeley.notifications</artifactId>
     <name>MyBerkeley CalDAV-based Notifications bundle</name>
-    <version>1.0.2</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <build>
         <plugins>
@@ -81,13 +81,13 @@
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.search</artifactId>
-            <version>1.0.2</version>
+            <version>1.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.messaging</artifactId>
-            <version>1.0.2</version>
+            <version>1.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>org.sakaiproject.nakamura</groupId>
             <artifactId>org.sakaiproject.nakamura.profile</artifactId>
-            <version>1.0.2</version>
+            <version>1.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -122,8 +122,8 @@
 
         <!-- commons -->
         <dependency>
-            <groupId>com.google.collections</groupId>
-            <artifactId>google-collections</artifactId>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
 
         <!-- logging -->
@@ -169,22 +169,36 @@
         <dependency>
             <groupId>edu.berkeley.myberkeley</groupId>
             <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-            <version>1.0.2</version>
-            <scope>compile</scope>
+            <version>1.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>edu.berkeley.myberkeley</groupId>
             <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
-            <version>1.0.2</version>
-            <scope>compile</scope>
+            <version>1.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- sling -->
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-api</artifactId>
+        <version>2.1.1</version>
+        <scope>provided</scope>
+      </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.commons.json</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.commons.scheduler</artifactId>
             <version>2.2.0</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.sling</groupId>
+          <artifactId>org.apache.sling.jcr.resource</artifactId>
         </dependency>
 
         <!-- commons -->

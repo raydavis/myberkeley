@@ -4,13 +4,13 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>1.0.2</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.berkeley.myberkeley</groupId>
   <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
   <name>Oracle JDBC bundle</name>
-  <version>1.0.2</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <dependencies>
     <dependency>
