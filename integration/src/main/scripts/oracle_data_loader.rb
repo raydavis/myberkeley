@@ -3,9 +3,6 @@
 # The Oracle server's host, port, and service name must be configured in:
 #   $TNS_ADMIN/tnsnames.ora
 
-# Add all files in testscripts\SlingRuby\lib directory to ruby "require" search path
-require 'ruby-lib-dir.rb'
-
 require 'rubygems'
 require 'optparse'
 require 'active_record'
@@ -13,8 +10,8 @@ require 'oci8'
 require 'json'
 require 'digest/sha1'
 require 'logger'
-require 'sling/sling'
-require 'sling/users'
+require 'nakamura'
+require 'nakamura/users'
 require 'ucb_data_loader'
 
 ## Block sling.rb's monkeying with form values.

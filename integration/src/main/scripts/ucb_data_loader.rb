@@ -1,15 +1,12 @@
 #!/usr/bin/env ruby
 
-# Add all files in testscripts\SlingRuby\lib directory to ruby "require" search path
-require 'ruby-lib-dir.rb'
-
 require 'rubygems'
 require 'json'
 require 'digest/sha1'
 require 'logger'
-require 'sling/sling'
-require 'sling/users'
-require 'sling/authz'
+require 'nakamura'
+require 'nakamura/users'
+require 'nakamura/authz'
 include SlingInterface
 include SlingUsers
 

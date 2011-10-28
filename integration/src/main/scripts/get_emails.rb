@@ -1,13 +1,10 @@
 #!/usr/bin/env ruby
 
-# Add all files in testscripts\SlingRuby\lib directory to ruby "require" search path
-require 'ruby-lib-dir.rb'
-
 require 'rubygems'
 require 'optparse'
 require 'json'
 require 'logger'
-require 'sling/sling'
+require 'nakamura'
 require 'ucb_data_loader'
 
 @log = Logger.new(STDOUT)
