@@ -14,6 +14,8 @@
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/TONY"]
     },
     "592722": {
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/MICHAEL"]
     },
     "892685": {
       "groups" : [ "myb-staff"],

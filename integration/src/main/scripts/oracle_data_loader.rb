@@ -70,8 +70,7 @@ module MyBerkeleyData
       @remaining_accounts = ucb_data_loader.get_all_ucb_accounts
     end
 
-    def make_user_props(person_row)
-      user_props = {}
+    def make_user_props(person_row, user_props={})
       user_props['firstName'] = person_row.first_name.strip
       user_props['lastName'] = person_row.last_name.strip
       user_props['email'] = person_row.email_address
@@ -110,7 +109,7 @@ module MyBerkeleyData
     end
 
     def determine_demographics(user_props, person_row)
-      myb_demographics = []
+      myb_demographics = user_props["myb-demographics"] || []
       if (is_current_student(person_row))
         if (!person_row.ug_grad_flag.nil?)
           case person_row.ug_grad_flag.strip
@@ -206,7 +205,7 @@ module MyBerkeleyData
       return student_rows
     end
 
-    def load_single_account(user_id)
+    def load_single_account(user_id, preset_props={})
       # The ID must be numeric.
       if (/^([\d]+)$/ =~ user_id)
         persondata = MyBerkeleyData::Person.find_by_sql(
@@ -223,7 +222,7 @@ module MyBerkeleyData
            where pi.LDAP_UID = #{user_id}"
         )
         if (!persondata.empty?)
-          load_user_from_row(persondata[0])
+          load_user_from_row(persondata[0], false, preset_props)
         else
           @log.warn("Could not find DB record for user ID #{user_id} - RECONCILE MANUALLY")
         end
@@ -232,8 +231,8 @@ module MyBerkeleyData
       end
     end
 
-    def load_user_from_row(person_row, fake_email=false)
-      props = make_user_props(person_row)
+    def load_user_from_row(person_row, fake_email=false, preset_props={})
+      props = make_user_props(person_row, preset_props)
       if (fake_email)
         props['email'] = "#{props['firstName'].gsub(/[\s']*/,'').downcase}.#{props['lastName'].gsub(/[\s']*/,'').downcase}@example.edu"
       end
@@ -306,26 +305,23 @@ module MyBerkeleyData
       users_data.each do |user_data|
         @log.info("user_data = #{user_data.inspect}")
         user_id = user_data[0]
-        user_props = user_data[1]
-        loaded_user = load_single_account(user_id)
+        user_extras = user_data[1]
+        predefined_props = {
+        	"myb-demographics" => user_extras["demographics"]
+        }
+        loaded_user = load_single_account(user_id, predefined_props)
         if (!loaded_user.nil?)
-          groups = user_props["groups"]
+          groups = user_extras["groups"]
           if (!groups.nil?)
             groups.each do |group_id|
               @ucb_data_loader.add_user_to_group(user_id, group_id)
             end
           end
-          contexts = user_props["contexts"]
+          contexts = user_extras["contexts"]
           if (!contexts.nil?)
             contexts.each do |context_id|
               @ucb_data_loader.add_reader_to_context(user_id, context_id)
             end
-          end
-          demographics = user_props["demographics"]
-          if (!demographics.nil?)
-            # WARNING: This will wipe out any existing campus demographics.
-            @renewed_accounts.delete(user_id)
-            @ucb_data_loader.apply_demographic(user_id, {"myb-demographics" => demographics})
           end
         end
       end

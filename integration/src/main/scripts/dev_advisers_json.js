@@ -24,7 +24,15 @@
     },
     "592722": {
       "lastName": "Ellison",
-      "firstName": "Michael"
+      "firstName": "Michael",
+      "email": "mellison@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/MICHAEL"]
+    },
+    "863980": {
+      "lastName": "MERCHANT",
+      "firstName": "FAISAL KARIM",
+      "email": "fmerchant@berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/FAISAL"]
     },
     "892685": {
       "lastName": "Shumikhin",
