@@ -327,6 +327,17 @@ module MyBerkeleyData
       end
     end
 
+    def check_stale_accounts
+      iterating_copy = Array.new(@remaining_accounts)
+      iterating_copy.each do |account_uid|
+        if (@ucb_data_loader.is_participant?(account_uid))
+          @log.info("Refreshing old participant #{account_uid}")
+          loaded_user = load_single_account(account_uid)
+          @remaining_accounts.delete(account_uid)
+        end
+      end
+    end
+
     def create_bedework_acct(username)
       # create users on the bedework server.
       # this will only work if the server has been put into unsecure login mode.
@@ -457,6 +468,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl.collect_integrated_accounts
   odl.load_all_students
   odl.load_additional_accounts
+  odl.check_stale_accounts
   odl.drop_stale_accounts
   odl.report_activity
 

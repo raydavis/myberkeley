@@ -383,6 +383,12 @@ module MyBerkeleyData
         @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
       end
     end
+
+    def is_participant?(uid)
+      response = @sling.execute_get("#{@server}~#{uid}/public/authprofile/myberkeley/elements/participant.json")
+      (response.code.to_i != 404)
+    end
+
   end
 end
 
