@@ -70,7 +70,6 @@ import org.apache.jackrabbit.webdav.security.Privilege;
 import org.apache.jackrabbit.webdav.version.report.ReportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ucar.unidata.util.DateUtil;
 
 import java.io.IOException;
 import java.io.StringReader;

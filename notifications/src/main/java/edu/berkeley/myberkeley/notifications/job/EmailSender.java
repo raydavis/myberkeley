@@ -27,7 +27,7 @@ import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentContext;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
@@ -71,9 +71,9 @@ public class EmailSender {
 
   protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
-    this.smtpPort = OsgiUtil.toInteger(props.get(SMTP_PORT), 25);
-    this.smtpServer = OsgiUtil.toString(props.get(SMTP_SERVER), "");
-    this.sendEmail = OsgiUtil.toBoolean(props.get(SEND_EMAIL), false);
+    this.smtpPort = PropertiesUtil.toInteger(props.get(SMTP_PORT), 25);
+    this.smtpServer = PropertiesUtil.toString(props.get(SMTP_SERVER), "");
+    this.sendEmail = PropertiesUtil.toBoolean(props.get(SEND_EMAIL), false);
     LOGGER.info("EmailSender started up; sendEmail = " + this.sendEmail + "; smtpPort = "
             + this.smtpPort + "; smtpServer = " + this.smtpServer);
   }

@@ -62,7 +62,6 @@
     <dependency>
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.commons.json</artifactId>
-      <version>2.0.5-20110812</version>
     </dependency>
   </dependencies>
 </project>
