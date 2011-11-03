@@ -197,7 +197,8 @@ module MyBerkeleyData
       else
         user = User.new(username)
       end
-      data = { ":name" => user.name,
+      data = {
+              ":name" => user.name,
               "pwd" => user.password,
               "pwdConfirm" => user.password,
               "locale" => "en_US",
@@ -205,7 +206,6 @@ module MyBerkeleyData
       }
       firstname = user_props['firstName']
       lastname = user_props['lastName']
-      create_bedework_acct(username)
       if (!firstname.nil? and !lastname.nil?)
         data = add_basic_profile(user_props, data)
       end
@@ -217,8 +217,8 @@ module MyBerkeleyData
       end
       add_nonbasic_profile_subnodes(@sling, user)
       apply_demographic(username, user_props)
-      create_bedework_acct(username)
       update_profile_properties(@sling, username, user_props)
+      create_bedework_acct(username)
       return user
     end
 
