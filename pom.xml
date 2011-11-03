@@ -36,7 +36,7 @@
         <module>caldav</module>
         <module>notifications</module>
         <module>migrators</module>
-        <module>ojdbc5</module>
+        <module>ojdbc6</module>
       </modules>
     </profile>
     <profile>

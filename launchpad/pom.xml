@@ -38,7 +38,7 @@
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
-              <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
+              <artifactId>edu.berkeley.myberkeley.ojdbc6</artifactId>
               <version>1.1-SNAPSHOT</version>
               <startLevel>1</startLevel>
             </bundle>

@@ -7,16 +7,14 @@
     <version>1.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>edu.berkeley.myberkeley</groupId>
-  <artifactId>edu.berkeley.myberkeley.ojdbc5</artifactId>
+  <artifactId>edu.berkeley.myberkeley.ojdbc6</artifactId>
   <name>Oracle JDBC bundle</name>
-  <version>1.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <dependencies>
     <dependency>
       <groupId>com.oracle</groupId>
-      <artifactId>ojdbc5_g</artifactId>
-      <version>11.2.0.2.0</version>
+      <artifactId>ojdbc6_g</artifactId>
+      <version>11.2.0.3</version>
     </dependency>
   </dependencies>
   <build>
@@ -36,6 +34,8 @@
               oracle.ons;resolution:=optional,
               oracle.security.pki;resolution:=optional,
               oracle.xdb;resolution:=optional,
+              oracle.xml.parser.v2;resolution:=optional,
+              org.objectweb.asm;resolution:=optional,
               com.sun.security.auth.module;resolution:=optional,
               sun.security.krb5;resolution:=optional,
               sun.security.krb5.internal;resolution:=optional,
