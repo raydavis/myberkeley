@@ -78,7 +78,6 @@ public class EmailSender {
             + this.smtpPort + "; smtpServer = " + this.smtpServer);
   }
 
-  @SuppressWarnings({"UnusedParameters"})
   protected void deactivate(ComponentContext componentContext) throws Exception {
     // nothing to do
   }

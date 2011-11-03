@@ -22,10 +22,7 @@ package edu.berkeley.myberkeley.notifications;
 
 import com.google.common.collect.ImmutableMap;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
-import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
-import net.fortuna.ical4j.model.Date;
-import org.apache.commons.httpclient.URI;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.resource.JcrResourceConstants;

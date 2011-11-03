@@ -23,7 +23,6 @@ package edu.berkeley.myberkeley.notifications.job;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
 import edu.berkeley.myberkeley.notifications.CalendarNotification;
 import net.fortuna.ical4j.data.CalendarOutputter;
-import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.ValidationException;
 import net.fortuna.ical4j.model.component.VToDo;
 import org.apache.commons.mail.EmailException;
