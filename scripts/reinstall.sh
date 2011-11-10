@@ -13,8 +13,7 @@ INPUT_FILE="$SRC_LOC/.build.cf"
 if [ -f $INPUT_FILE ]; then
   SLING_PASSWORD=`awk -F"=" '/^APPLICATION_PASSWORD=/ {print $2}' $INPUT_FILE`
   SHARED_SECRET=`awk -F"=" '/^SHARED_SECRET=/ {print $2}' $INPUT_FILE`
-  X-SAKAI-TOKEN_SHARED_SECRET=`awk -F"=" '/^X-SAKAI-TOKEN_SHARED_SECRET=/ {print $2}' $INPUT_FILE`
-  LOGIN_SHARED_SECRET=`awk -F"=" '/^LOGIN_SHARED_SECRET=/ {print $2}' $INPUT_FILE`
+  X_SAKAI_TOKEN_SHARED_SECRET=`awk -F"=" '/^X_SAKAI_TOKEN_SHARED_SECRET=/ {print $2}' $INPUT_FILE`
   CLE_SERVER_IP=`awk -F"=" '/^CLE_SERVER_IP=/ {print $2}' $INPUT_FILE`
   CONFIG_FILE_DIR=`awk -F"=" '/^CONFIG_FILE_DIR=/ {print $2}' $INPUT_FILE`
 else
@@ -77,7 +76,7 @@ else
   TRUSTED_TOKEN_SERVICE_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.auth.trusted.TrustedTokenServiceImpl.cfg
   if [ -f $TRUSTED_TOKEN_SERVICE_CFG ]; then
     grep -v sakai\.auth\.trusted\.server\.secret= $TRUSTED_TOKEN_SERVICE_CFG > $TRUSTED_TOKEN_SERVICE_CFG.new
-    echo "sakai.auth.trusted.server.secret=\"$X-SAKAI-TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_SERVICE_CFG.new
+    echo "sakai.auth.trusted.server.secret=\"$X_SAKAI_TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_SERVICE_CFG.new
     echo "sakai.auth.trusted.server.safe-hostsaddress=\"localhost;127.0.0.1;0:0:0:0:0:0:0:1%0;$CLE_SERVER_IP\"" >> $TRUSTED_TOKEN_SERVICE_CFG.new
     mv -f $TRUSTED_TOKEN_SERVICE_CFG.new $TRUSTED_TOKEN_SERVICE_CFG
   fi
@@ -86,7 +85,7 @@ else
   TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.proxy.TrustedLoginTokenProxyPreProcessor.cfg
   if [ -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG ]; then
   	grep -v sharedSecret= $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG > $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
-    echo "sharedSecret=\"$LOGIN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
+    echo "sharedSecret=\"$X_SAKAI_TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
     mv -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG
   fi
 
