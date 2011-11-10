@@ -97,6 +97,8 @@
         "groups" : [ "myb-staff"],
         "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/CHARMAINE"]
     },
+    "177473": {
+    },
     "730057": {
     },
     "741134": {
