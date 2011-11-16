@@ -117,12 +117,18 @@
       "email": "rhollow@berkeley.edu",
       "myb-demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RACHEL"]
     },
+    "177473": {
+      "lastName": "Felder",
+      "firstName": "Jonathan",
+      "email": "felder@media.berkeley.edu",
+      "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/JONATHAN"]
+    },
     "53791": {
       "lastName": "Kawase",
       "firstName": "Darlene",
       "email": "dkawase@berkeley.edu",
       "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"]
-    },
+    },    
     "18437": {
       "lastName": "German",
       "firstName": "Greg",
