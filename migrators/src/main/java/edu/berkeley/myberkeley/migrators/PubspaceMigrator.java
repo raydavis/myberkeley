@@ -48,7 +48,6 @@ public class PubspaceMigrator {
     try {
       session = repository.loginAdministrative();
       ContentManager cm = session.getContentManager();
-      cm.setMaintanenceMode(true);
 
       int start = 0;
       int page = 0;
