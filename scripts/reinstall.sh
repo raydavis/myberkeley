@@ -75,7 +75,7 @@ else
   TRUSTED_TOKEN_SERVICE_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.auth.trusted.TrustedTokenServiceImpl.cfg
   if [ -f $TRUSTED_TOKEN_SERVICE_CFG ]; then
     grep -v sakai\.auth\.trusted\.server\.secret= $TRUSTED_TOKEN_SERVICE_CFG > $TRUSTED_TOKEN_SERVICE_CFG.new
-    echo "sakai.auth.trusted.server.secret=\"$X_SAKAI_TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_SERVICE_CFG.new
+    echo "sakai.auth.trusted.server.secret=$X_SAKAI_TOKEN_SHARED_SECRET" >> $TRUSTED_TOKEN_SERVICE_CFG.new
     mv -f $TRUSTED_TOKEN_SERVICE_CFG.new $TRUSTED_TOKEN_SERVICE_CFG
   fi
   
@@ -83,7 +83,7 @@ else
   TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.proxy.TrustedLoginTokenProxyPreProcessor.cfg
   if [ -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG ]; then
     grep -v sharedSecret= $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG > $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
-    echo "sharedSecret=\"$X_SAKAI_TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
+    echo "sharedSecret=$X_SAKAI_TOKEN_SHARED_SECRET" >> $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
     mv -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG
   fi
 
