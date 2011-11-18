@@ -7,7 +7,7 @@ define(["config/config"], function(config) {
             WebPropertyID : "UA-21809393-3"
         }
     };
-    config.showSakai=true;
+    config.showSakai2=true;
     config.useLiveSakai2Feeds=true;
-	
+    config.hybridCasHost="sakai-dev.berkeley.edu";
 });
