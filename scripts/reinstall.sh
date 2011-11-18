@@ -82,7 +82,7 @@ else
   #put the X-SAKAI-TOKEN shared secret into the Trusted Token Proxy Preprocessor config file
   TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG=$CONFIG_FILES/org.sakaiproject.nakamura.proxy.TrustedLoginTokenProxyPreProcessor.cfg
   if [ -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG ]; then
-  	grep -v sharedSecret= $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG > $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
+    grep -v sharedSecret= $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG > $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
     echo "sharedSecret=\"$X_SAKAI_TOKEN_SHARED_SECRET\"" >> $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new
     mv -f $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG.new $TRUSTED_TOKEN_PROXY_PREPROCESSOR_CFG
   fi
