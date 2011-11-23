@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # script that launches a myberkeley instance and runs its suite
-# of integration tests.  
+# of integration tests.
 
 PORT="8899"
 
@@ -21,9 +21,9 @@ mvn clean install || { echo "mvn clean install failed." ; stopAndExit ; }
 
 # make the server think its port is safe
 mkdir -p working/load
-echo "trusted.hosts=http://localhost:$PORT" > working/load/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.cfg
+echo "trusted.hosts=[\"localhost:$PORT\\ \\=\\ http://localhost:8082\"]" > working/load/org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl.config
 
-# start up 
+# start up
 mvn -P runner -Dsling.start -Dsling.port=$PORT verify || { echo "Failed to start sling." ; stopAndExit ; }
 
 # wait 2 minutes so sling can get going
