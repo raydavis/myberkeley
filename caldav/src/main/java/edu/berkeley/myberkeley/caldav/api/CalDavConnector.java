@@ -46,4 +46,6 @@ public interface CalDavConnector {
 
   void deleteCalendar(CalendarURI uri) throws CalDavException, IOException;
 
+  void ensureCalendarStore();
+
 }

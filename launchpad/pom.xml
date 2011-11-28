@@ -84,6 +84,18 @@
               <version>1.1-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
+            <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.foreignprincipal</artifactId>
+              <version>1.1-SNAPSHOT</version>
+              <startLevel>30</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.provision</artifactId>
+              <version>1.1-SNAPSHOT</version>
+              <startLevel>30</startLevel>
+            </bundle>
             <!-- MYB-597 -->
             <bundle>
               <groupId>org.apache.felix</groupId>

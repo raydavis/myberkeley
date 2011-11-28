@@ -24,6 +24,8 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 
 import java.util.Collection;
+import java.util.Set;
+
 import javax.jcr.RepositoryException;
 
 /**
@@ -46,5 +48,14 @@ public interface DynamicListService {
 
   Collection<String> getUserIdsForNode(Content node, Session session) throws StorageClientException,
           AccessDeniedException, RepositoryException;
+
+  /**
+   * @param session
+   * @param userId
+   * @param demographicSet null if demographic property should be deleted
+   * @throws StorageClientException
+   * @throws AccessDeniedException
+   */
+  void setDemographics(Session session, String userId, Set<String> demographicSet) throws StorageClientException, AccessDeniedException;
 
 }

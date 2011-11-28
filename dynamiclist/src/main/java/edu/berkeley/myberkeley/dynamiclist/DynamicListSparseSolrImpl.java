@@ -30,6 +30,7 @@ import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.apache.sling.jcr.api.SlingRepository;
+import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -38,9 +39,18 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
+import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessControlManager;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.AclModification;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.Permissions;
+import org.sakaiproject.nakamura.api.lite.accesscontrol.Security;
+import org.sakaiproject.nakamura.api.lite.authorizable.Group;
+import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.solr.SolrServerService;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +63,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -75,6 +86,7 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
       "ALL", "AND",
       "ANY", "OR"
   );
+  private static final String PERSONAL_DEMOGRAPHIC_STORE_NAME = "_myberkeley-demographic";
 
   @Reference
   private SolrServerService solrSearchService;
@@ -222,6 +234,34 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
     sb.append(" AND ");
     appendClause(context, parsedCriteria, sb, null, false);
     return sb.toString();
+  }
+
+  @Override
+  public void setDemographics(Session session, String userId, Set<String> demographicSet) throws StorageClientException, AccessDeniedException {
+    final String homePath = LitePersonalUtils.getHomePath(userId);
+    ContentManager contentManager = session.getContentManager();
+    final String storePath = StorageClientUtils.newPath(homePath, PERSONAL_DEMOGRAPHIC_STORE_NAME);
+    if (!contentManager.exists(storePath)) {
+      contentManager.update(new Content(storePath, ImmutableMap.of(
+          JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+          (Object) DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT)));
+      // Only administrative accounts can access the demographic profile directly.
+      List<AclModification> modifications = new ArrayList<AclModification>();
+      AclModification.addAcl(false, Permissions.ALL, User.ANON_USER, modifications);
+      AclModification.addAcl(false, Permissions.ALL, Group.EVERYONE, modifications);
+      AccessControlManager accessControlManager = session.getAccessControlManager();
+      accessControlManager.setAcl(Security.ZONE_CONTENT, storePath, modifications.toArray(new AclModification[modifications.size()]));
+    }
+    Content content = contentManager.get(storePath);
+    final String[] demographics;
+    if (demographicSet != null) {
+      demographics = demographicSet.toArray(new String[demographicSet.size()]);
+      content.setProperty(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP, demographics);
+    } else {
+      content.removeProperty(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
+    }
+    LOGGER.info("Set {} demographics to {}", storePath, demographicSet);
+    contentManager.update(content);
   }
 
 }

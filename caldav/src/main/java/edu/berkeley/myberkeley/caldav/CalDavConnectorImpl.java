@@ -31,6 +31,7 @@ import edu.berkeley.myberkeley.caldav.report.CalendarQueryReportInfo;
 import edu.berkeley.myberkeley.caldav.report.Filter;
 import edu.berkeley.myberkeley.caldav.report.RequestCalendarData;
 import edu.berkeley.myberkeley.caldav.report.TimeRange;
+
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.Calendar;
@@ -38,6 +39,7 @@ import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
+
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -48,6 +50,7 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.time.DateUtils;
@@ -84,6 +87,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 import javax.servlet.http.HttpServletResponse;
 
 public class CalDavConnectorImpl implements CalDavConnector {
@@ -391,6 +395,26 @@ public class CalDavConnectorImpl implements CalDavConnector {
       executeMethod(aclMethod);
     } catch (IOException ioe) {
       throw new CalDavException("Got IO exception setting ACL", ioe);
+    }
+  }
+
+  /**
+   * All that's required to create an account is to log in once and
+   * make any request.
+   * @see edu.berkeley.myberkeley.caldav.api.CalDavConnector#ensureCalendarAccount()
+   */
+  @Override
+  public void ensureCalendarStore() {
+    GetMethod getMethod = new GetMethod(userHome.toString());
+    try {
+      getMethod.getParams().setSoTimeout(30000);
+      this.client.executeMethod(getMethod);
+    } catch (IOException e) {
+      LOGGER.error("Error running " + getMethod.getName() + ": " + e.getMessage());
+    } finally {
+      if (getMethod != null) {
+        getMethod.releaseConnection();
+      }
     }
   }
 
