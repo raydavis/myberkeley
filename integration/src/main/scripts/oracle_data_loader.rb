@@ -12,7 +12,7 @@ require 'digest/sha1'
 require 'logger'
 require 'nakamura'
 require 'nakamura/users'
-require 'ucb_data_loader'
+require_relative 'ucb_data_loader'
 
 ## Block sling.rb's monkeying with form values.
 module Net::HTTPHeader
