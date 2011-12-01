@@ -17,11 +17,13 @@
  */
 package edu.berkeley.myberkeley.provision;
 
+import static edu.berkeley.myberkeley.api.dynamiclist.DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
+import edu.berkeley.myberkeley.api.provision.ProvisionResult;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -38,7 +40,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -64,36 +65,39 @@ public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
   @Override
   protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    Set<User> users = Sets.newHashSet();
     String userId = request.getParameter(CALLER_PROVIDED_USER_ID_PARAM);
-    if (userId != null) {
-      if (!"admin".equals(request.getRemoteUser())) {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
-        return;
-      }
-      User user = createFromRequestParameters(userId, request, response);
-      users.add(user);
+    if (userId == null) {
+      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing " + CALLER_PROVIDED_USER_ID_PARAM + " parameter");
+      return;
     }
+    if (!"admin".equals(request.getRemoteUser())) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
+      return;
+    }
+    ProvisionResult result = createFromRequestParameters(userId, request, response);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     try {
       ExtendedJSONWriter jsonWriter = new ExtendedJSONWriter(response.getWriter());
       jsonWriter.setTidy(Arrays.asList(request.getRequestPathInfo().getSelectors()).contains("tidy"));
       jsonWriter.object();
-      jsonWriter.key("results");
-      jsonWriter.array();
-      for (User user : users) {
+      jsonWriter.key("synchronizationState");
+      jsonWriter.value(result.getSynchronizationState().toString());
+      jsonWriter.key("user");
+      User user = result.getUser();
+      if (user != null) {
         LOGGER.info("ID = {}, properties = {}", user.getId(), user.getOriginalProperties());
         ExtendedJSONWriter.writeValueMap(jsonWriter, user.getOriginalProperties());
+      } else {
+        jsonWriter.value(null);
       }
-      jsonWriter.endArray();
       jsonWriter.endObject();
     } catch (JSONException e) {
       LOGGER.error(e.getMessage(), e);
     }
   }
 
-  private User createFromRequestParameters(String userId, SlingHttpServletRequest request, SlingHttpServletResponse response) {
+  private ProvisionResult createFromRequestParameters(String userId, SlingHttpServletRequest request, SlingHttpServletResponse response) {
     @SuppressWarnings("unchecked")
     Map<String, String[]> requestParameters = request.getParameterMap();
     Map<String, Object> personAttributes = Maps.newHashMap();
@@ -105,7 +109,11 @@ public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
         if (values.length == 0) {
           value = null;
         } else if (values.length == 1) {
-          value = values[0];
+          if (DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP.equals(key)) {
+            value = ImmutableSet.of(values[0]);
+          } else {
+            value = values[0];
+          }
         } else {
           value = ImmutableSet.copyOf(values);
         }

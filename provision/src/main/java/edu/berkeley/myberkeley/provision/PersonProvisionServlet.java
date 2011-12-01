@@ -21,6 +21,8 @@ import com.google.common.collect.Sets;
 
 import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
 import edu.berkeley.myberkeley.api.provision.PersonAttributeProvider;
+import edu.berkeley.myberkeley.api.provision.ProvisionResult;
+import edu.berkeley.myberkeley.api.provision.SynchronizationState;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -66,7 +68,6 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
   @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    // Temporary protection during development.
     // TODO Base on resource ACL.
     if (!"admin".equals(request.getRemoteUser())) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
@@ -103,7 +104,6 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
   @Override
   protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    // Temporary protection during development.
     // TODO Base on resource ACL.
     if (!"admin".equals(request.getRemoteUser())) {
       response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
@@ -114,11 +114,16 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing " + SYSTEM_PROVIDED_USER_IDS_PARAM + " parameter");
       return;
     }
-    Set<User> users = Sets.newHashSet();
+    Set<ProvisionResult> results = Sets.newHashSet();
     for (String personId : personIds) {
       Map<String, Object> personAttributes = personAttributeProvider.getPersonAttributes(personId);
-      User user = oaeAuthorizableService.loadUser(personId, personAttributes);
-      users.add(user);
+      final ProvisionResult result;
+      if (personAttributes != null) {
+        result = oaeAuthorizableService.loadUser(personId, personAttributes);
+      } else {
+        result = new ProvisionResult(null, SynchronizationState.error);
+      }
+      results.add(result);
     }
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
@@ -128,9 +133,19 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
       jsonWriter.object();
       jsonWriter.key("results");
       jsonWriter.array();
-      for (User user : users) {
-        LOGGER.info("ID = {}, properties = {}", user.getId(), user.getOriginalProperties());
-        ExtendedJSONWriter.writeValueMap(jsonWriter, user.getOriginalProperties());
+      for (ProvisionResult result : results) {
+        jsonWriter.object();
+        jsonWriter.key("synchronizationState");
+        jsonWriter.value(result.getSynchronizationState().toString());
+        jsonWriter.key("user");
+        User user = result.getUser();
+        if (user != null) {
+          LOGGER.info("ID = {}, properties = {}", user.getId(), user.getOriginalProperties());
+          ExtendedJSONWriter.writeValueMap(jsonWriter, user.getOriginalProperties());
+        } else {
+          jsonWriter.value(null);
+        }
+        jsonWriter.endObject();
       }
       jsonWriter.endArray();
       jsonWriter.endObject();

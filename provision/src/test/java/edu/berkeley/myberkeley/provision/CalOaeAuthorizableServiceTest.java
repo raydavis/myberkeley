@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
+import edu.berkeley.myberkeley.api.provision.ProvisionResult;
+import edu.berkeley.myberkeley.api.provision.SynchronizationState;
 
 import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;
@@ -84,8 +86,10 @@ public class CalOaeAuthorizableServiceTest {
         .put("role", "Undergraduate Student")
         .put( "major", "UNDECLARED")
         .build();
-    User user = calOaeAuthorizableService.loadUser(userId, attributes);
+    ProvisionResult provisionResult = calOaeAuthorizableService.loadUser(userId, attributes);
+    User user = provisionResult.getUser();
     assertNotNull(user);
+    assertEquals(SynchronizationState.created, provisionResult.getSynchronizationState());
     // Empty update to initialize settings for new user.
     // Then update with specified property values.
     ArgumentCaptor<JSONObject> argument = ArgumentCaptor.forClass(JSONObject.class);
@@ -110,7 +114,9 @@ public class CalOaeAuthorizableServiceTest {
     Map<String, Object> attributes = ImmutableMap.of(
         "myb-demographics", (Object) demographics
     );
-    User user = calOaeAuthorizableService.loadUser(userId, attributes);
+    ProvisionResult provisionResult = calOaeAuthorizableService.loadUser(userId, attributes);
+    User user = provisionResult.getUser();
+    assertNotNull(user);
     assertNotNull(user);
     verify(dynamicListService).setDemographics(any(Session.class), eq(userId), eq(demographics));
   }

@@ -20,6 +20,7 @@ package edu.berkeley.myberkeley.provision;
 import edu.berkeley.myberkeley.api.foreignprincipal.ForeignPrincipalService;
 import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
 import edu.berkeley.myberkeley.api.provision.PersonAttributeProvider;
+import edu.berkeley.myberkeley.api.provision.ProvisionResult;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -97,7 +98,7 @@ public class SelfProvisionServlet extends SlingAllMethodsServlet {
       return;
     }
     Map<String, Object> personAttributes = personAttributeProvider.getPersonAttributes(personId);
-    User user = oaeAuthorizableService.loadUser(personId, personAttributes);
+    ProvisionResult result = oaeAuthorizableService.loadUser(personId, personAttributes);
     // If the new user made the POST herself, then she is also agreeing to join as a participant.
     oaeAuthorizableService.initializeParticipant(personId);
     response.setContentType("application/json");
@@ -105,8 +106,13 @@ public class SelfProvisionServlet extends SlingAllMethodsServlet {
     try {
       ExtendedJSONWriter jsonWriter = new ExtendedJSONWriter(response.getWriter());
       jsonWriter.setTidy(Arrays.asList(request.getRequestPathInfo().getSelectors()).contains("tidy"));
-      LOGGER.info("ID = {}, properties = {}", user.getId(), user.getOriginalProperties());
-      ExtendedJSONWriter.writeValueMap(jsonWriter, user.getOriginalProperties());
+      User user = result.getUser();
+      if (user != null) {
+        LOGGER.info("ID = {}, properties = {}", user.getId(), user.getOriginalProperties());
+        ExtendedJSONWriter.writeValueMap(jsonWriter, user.getOriginalProperties());
+      } else {
+        jsonWriter.value(null);
+      }
     } catch (JSONException e) {
       LOGGER.error(e.getMessage(), e);
     }

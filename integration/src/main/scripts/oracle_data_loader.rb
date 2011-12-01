@@ -49,12 +49,8 @@ module MyBerkeleyData
       @synchronized_accounts = []
 
       @env = options[:runenv]
-      @user_password_key = options[:userpwdkey]
       @ucb_data_loader = MyBerkeleyData::UcbDataLoader.new(options[:appserver], options[:adminpwd])
       @sling = @ucb_data_loader.sling
-
-      @bedeworkServer = options[:bedeworkServer]
-      @bedeworkPort = options[:bedeworkPort]
 
       ActiveRecord::Base.logger = Logger.new(STDOUT)
       #requires a TNSNAMES.ORA file and a TNS_ADMIN env variable pointing to directory containing it
@@ -237,13 +233,7 @@ module MyBerkeleyData
         props['email'] = "#{props['firstName'].gsub(/[\s']*/,'').downcase}.#{props['lastName'].gsub(/[\s']*/,'').downcase}@example.edu"
       end
       person_uid = person_row.ldap_uid.to_i.to_s
-      create_bedework_acct(person_uid)
-      if (@user_password_key)
-        user_password = ucb_data_loader.make_password person_row.person_name, @user_password_key
-      else
-        user_password = "testuser"
-      end
-      (user, new_user) = @ucb_data_loader.load_user(person_uid, props, user_password)
+      (user, new_user) = @ucb_data_loader.load_user(person_uid, props)
       if (@remaining_accounts.include?(person_uid))
         @synchronized_accounts.push(person_uid)
         @remaining_accounts.delete(person_uid)
@@ -278,8 +268,9 @@ module MyBerkeleyData
 
     def drop_account(account_uid)
       # Delete demographic.
-      user_props = {"myb-demographics"  => []}
-      @ucb_data_loader.apply_demographic account_uid, user_props
+      res = @sling.execute_post(@sling.url_for("#{account_uid}.myb-demographic.html"), {
+        "myb-demographics@Delete" => ""
+      })
 
       # Delete obsolete profile sections.
       res = @sling.execute_post(@sling.url_for("~#{account_uid}/public/authprofile/email.profile.json"), {
@@ -335,19 +326,6 @@ module MyBerkeleyData
           loaded_user = load_single_account(account_uid)
           @remaining_accounts.delete(account_uid)
         end
-      end
-    end
-
-    def create_bedework_acct(username)
-      # create users on the bedework server.
-      # this will only work if the server has been put into unsecure login mode.
-      if (@bedeworkServer)
-        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
-        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
-          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
-          req.basic_auth username, username
-          response = http.request(req)
-        }
       end
     end
 
@@ -445,20 +423,6 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
       options[:runenv] = re
     end
 
-    opts.on("-k", "--userpwdkey USERPWDKEY", "Key used to encrypt user passwords") do |pk|
-      options[:userpwdkey] = pk
-    end
-
-    options[:bedeworkServer] = nil
-    opts.on("--bedeworkserver [BEDEWORKSERVER]", "Bedework server") do |bs|
-      options[:bedeworkServer] = bs
-    end
-
-    options[:bedeworkPort] = 8080
-    opts.on("--bedeworkport [BEDEWORKPORT]", "Bedework server port") do |bp|
-      options[:bedeworkPort] = bp
-    end
-
   end
 
   optparser.parse ARGV
@@ -466,7 +430,7 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   odl = MyBerkeleyData::OracleDataLoader.new options
 
   odl.collect_integrated_accounts
-  odl.load_all_students
+#  odl.load_all_students
   odl.load_additional_accounts
   odl.check_stale_accounts
   odl.drop_stale_accounts

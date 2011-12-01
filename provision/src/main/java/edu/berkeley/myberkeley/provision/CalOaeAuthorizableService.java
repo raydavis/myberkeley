@@ -26,6 +26,8 @@ import com.google.common.collect.Sets;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
+import edu.berkeley.myberkeley.api.provision.ProvisionResult;
+import edu.berkeley.myberkeley.api.provision.SynchronizationState;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 
@@ -95,6 +97,12 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
   public static final String PARTICIPANT_PROFILE_CONTENT =
       "{'myberkeley':{'elements':{'joinDate':{'date':'%JOIN_DATE%'}," +
       "'participant':{'value':'true'}}}}";
+  /**
+   * Property to explicitly set the user's Sparse account password.
+   * This should only be used when loading test users, not in a production
+   * or QA deployment where external authentication is used.
+   */
+  public static final String PASSWORD_PROPERTY_NAME = "pwd";
 
   @Reference(policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL_UNARY)
   CalDavConnectorProvider calDavConnectorProvider;
@@ -108,22 +116,25 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
   Repository repository;
 
   @Override
-  public User loadUser(String userId, Map<String, Object> attributes) {
+  public ProvisionResult loadUser(String userId, Map<String, Object> attributes) {
     User user = null;
     Session adminSession = null;
+    SynchronizationState synchronizationState = SynchronizationState.error;
     try {
       adminSession = repository.loginAdministrative();
       final AuthorizableManager authorizableManager = adminSession.getAuthorizableManager();
       Authorizable authorizable = authorizableManager.findAuthorizable(userId);
       if (authorizable == null) {
         user = createOaeUser(userId, adminSession);
+        synchronizationState = SynchronizationState.created;
       } else if (authorizable instanceof User) {
         user = (User) authorizable;
+        synchronizationState = SynchronizationState.refreshed;
       } else {
         LOGGER.warn("Specified user ID {} resolves to {}", userId, authorizable);
       }
       if (user != null) {
-        loadCalAttributes(userId, attributes, adminSession);
+        loadCalAttributes(user, attributes, adminSession);
         user = (User) authorizableManager.findAuthorizable(userId);
       }
     } catch (StorageClientException e) {
@@ -141,7 +152,7 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
         }
       }
     }
-    return user;
+    return new ProvisionResult(user, synchronizationState);
   }
 
   @Override
@@ -173,9 +184,17 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
   }
 
   @SuppressWarnings("unchecked")
-  private void loadCalAttributes(String userId, Map<String, Object> attributes, Session session)
+  private void loadCalAttributes(User user, Map<String, Object> attributes, Session session)
       throws JSONException, StorageClientException, AccessDeniedException {
+    // Check for explicit password change.
+    final String password = (String) attributes.get(PASSWORD_PROPERTY_NAME);
+    if (password != null) {
+      final AuthorizableManager authorizableManager = session.getAuthorizableManager();
+      authorizableManager.changePassword(user, password, "");
+    }
+
     // Build JSON object corresponding to profile properties.
+    final String userId = user.getId();
     JSONObject importJson = new JSONObject();
     for (String sectionName : PROFILE_SECTIONS.keySet()) {
       final Set<String> profileProps = Sets.intersection(PROFILE_SECTIONS.get(sectionName), attributes.keySet());

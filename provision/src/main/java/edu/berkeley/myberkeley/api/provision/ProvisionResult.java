@@ -17,10 +17,25 @@
  */
 package edu.berkeley.myberkeley.api.provision;
 
+import org.sakaiproject.nakamura.api.lite.authorizable.User;
 
-import java.util.Map;
+/**
+ * Give callers enough information to display or log the results of an
+ * account provision request.
+ */
+public class ProvisionResult {
+  private User user;
+  private SynchronizationState synchronizationState;
 
-public interface OaeAuthorizableService {
-  ProvisionResult loadUser(String userId, Map<String, Object> attributes);
-  void initializeParticipant(String userId);
+  public ProvisionResult(User user, SynchronizationState synchronizationState) {
+    this.user = user;
+    this.synchronizationState = synchronizationState;
+  }
+  public User getUser() {
+    return user;
+  }
+  public SynchronizationState getSynchronizationState() {
+    return synchronizationState;
+  }
+
 }

@@ -53,15 +53,11 @@ module MyBerkeleyData
     TEST_USER_PREFIX = 'testuser'
 
     @env = nil
-
-    @bedeworkServer = nil
-    @bedeworkPort = nil
-
     @user_manager = nil
     @sling = nil
     @authz = nil
 
-    def initialize(server, admin_password="admin", bedeworkServer=nil, bedeworkPort="8080")
+    def initialize(server, admin_password="admin")
       @log = Logger.new(STDOUT)
       @log.level = Logger::DEBUG
       @sling = Sling.new(server, true)
@@ -71,14 +67,6 @@ module MyBerkeleyData
       @sling.do_login
       @authz = SlingAuthz::Authz.new(@sling)
       @server = server
-      @bedeworkServer = bedeworkServer
-      @bedeworkPort = bedeworkPort
-    end
-
-    def make_password(name, key)
-      digest = Digest::SHA1.new
-      digest.update(name).update(key)
-      return digest.hexdigest
     end
 
     def get_all_ucb_accounts
@@ -127,7 +115,7 @@ module MyBerkeleyData
         username = user[0]
         user_props = user[1]
         make_adviser_props user_props
-        (loaded_user, new_user) = load_user username, user_props
+        (loaded_user, new_user) = load_user username, user_props, "testuser"
         return loaded_user
     end
 
@@ -143,8 +131,7 @@ module MyBerkeleyData
         uid = id.split('-')[1].to_s
         # for a user like test-212381, the calnet uid will be 212381
         user_props = generate_student_props uid, first_name, last_name, i, CALNET_TEST_USER_IDS.length
-        (loaded_calnet_test_user, new_user) = load_user uid, user_props
-        apply_demographic uid, user_props
+        (loaded_calnet_test_user, new_user) = load_user uid, user_props, "testuser"
         i = i + 1
       end
     end
@@ -190,99 +177,6 @@ module MyBerkeleyData
         return user_props
     end
 
-    def create_user_with_props(username, user_props, password=nil)
-      @log.info "Creating user: #{username}, props: #{user_props.inspect}"
-      if (password)
-        user = User.new(username, password)
-      else
-        user = User.new(username)
-      end
-      data = {
-              ":name" => user.name,
-              "pwd" => user.password,
-              "pwdConfirm" => user.password,
-              "locale" => "en_US",
-              "timezone" => "America/Los_Angeles"
-      }
-      firstname = user_props['firstName']
-      lastname = user_props['lastName']
-      if (!firstname.nil? and !lastname.nil?)
-        data = add_basic_profile(user_props, data)
-      end
-      result = @sling.execute_post(@sling.url_for("#{$USER_URI}"), data)
-      @log.info("creating basic profile, data = #{data}")
-      if (result.code.to_i > 299)
-        @log.info "Error creating user, result = #{result.code}"
-        return nil
-      end
-      add_nonbasic_profile_subnodes(@sling, user)
-      apply_demographic(username, user_props)
-      update_profile_properties(@sling, username, user_props)
-      create_bedework_acct(username)
-      return user
-    end
-
-    def add_basic_profile(user_props, post_data)
-      BASIC_PROFILE_PROPS.each do |prop|
-        post_data[prop] = user_props[prop] if (!user_props[prop].nil?)
-      end
-      post_data[":sakai:profile-import"] = getBasicProfileContent(user_props)
-      return post_data
-    end
-
-    def add_nonbasic_profile_subnodes(sling, user)
-      # create and lock down the institutional and email sections of profile.
-      # this is unique to myBerkeley.
-      data = { ":operation" => "import",
-        ":contentType" => "json",
-        ":replace" => "true",
-        ":replaceProperties" => "true",
-        ":content" => "{'institutional':{},'email':{}}"
-          }
-      @log.info("creating empty nonbasic profile nodes, data = #{data}")
-      result = @sling.execute_post("#{@server}~#{user.name}/public/authprofile", data)
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-
-      home_url = @sling.url_for(user.home_path_for @sling)
-
-      result = @sling.execute_post("#{home_url}/public/authprofile/institutional.modifyAce.html", {
-        "principalId" => "anonymous",
-        "privilege@jcr:all" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-
-      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
-          "principalId" => "everyone",
-          "privilege@jcr:all" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-
-      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
-          "principalId" => "anonymous",
-          "privilege@jcr:all" => "denied"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-
-      result = @sling.execute_post("#{home_url}/public/authprofile/email.modifyAce.html", {
-          "principalId" => user.name,
-          "privilege@jcr:all" => "granted"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-
-    end
-
-    def update_profile_properties(sling, username, user_props)
-      profileContent = getProfileContent(user_props)
-      @log.info("updating profile, data = #{profileContent}")
-      @sling.execute_post("#{@server}~#{username}/public/authprofile", {
-        ":operation" => "import",
-        ":contentType" => "json",
-        ":replace" => "true",
-        ":replaceProperties" => "true",
-        ":content" => profileContent
-      })
-    end
-
     def getBasicProfileContent(user_props)
       basicProps = []
       BASIC_PROFILE_PROPS.each do |prop|
@@ -325,63 +219,29 @@ module MyBerkeleyData
     end
 
     def load_user(username, user_props, password=nil)
-      res = @sling.execute_get(@sling.url_for("system/userManager/user.exists.html"), {
-        "userid" => username
-      })
-      new_user = (res.code == "404")
-      if (new_user)
-        target_user = create_user_with_props username, user_props, password
+      @log.info("load_user #{username} with props #{user_props.inspect} and password #{password}")
+      provision_props = user_props.clone
+      if (password)
+        provision_props["pwd"] = password
+      end
+      provision_props["userId"] = username
+      res = @sling.execute_post(@sling.url_for("system/myberkeley/testPersonProvision"), provision_props)
+      @log.info("provision returned #{res.code}, #{res.body}")
+      if (res.code.to_i > 299)
+        @log.error("Could not load user #{username}: #{response.code}, #{response.body}")
+        return nil, false
+      end
+      json = JSON.parse(res.body)
+      if (json["synchronizationState"] == "error")
+        return nil, false
+      end
+      new_user = (json["synchronizationState"] == "created")
+      if (password)
+        target_user = User.new username, password
       else
-        # if user exists, they will not be (re)created but props may be updated
-        puts "user #{username} already exists, attempting to update properties of user: #{user_props.inspect}"
-        target_user = update_user(username, user_props)
+        target_user = User.new username
       end
       return target_user, new_user
-    end
-
-    def update_user(username, user_props, password=nil)
-      if (password)
-          target_user = User.new username, password
-        else
-          target_user = User.new username
-        end
-      response = update_profile_properties @sling, username, user_props
-      if (response.code.to_i > 299)
-        @log.error("Could not update user #{username}: #{response.code}, #{response.body}")
-        return nil
-      end
-      apply_demographic(username, user_props)
-      create_bedework_acct(username)
-      return target_user
-    end
-
-    def create_bedework_acct(username)
-      # create users on the bedework server.
-      # this will only work if the server has been put into unsecure login mode.
-      if (@bedeworkServer)
-        puts "Creating a bedework account for user #{username} on server #{@bedeworkServer}..."
-        Net::HTTP.start(@bedeworkServer, @bedeworkPort) { |http|
-          req = Net::HTTP::Options.new('/ucaldav/principals/users/' + username)
-          req.basic_auth username, username
-          response = http.request(req)
-        }
-      end
-    end
-
-    def apply_demographic(uid, user_props)
-      demog = user_props["myb-demographics"]
-      if (!demog.nil?)
-        if (demog.empty?)
-          result = @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", {
-            "myb-demographics@Delete" => ""
-          })
-        else
-          result = @sling.execute_post("#{@server}~#{uid}.myb-demographic.html", {
-            "myb-demographics" => demog
-          })
-        end
-        @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-      end
     end
 
     def is_participant?(uid)
@@ -394,7 +254,7 @@ end
 
 if ($PROGRAM_NAME.include? 'ucb_data_loader.rb')
   puts "will load data on server #{ARGV[0]}"
-  sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1], ARGV[2], ARGV[3]
+  sdl = MyBerkeleyData::UcbDataLoader.new ARGV[0], ARGV[1]
   sdl.load_dev_advisers
   sdl.load_calnet_test_users
 end
