@@ -228,7 +228,7 @@ module MyBerkeleyData
       res = @sling.execute_post(@sling.url_for("system/myberkeley/testPersonProvision"), provision_props)
       @log.info("provision returned #{res.code}, #{res.body}")
       if (res.code.to_i > 299)
-        @log.error("Could not load user #{username}: #{response.code}, #{response.body}")
+        @log.error("Could not load user #{username}: #{res.code}, #{res.body}")
         return nil, false
       end
       json = JSON.parse(res.body)
