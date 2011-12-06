@@ -84,12 +84,14 @@ In OSX 10.5 I needed to do the following.
 
 sudo gem update
 sudo gem install json
-sudo gem install curb
+sudo gem install curb  
+sudo gem install nakamura
 
 If you are running OS X 10.6, the following commands work:
 sudo gem update --system
 sudo gem update
 sudo gem install json
+sudo gem install nakamura
 sudo env ARCHFLAGS="-arch x86_64" gem install curb
 
 On Windows, see the instructions at:
