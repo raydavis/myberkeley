@@ -80,9 +80,7 @@ Install the json and curb ruby gems
 
 Possibly obsolete instructions from old Nakamura testscripts README:
 
-In OSX 10.5 I needed to do the following (if you are managing ruby 
-on your local system with the Ruby Version Manager (rvm), 
-skip "sudo" on the steps below.
+In OSX 10.5 I needed to do the following:
 
 sudo gem update
 sudo gem install json
@@ -96,6 +94,7 @@ sudo gem install json
 sudo gem install nakamura
 sudo env ARCHFLAGS="-arch x86_64" gem install curb
 
+(If you are using Ruby Version Manager (rvm), skip "sudo" on the steps above).
 
 On Windows, see the instructions at:
 https://confluence.sakaiproject.org/x/9IIpB
