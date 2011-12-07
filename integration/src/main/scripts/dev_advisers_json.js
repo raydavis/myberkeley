@@ -128,7 +128,7 @@
       "firstName": "Darlene",
       "email": "dkawase@berkeley.edu",
       "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"]
-    },    
+    },
     "18437": {
       "lastName": "German",
       "firstName": "Greg",
@@ -187,6 +187,11 @@
         "lastName": "White",
         "firstName": "Bobby (Angela)",
         "email": "bobby@media.berkeley.edu"
+    },
+    "191779": {
+        "lastName": "Hacker",
+        "firstName": "Scot",
+        "email": "shacker@berkeley.edu"
     },
     "5698": {
         "lastName": "Blackstone",
