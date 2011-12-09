@@ -1,5 +1,9 @@
 COOKBOOK - SERVER CONTROL
 
+This first section is for production only. For local development, see
+the appropriate section below. In particular, do not run ./scripts/reinstall.sh
+in a localhost environment.
+
 Although this directory contains the project source code, you do not have to
 actually build a new version of the application to run it. If you are on a
 shared server environment, it's preferable to use a shared build that has
@@ -100,12 +104,27 @@ On Windows, see the instructions at:
 https://confluence.sakaiproject.org/x/9IIpB
 
 
-4. To actually load data, start the server. Then, from the
-myberkeley directory, run
+4. Start the server:
+mvn -P runner -Dsling.start verify 
+
+To stop, use:
+mvn -P runner -Dsling.stop verify 
+
+To clean out the old server environment including repository:
+mvn -P runner -Dsling.clean clean
+
+To clean the server of deployed and cached bundles while leaving repository and data intact:
+
+mvn -P runner -Dsling.purge clean
+
+
+5. To load test data, make sure the server, then run from the myberkeley directory
 
 mvn -Dsling.loaddata integration-test
 
-this will load data to the default server - http://localhost:8080/, using password "admin", loading the users defined in ./myberkeley/integration/src/main/scripts/json_data.js and ucb_data_loader.rb.
+this will load data to the default server - http://localhost:8080/, using password "admin", 
+loading the users defined in ./myberkeley/integration/src/main/scripts/json_data.js 
+and ucb_data_loader.rb.
 
 or to load data to another server, run
 mvn -Dsling.loaddata -Dloaddata.server=${server} -Dloaddata.password=${password} integration-test
@@ -113,8 +132,9 @@ where ${server} should be replaced with a full server URL such as https://calcen
 NOTE: the trailing slash on the server URL is required
 
 All users will be given the password "testuser".
+ 
 
-5. The above user-load includes records keyed to the LDAP UIDs of MyBerkeley project
+6. The above user-load includes records keyed to the LDAP UIDs of MyBerkeley project
 members, letting us test CAS authentication. When running MyBerkeley on your own
 computer, you can log in at:
 https://auth-test.berkeley.edu/cas/login?service=http://localhost:8080/dev/index.html
