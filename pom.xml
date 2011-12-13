@@ -81,17 +81,6 @@
   </profiles>
   <repositories>
     <repository>
-      <id>sakai-releases</id>
-      <name>Sakai Releases</name>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <url>https://source.sakaiproject.org/maven2/</url>
-    </repository>
-    <repository>
       <id>myberkeley-snapshots</id>
       <url>http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley-snapshots</url>
       <releases>
@@ -110,6 +99,17 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
+    </repository>
+    <repository>
+      <id>sakai-releases</id>
+      <name>Sakai Releases</name>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <url>https://source.sakaiproject.org/maven2/</url>
     </repository>
     <repository>
       <id>sakai-snapshots</id>
