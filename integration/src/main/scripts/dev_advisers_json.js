@@ -191,7 +191,8 @@
     "191779": {
         "lastName": "Hacker",
         "firstName": "Scot",
-        "email": "shacker@berkeley.edu"
+        "email": "shacker@berkeley.edu",
+        "myb-demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/SCOT"]
     },
     "5698": {
         "lastName": "Blackstone",
