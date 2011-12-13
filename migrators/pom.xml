@@ -48,7 +48,7 @@
     </dependency>
     <dependency>
       <groupId>org.sakaiproject.nakamura</groupId>
-      <artifactId>org.sakaiproject.nakamura.solr-myberkeley</artifactId>
+      <artifactId>org.sakaiproject.nakamura.solr</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
