@@ -120,7 +120,7 @@ mvn -P runner -Dsling.purge clean
 
 5. To load test data, make sure the server, then run from the myberkeley directory
 
-mvn -Dsling.loaddata integration-test
+mvn -P runner -Dsling.loaddata integration-test
 
 this will load data to the default server - http://localhost:8080/, using password "admin", 
 loading the users defined in ./myberkeley/integration/src/main/scripts/json_data.js 
