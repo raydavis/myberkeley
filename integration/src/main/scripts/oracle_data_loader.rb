@@ -268,7 +268,7 @@ module MyBerkeleyData
 
     def drop_account(account_uid)
       # Delete demographic.
-      res = @sling.execute_post(@sling.url_for("#{account_uid}.myb-demographic.html"), {
+      res = @sling.execute_post(@sling.url_for("~#{account_uid}.myb-demographic.html"), {
         "myb-demographics@Delete" => ""
       })
 

@@ -17,8 +17,6 @@
  */
 package edu.berkeley.myberkeley.dynamiclist;
 
-import static edu.berkeley.myberkeley.api.dynamiclist.DynamicListService.DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT;
-
 import com.google.common.collect.ImmutableMap;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
@@ -38,6 +36,7 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
+import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,22 +60,21 @@ import javax.servlet.http.HttpServletResponse;
  *
  * This servlet must be protected against all non-administrative
  * sessions.
- *
- * TODO Disable the servlet by default, and enable it only when data
- * synchronization is in progress.
- * TODO Add a way to find all user accounts that are not associated
- * with UC Berkeley demographics.
  */
 @SlingServlet(extensions = {"json"}, methods = {"GET"},
-    paths = {"/system/myberkeley/integratedUserIds"},
+    paths = {"/system/myberkeley/userIds"},
     generateComponent = true, generateService = true)
-public class GetIntegratedUserIdsServlet extends SlingSafeMethodsServlet {
+public class GetUserIdsServlet extends SlingSafeMethodsServlet {
   private static final long serialVersionUID = 7368025436453141350L;
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetIntegratedUserIdsServlet.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetUserIdsServlet.class);
+
+  public static final String FILTER_PROP = "filter";
+  public static final String FILTER_INTEGRATED = "integrated";
+  public static final String FILTER_PARTICIPANTS = "participants";
 
   private static final Map<String, Object> SPARSE_QUERY_MAP = ImmutableMap.of(
       JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-      (Object) DYNAMIC_LIST_PERSONAL_DEMOGRAPHIC_RT,
+      (Object) UserConstants.USER_HOME_RESOURCE_TYPE,
       "_items", new Long(20000)
   );
 
@@ -89,21 +87,33 @@ public class GetIntegratedUserIdsServlet extends SlingSafeMethodsServlet {
     Session session = StorageClientUtils.adaptToSession(request.getResourceResolver().adaptTo(
             javax.jcr.Session.class));
     if (!isAdminUser(session)) {
-      LOGGER.error("GetIntegratedIdsServlet called by " + session.getUserId());
+      LOGGER.error("GetUserIdsServlet called by " + session.getUserId());
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return;
     }
+    final String filter = request.getParameter(FILTER_PROP);
     try {
       ContentManager contentManager = session.getContentManager();
-      Iterable<Content> demographicNodes = contentManager.find(SPARSE_QUERY_MAP);
+      Iterable<Content> homeNodes = contentManager.find(SPARSE_QUERY_MAP);
       response.setContentType("application/json");
       response.setCharacterEncoding("UTF-8");
       JSONWriter write = new JSONWriter(response.getWriter());
       write.object().key("userIds").array();
-      for (Content demographicNode : demographicNodes) {
-        if (demographicNode.hasProperty(DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP)) {
-          String path = demographicNode.getPath();
-          String userId = PathUtils.getAuthorizableId(path);
+      for (Content homeNode : homeNodes) {
+        String path = homeNode.getPath();
+        String userId = PathUtils.getAuthorizableId(path);
+        String participantStatusPath = path + "/public/authprofile/myberkeley/elements/participant";
+        String demographicPath = path + "/_myberkeley-demographic";
+        boolean isParticipant = contentManager.exists(participantStatusPath);
+        Content demographicNode = contentManager.get(demographicPath);
+        boolean isIntegrated = (demographicNode != null) &&
+            demographicNode.hasProperty(DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
+        if (isParticipant && !isIntegrated) {
+          LOGGER.warn("Particpant {} is no longer being udpated", userId);
+        }
+        if ((filter == null) ||
+            (filter.equals(FILTER_INTEGRATED) && isIntegrated) ||
+            (filter.equals(FILTER_PARTICIPANTS) && isParticipant)) {
           write.value(userId);
         }
       }
