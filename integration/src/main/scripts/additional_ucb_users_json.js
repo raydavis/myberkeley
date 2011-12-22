@@ -44,12 +44,17 @@
         "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ALLISON"]
     },
     "271592": {
+        "groups" : [ "myb-staff"],
         "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/JOHN"]
     },
     "95509": {
       "groups" : [ "myb-staff"],
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/KEVIN"]
     },
+    "972716": {
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/SAGE"]
+    },    
     "758029": {
     },
     "756037": {
