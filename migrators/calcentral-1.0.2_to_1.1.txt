@@ -1,0 +1,38 @@
+MIGRATING 1.0.2 TO 1.1.0
+
+1. Bump the size of this MySQL variable in my.cnf and restart mysqld_safe:
+
+[mysql]
+max_allowed_packet=20M
+
+Otherwise 1.1 startup will fail in a big way.
+
+2. While v1.0.2 is still running, delete /var to give the new search templates room to drop in
+
+curl -u admin:admin -e http://localhost:8080 http://localhost:8080/var -F":operation=delete"
+curl -u admin:admin -e http://localhost:8080 http://localhost:8080/var -F "jcr:primaryType"="sling:Folder"
+
+Now stop v1.0.2.
+
+3. Blow away some old sling directories:
+
+mvn -e -Dsling.purge -P runner clean
+rm -rf working/sling/solr
+
+(Our Maven procedures take care of the OAE Confluence page's steps 3, 5, and 6.)
+
+4. Run the database migration script:
+
+myberkeley> mysql -u root nakamura < migrators/src/main/scripts/calcentral-mysql-1.0.2_to_1.1.sql
+
+5. Update the code and start v1.1 over the same Sling directory. DON'T ALLOW USERS ON YET!
+
+6. Run /system/sparseupgrade to migrate data, move to the new Sparse indexing schema, and reindex Solr:
+
+curl -N -u admin:admin -e http://localhost:8080 -FdryRun=false -FreindexAll=true http://localhost:8080/system/sparseupgrade
+
+The Sparse job took about 15 minutes. The Solr re-indexing took about another 30 minutes to complete. Presumably it will take a lot longer when uploaded files are available! (I worked from a copy of the MySQL data but without the content stored in the file system.)
+
+You may see many "Counter cachedStatement Leaking" messages due to a Sparse bug: https://jira.sakaiproject.org/browse/KERN-2445
+
+The "solr console step" mentioned in the OAE Confluence page can be skipped, since the same work is done by the "sparseupgrade" servlet.
