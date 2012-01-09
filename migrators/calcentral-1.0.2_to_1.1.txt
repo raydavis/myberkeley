@@ -41,6 +41,3 @@ step 4.
 
 You may see many "Counter cachedStatement Leaking" messages due to a Sparse bug:
 https://jira.sakaiproject.org/browse/KERN-2445
-
-The "solr console step" mentioned in the OAE Confluence page can be skipped, since the same work
-is done by the "sparseupgrade" servlet.
