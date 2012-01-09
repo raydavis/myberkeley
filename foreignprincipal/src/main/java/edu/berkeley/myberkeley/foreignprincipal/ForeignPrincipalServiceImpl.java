@@ -19,6 +19,7 @@ package edu.berkeley.myberkeley.foreignprincipal;
 
 import edu.berkeley.myberkeley.api.foreignprincipal.ForeignPrincipalService;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.ConfigurationPolicy;
@@ -26,10 +27,12 @@ import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.ComponentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import java.util.Dictionary;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,7 +46,7 @@ public class ForeignPrincipalServiceImpl implements ForeignPrincipalService {
   private static final long TIME_TO_LIVE_MS = 7200000;
 
   @Property(label = "Secret encryption key", description = "Must be set to enable self-registration")
-  public static final String FOREIGN_PRINCIPAL_SECRET_ = "foreignprincipal.secret";
+  public static final String FOREIGN_PRINCIPAL_SECRET = "foreignprincipal.secret";
   private String secretKey;
 
   /**
@@ -77,8 +80,12 @@ public class ForeignPrincipalServiceImpl implements ForeignPrincipalService {
 
   @Activate
   @Modified
-  protected void activate(Map<?, ?> props) {
-    secretKey = PropertiesUtil.toString(props.get(FOREIGN_PRINCIPAL_SECRET_), null);
-    LOGGER.debug("secretKey = {}", secretKey);
+  protected void activate(ComponentContext componentContext) {
+    Dictionary<?, ?> props = componentContext.getProperties();
+    secretKey = StringUtils.stripToNull(PropertiesUtil.toString(props.get(FOREIGN_PRINCIPAL_SECRET), null));
+    LOGGER.warn("secretKey = {}", secretKey);
+    if (secretKey == null) {
+      throw new ComponentException("Will not activate without " + FOREIGN_PRINCIPAL_SECRET + " configuration");
+    }
   }
 }

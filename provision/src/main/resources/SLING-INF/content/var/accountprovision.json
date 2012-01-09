@@ -1,0 +1,28 @@
+{
+  "security:principals" : [
+    {
+      "name" : "AccountAdministrators",
+      "isgroup" :"true"
+    }
+  ],
+  "security:acl" : [
+    {
+      "principal" : "everyone",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "anonymous",
+      "denied" : [
+        "jcr:all"
+      ]
+    },
+    {
+      "principal" : "AccountAdministrators",
+      "granted" : [
+        "jcr:read"
+      ]
+    }
+  ]
+}

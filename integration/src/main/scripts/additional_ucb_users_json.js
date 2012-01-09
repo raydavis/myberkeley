@@ -32,11 +32,11 @@
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/OLIVER"]
     },
     "322279": {
-      "groups" : [ "myb-staff"],
+      "groups" : [ "myb-staff", "AccountAdministrators"],
       "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ELI"]
     },
     "211159": {
-      "groups" : [ "myb-staff"],
+      "groups" : [ "myb-staff", "AccountAdministrators"],
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RAY"]
     },
     "208861": {
@@ -44,7 +44,7 @@
         "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/ALLISON"]
     },
     "271592": {
-        "groups" : [ "myb-staff"],
+        "groups" : [ "myb-staff", "AccountAdministrators"],
         "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/JOHN"]
     },
     "95509": {
@@ -54,7 +54,7 @@
     "972716": {
       "groups" : [ "myb-staff"],
       "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/SAGE"]
-    },    
+    },
     "758029": {
     },
     "756037": {
@@ -72,7 +72,7 @@
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/RACHEL"]
     },
     "53791": {
-      "groups" : [ "myb-staff"],
+      "groups" : [ "myb-staff", "AccountAdministrators"],
       "demographics" : ["/colleges/ETS TEST/standings/grad", "/colleges/ETS TEST/standings/grad/majors/DARLENE"]
     },
     "18437": {
@@ -80,7 +80,7 @@
     "313561": {
     },
     "323487": {
-      "groups" : [ "myb-staff"],
+      "groups" : [ "myb-staff", "AccountAdministrators"],
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/JON"]
      },
     "80818": {

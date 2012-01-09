@@ -19,6 +19,9 @@
             <Bundle-Category>myberkeley</Bundle-Category>
             <Export-Package>edu.berkeley.myberkeley.api.provision.*</Export-Package>
             <Private-Package>edu.berkeley.myberkeley.provision.*</Private-Package>
+            <Sling-Initial-Content>
+              SLING-INF/content;overwriteProperties:=true;uninstall:=false
+            </Sling-Initial-Content>
             <Embed-Transitive>true</Embed-Transitive>
           </instructions>
         </configuration>

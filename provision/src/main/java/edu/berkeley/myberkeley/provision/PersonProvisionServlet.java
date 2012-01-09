@@ -28,6 +28,7 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
@@ -53,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
     generateService = true, generateComponent = true)
 public class PersonProvisionServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 8837015974872136655L;
+  public static final String ACCOUNT_ADMINISTRATION_RESOURCE_PATH = "/var/accountprovision";
   public static final String SYSTEM_PROVIDED_USER_IDS_PARAM = "userIds";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PersonProvisionServlet.class);
@@ -68,9 +70,8 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
   @Override
   protected void doGet(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    // TODO Base on resource ACL.
-    if (!"admin".equals(request.getRemoteUser())) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
+    if (!isAllowed(request)) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
     String[] personIds = request.getParameterValues(SYSTEM_PROVIDED_USER_IDS_PARAM);
@@ -104,9 +105,8 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
   @Override
   protected void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response)
       throws ServletException, IOException {
-    // TODO Base on resource ACL.
-    if (!"admin".equals(request.getRemoteUser())) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
+    if (!isAllowed(request)) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
     String[] personIds = request.getParameterValues(SYSTEM_PROVIDED_USER_IDS_PARAM);
@@ -152,6 +152,11 @@ public class PersonProvisionServlet extends SlingAllMethodsServlet {
     } catch (JSONException e) {
       LOGGER.error(e.getMessage(), e);
     }
+  }
+
+  private boolean isAllowed(SlingHttpServletRequest request) {
+    Resource protectedResource = request.getResourceResolver().getResource(ACCOUNT_ADMINISTRATION_RESOURCE_PATH);
+    return (protectedResource != null);
   }
 
 }
