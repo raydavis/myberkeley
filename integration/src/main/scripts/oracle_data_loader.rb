@@ -43,6 +43,7 @@ module MyBerkeleyData
       @oracle_sid = options[:oraclesid]
 
       @remaining_accounts = []
+      @participants = []
       @new_users = []
       @dropped_accounts = []
       @renewed_accounts = []
@@ -63,7 +64,9 @@ module MyBerkeleyData
     end
 
     def collect_integrated_accounts
-      @remaining_accounts = ucb_data_loader.get_all_ucb_accounts
+      ucbAccounts = ucb_data_loader.get_all_ucb_accounts
+      @participants = ucbAccounts['participants']
+      @remaining_accounts = ucbAccounts['nonparticipants'] | @participants
     end
 
     def make_user_props(person_row, user_props={})
@@ -321,7 +324,7 @@ module MyBerkeleyData
     def check_stale_accounts
       iterating_copy = Array.new(@remaining_accounts)
       iterating_copy.each do |account_uid|
-        if (@ucb_data_loader.is_participant?(account_uid))
+        if (@participants.include?(account_uid))
           @log.info("Refreshing old participant #{account_uid}")
           loaded_user = load_single_account(account_uid)
           @remaining_accounts.delete(account_uid)
@@ -346,6 +349,7 @@ module MyBerkeleyData
       @log.info("Added #{@new_users.length} new users: #{@new_users.inspect}")
       @log.info("Renewed #{@renewed_accounts.length} synchronizations: #{@renewed_accounts.inspect}")
       @log.info("Dropped #{@dropped_accounts.length} synchronizations: #{@dropped_accounts.inspect}")
+      @log.info("Currently #{@participants.length} participants: #{@participants.inspect}")
       # Wait for indexing.
       sleep(4)
       cedStudentCount = get_student_count("myb-ced-students", 'ENV DSGN')
@@ -359,7 +363,8 @@ module MyBerkeleyData
           "* Renewed #{@renewed_accounts.length} synchronizations\n" +
           "* Dropped #{@dropped_accounts.length} synchronizations\n" +
           "* #{cedStudentCount} CED Students\n" +
-          "* #{cnrStudentCount} CNR Students\n"
+          "* #{cnrStudentCount} CNR Students\n" +
+          "* #{@participants.length} participants\n"
         subjectline = Time.now.strftime("%Y-%m-%d") + " Oracle account updates"
         res = @sling.execute_post(@sling.url_for("~admin/message.create.html"), {
           "sakai:type" => "internal",

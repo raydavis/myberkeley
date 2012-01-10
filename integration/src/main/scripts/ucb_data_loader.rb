@@ -77,7 +77,7 @@ module MyBerkeleyData
         @log.error("Could not get existing integrated users: #{res.code} / #{res.body}")
         return nil
       else
-        return (JSON.parse(res.body))["userIds"]
+        return JSON.parse(res.body)
       end
     end
 

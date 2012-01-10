@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -68,10 +70,6 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
   private static final long serialVersionUID = 7368025436453141350L;
   private static final Logger LOGGER = LoggerFactory.getLogger(GetUserIdsServlet.class);
 
-  public static final String FILTER_PROP = "filter";
-  public static final String FILTER_INTEGRATED = "integrated";
-  public static final String FILTER_PARTICIPANTS = "participants";
-
   private static final Map<String, Object> SPARSE_QUERY_MAP = ImmutableMap.of(
       JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
       (Object) UserConstants.USER_HOME_RESOURCE_TYPE,
@@ -91,14 +89,12 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       return;
     }
-    final String filter = request.getParameter(FILTER_PROP);
+    List<String> nonparticipants = new ArrayList<String>();
+    List<String> participants = new ArrayList<String>();
+    List<String> dropped = new ArrayList<String>();
     try {
       ContentManager contentManager = session.getContentManager();
       Iterable<Content> homeNodes = contentManager.find(SPARSE_QUERY_MAP);
-      response.setContentType("application/json");
-      response.setCharacterEncoding("UTF-8");
-      JSONWriter write = new JSONWriter(response.getWriter());
-      write.object().key("userIds").array();
       for (Content homeNode : homeNodes) {
         String path = homeNode.getPath();
         String userId = PathUtils.getAuthorizableId(path);
@@ -109,21 +105,48 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
         boolean isIntegrated = (demographicNode != null) &&
             demographicNode.hasProperty(DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP);
         if (isParticipant && !isIntegrated) {
-          LOGGER.warn("Particpant {} is no longer being udpated", userId);
+          Content emailNode = contentManager.get(path + "/public/authprofile/email/elements/email");
+          boolean wasDropped = (emailNode == null) || (!emailNode.hasProperty("value"));
+          if (wasDropped) {
+            LOGGER.warn("Participant {} was mistakenly dropped", userId);
+          }
         }
-        if ((filter == null) ||
-            (filter.equals(FILTER_INTEGRATED) && isIntegrated) ||
-            (filter.equals(FILTER_PARTICIPANTS) && isParticipant)) {
-          write.value(userId);
+        if (isParticipant) {
+          participants.add(userId);
+        } else if (isIntegrated) {
+          nonparticipants.add(userId);
+        } else {
+          dropped.add(userId);
         }
       }
-      write.endArray().endObject();
     } catch (StorageClientException e) {
       LOGGER.error(e.getMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
     } catch (AccessDeniedException e) {
       LOGGER.error(e.getMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+    try {
+      response.setContentType("application/json");
+      response.setCharacterEncoding("UTF-8");
+      JSONWriter write = new JSONWriter(response.getWriter());
+      write.object();
+      write.key("dropped").array();
+      for (String userId : dropped) {
+        write.value(userId);
+      }
+      write.endArray();
+      write.key("nonparticipants").array();
+      for (String userId : nonparticipants) {
+        write.value(userId);
+      }
+      write.endArray();
+      write.key("participants").array();
+      for (String userId : participants) {
+        write.value(userId);
+      }
+      write.endArray();
+      write.endObject();
     } catch (JSONException e) {
       LOGGER.warn(e.getMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create the proper JSON structure.");
