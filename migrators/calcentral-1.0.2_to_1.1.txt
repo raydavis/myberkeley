@@ -1,6 +1,6 @@
 MIGRATING 1.0.2 TO 1.1.0
 
-1. Bump the size of this MySQL variable in my.cnf and restart mysqld_safe:
+1. Make sure this MySQL configuration variable is at least this large in my.cnf:
 
 [mysql]
 max_allowed_packet=20M
@@ -9,8 +9,8 @@ Otherwise 1.1 startup will fail in a big way.
 
 2. While v1.0.2 is still running, delete /var to give the new search templates room to drop in
 
-curl -u admin:admin -e http://localhost:8080 http://localhost:8080/var -F":operation=delete"
-curl -u admin:admin -e http://localhost:8080 http://localhost:8080/var -F "jcr:primaryType"="sling:Folder"
+curl -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 http://localhost:8080/var -F":operation=delete"
+curl -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 http://localhost:8080/var -F "jcr:primaryType"="sling:Folder"
 
 Now stop v1.0.2 and update the code from Git.
 
@@ -36,22 +36,35 @@ rm -rf working/sling/solr
 
 mysql -p -u sakaiuser nakamura < migrators/src/main/scripts/calcentral-mysql-1.0.2_to_1.1.sql
 
-5. Update configurations and then start v1.1 over the same Sling directory. (We'll probably do this
-via the usual "reinstall.sh".) DON'T ALLOW USERS ON YET!
+5. Update configurations. On the calcentral servers, this means adding two new lines to
+"~/.build.cf":
 
-6. Force a complete Solr re-indexing so that the database migration code can search successfully:
+MYSQL_PASSWORD=xxx
+ORACLE_URL=yyy
 
-curl -u admin:admin -e http://localhost:8080 http://localhost:8080/system/console/solr -F type=all
+6. Start v1.1 over the existing Sling directory. On the calcentral servers, we do this
+via the usual "reinstall.sh" run. DON'T ALLOW USERS ON YET!
 
-Watch the server log for progress. On my laptop this took 35 minutes to finish.
+7. Force a complete Solr re-indexing so that the database migration code can search successfully:
 
-7. Run /system/sparseupgrade to migrate data, move to the new Sparse indexing schema, and
+curl -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 http://localhost:8080/system/console/solr -F type=all
+
+(This did not work for me on the staging server, and I don't know why. Instead I had to log
+into the system console through a browser, and reindex all from there. This is troubling
+since it means we have to have the https front-end running.)
+
+Watch the server log for progress. On my laptop this took 35 minutes to finish. On
+calcentral-staging it took about 12 minutes.
+
+8. Run /system/sparseupgrade to migrate data, move to the new Sparse indexing schema, and
 re-re-index Solr:
 
-curl -N -u admin:admin -e http://localhost:8080 -FdryRun=false -FreindexAll=true http://localhost:8080/system/sparseupgrade
-
-The Sparse job took about 20 minutes. The Solr re-indexing takes the same amount of time as in
-step 6.
+curl -N -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 -FdryRun=false \
+  -FreindexAll=true http://localhost:8080/system/sparseupgrade
 
 You may see many "Counter cachedStatement Leaking" messages due to a Sparse bug:
 https://jira.sakaiproject.org/browse/KERN-2445
+
+The Sparse job took about 20 minutes on my laptop and about 10 minutes on
+calcentral-staging. The Solr re-indexing takes the same amount of time as in
+step 7.
