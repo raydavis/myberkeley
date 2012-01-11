@@ -130,8 +130,6 @@ fi
 echo "`date`: Doing clean..." | $LOGIT
 mvn -B -e clean >>$LOG 2>&1
 
-exit
-
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -Dmyb.sling.config=$SRC_LOC/myberkeley/scripts/mysql -P runner verify >>$LOG 2>&1
 
