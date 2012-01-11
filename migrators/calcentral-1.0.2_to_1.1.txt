@@ -14,6 +14,17 @@ curl -u admin:admin -e http://localhost:8080 http://localhost:8080/var -F "jcr:p
 
 Now stop v1.0.2 and update the code from Git.
 
+mvn -e -P runner -Dsling.stop verify
+cd ../3akai-ux/
+git fetch -p origin
+git checkout dev
+git pull
+cd ../myberkeley/
+git fetch -p origin
+git checkout .
+git checkout dev
+git pull
+
 3. Blow away some old sling directories:
 
 mvn -e -Dsling.purge -P runner clean
@@ -23,7 +34,7 @@ rm -rf working/sling/solr
 
 4. Run the database migration script:
 
-myberkeley> mysql -u root nakamura < migrators/src/main/scripts/calcentral-mysql-1.0.2_to_1.1.sql
+mysql -p -u sakaiuser nakamura < migrators/src/main/scripts/calcentral-mysql-1.0.2_to_1.1.sql
 
 5. Update configurations and then start v1.1 over the same Sling directory. (We'll probably do this
 via the usual "reinstall.sh".) DON'T ALLOW USERS ON YET!

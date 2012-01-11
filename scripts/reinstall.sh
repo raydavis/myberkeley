@@ -19,6 +19,7 @@ if [ -f $INPUT_FILE ]; then
   ORACLE_PASSWORD=`awk -F"=" '/^ORACLE_PASSWORD=/ {print $2}' $INPUT_FILE`
   ORACLE_URL=`awk -F"=" '/^ORACLE_URL=/ {print $2}' $INPUT_FILE`
   ORACLE_DB=`awk -F"=" '/^ORACLE_DB=/ {print $2}' $INPUT_FILE`
+  MYSQL_PASSWORD=`awk -F"=" '/^MYSQL_PASSWORD=/ {print $2}' $INPUT_FILE`
 else
   SLING_PASSWORD='admin'
   SHARED_SECRET='SHARED_SECRET_CHANGE_ME_IN_PRODUCTION'
@@ -65,6 +66,7 @@ if [ -z "$CONFIG_FILE_DIR" ]; then
   echo "Not updating local configuration files..." | $LOGIT
 else
   CONFIG_FILES="$SRC_LOC/myberkeley/configs/$CONFIG_FILE_DIR/load"
+  STORAGE_FILES="$SRC_LOC/myberkeley/scripts/mysql"
   echo "Updating local configuration files..." | $LOGIT
 
   # put the shared secret into config file
@@ -107,12 +109,28 @@ else
     mv -f $FOREIGN_PRINCIPAL_CFG.new $FOREIGN_PRINCIPAL_CFG
   fi
 
+  # Fix MySQL password.
+  if [ $MYSQL_PASSWORD ]; then
+    SPARSE_CONFIG=$STORAGE_FILES/JDBCStorageClientPool.config
+    if [ -f $SPARSE_CONFIG ]; then
+      sed "s/ironchef/$MYSQL_PASSWORD/g" $SPARSE_CONFIG > $SPARSE_CONFIG.new
+      mv $SPARSE_CONFIG.new $SPARSE_CONFIG
+    fi
+    JCR_CONFIG=$STORAGE_FILES/repository.xml
+    if [ -f $JCR_CONFIG ]; then
+      sed "s/ironchef/$MYSQL_PASSWORD/g" $JCR_CONFIG > $JCR_CONFIG.new
+      mv $JCR_CONFIG.new $JCR_CONFIG
+    fi
+  fi
+
   rm $SRC_LOC/myberkeley/working/load/*
   cp -f $CONFIG_FILES/* $SRC_LOC/myberkeley/working/load
 fi
 
 echo "`date`: Doing clean..." | $LOGIT
 mvn -B -e clean >>$LOG 2>&1
+
+exit
 
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -Dmyb.sling.config=$SRC_LOC/myberkeley/scripts/mysql -P runner verify >>$LOG 2>&1
