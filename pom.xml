@@ -391,7 +391,7 @@
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.solr</artifactId>
-        <version>1.3-20111212</version>
+        <version>1.3-20120112</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
