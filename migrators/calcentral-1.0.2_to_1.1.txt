@@ -68,3 +68,7 @@ https://jira.sakaiproject.org/browse/KERN-2445
 The Sparse job took about 20 minutes on my laptop and about 10 minutes on
 calcentral-staging. The Solr re-indexing takes the same amount of time as in
 step 7.
+
+9. Before re-enabling preview generation on mboo, make sure that "nakamura" has been
+updated to the correct Git tag or branch and that "/etc/init.d/monitorserver" and
+"/home/myberkeley/.build.cf" has an entry for "APPLICATION_TERM_EXTRACT_SVR".
