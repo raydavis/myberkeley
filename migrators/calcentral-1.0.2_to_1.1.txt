@@ -47,11 +47,10 @@ via the usual "reinstall.sh" run. DON'T ALLOW USERS ON YET!
 
 7. Force a complete Solr re-indexing so that the database migration code can search successfully:
 
-curl -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 http://localhost:8080/system/console/solr -F type=all
+curl -i -L -g -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 -X POST \
+  'http://localhost:8080/system/console/solr?type=all'
 
-(This did not work for me on the staging server, and I don't know why. Instead I had to log
-into the system console through a browser, and reindex all from there. This is troubling
-since it means we have to have the https front-end running.)
+(Yes, you must use a GET-style query string in a POST request.)
 
 Watch the server log for progress. On my laptop this took 35 minutes to finish. On
 calcentral-staging it took about 12 minutes.
