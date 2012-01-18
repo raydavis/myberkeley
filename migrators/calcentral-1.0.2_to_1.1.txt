@@ -7,6 +7,10 @@ max_allowed_packet=20M
 
 Otherwise 1.1 startup will fail in a big way.
 
+Also ensure that the "myberkeley" account has a "maximum open files" limit of 2048
+(rather than the default 1024). This should head off the Solr indexing bug described
+at MYB-1251 and MYB-1302.
+
 2. While v1.0.2 is still running, delete /var to give the new search templates room to drop in
 
 curl -u admin:'ADMIN_PASSWORD' -e http://localhost:8080 http://localhost:8080/var -F":operation=delete"
