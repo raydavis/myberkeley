@@ -116,6 +116,8 @@
     "5698": {
     },
     "863980": {
+      "groups" : [ "myb-staff"],
+      "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/FAISAL"]
     },
     "874431": {
     },
