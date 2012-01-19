@@ -67,6 +67,7 @@ module MyBerkeleyData
       @sling.do_login
       @authz = SlingAuthz::Authz.new(@sling)
       @server = server
+      @known_groups = []
     end
 
     def get_all_ucb_accounts
@@ -82,6 +83,19 @@ module MyBerkeleyData
     end
 
     def add_user_to_group(user_id, group_id)
+      if (!(@known_groups.include?(group_id)))
+        result = @sling.execute_get(@sling.url_for("/system/userManager/group/#{group_id}.json"))
+        if (result.code != "200")
+          result = @sling.execute_post(@sling.url_for("/system/userManager/group.create.html"), {
+            ":name" => group_id
+          })
+          if (result.code != "200")
+            @log.error("Could not create group #{group_id}")
+            return nil
+          end
+        end
+        @known_groups.push(group_id)
+      end
       result = @sling.execute_post(@sling.url_for("/system/userManager/group/#{group_id}.update.html"), {
         ":member" => user_id
       })
