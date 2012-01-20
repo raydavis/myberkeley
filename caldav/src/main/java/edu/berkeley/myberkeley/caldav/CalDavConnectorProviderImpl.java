@@ -27,19 +27,23 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.ComponentException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Dictionary;
 
 @Component(label = "MyBerkeley :: CalDavConnectorProvider",
         description = "Provider for CalDav server authentication information",
-        immediate = true, metatype = true)
+        immediate = true, metatype = true, policy = ConfigurationPolicy.REQUIRE)
 @Service(value = CalDavConnectorProvider.class)
 public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorProviderImpl.class);
 
   @org.apache.felix.scr.annotations.Property(value = "admin", label = "CalDav Admin Username")
   protected static final String PROP_ADMIN_USERNAME = "caldavconnectorprovider.adminusername";
@@ -64,6 +68,7 @@ protected void activate(ComponentContext componentContext) throws Exception {
     this.adminUsername = PropertiesUtil.toString(props.get(PROP_ADMIN_USERNAME), "admin");
     this.adminPassword = PropertiesUtil.toString(props.get(PROP_ADMIN_PASSWORD), "bedework");
     this.calDavServerRoot = StringUtils.stripToNull(PropertiesUtil.toString(props.get(PROP_SERVER_ROOT), null));
+    LOGGER.info("calDavServerRoot = {}", this.calDavServerRoot);
     if (this.calDavServerRoot == null) {
       throw new ComponentException("Will not activate without " + PROP_SERVER_ROOT + " configuration");
     }
