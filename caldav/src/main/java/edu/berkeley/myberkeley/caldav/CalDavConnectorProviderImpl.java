@@ -24,10 +24,14 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.commons.lang.StringUtils;
+import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.ComponentException;
 
 import java.util.Dictionary;
 
@@ -43,7 +47,7 @@ public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
   @org.apache.felix.scr.annotations.Property(value = "bedework", label = "CalDav Admin Password")
   protected static final String PROP_ADMIN_PASSWORD = "caldavconnectorprovider.adminpassword";
 
-  @org.apache.felix.scr.annotations.Property(value = "http://test.media.berkeley.edu:8080", label = "CalDav Server Root")
+  @org.apache.felix.scr.annotations.Property(label = "CalDav Server Root")
   protected static final String PROP_SERVER_ROOT = "caldavconnectorprovider.serverroot";
 
   String adminUsername;
@@ -52,13 +56,17 @@ public class CalDavConnectorProviderImpl implements CalDavConnectorProvider {
 
   String calDavServerRoot;
 
-  @SuppressWarnings({"UnusedDeclaration"})
-  protected void activate(ComponentContext componentContext) throws Exception {
+@SuppressWarnings({"UnusedDeclaration"})
+@Activate
+@Modified
+protected void activate(ComponentContext componentContext) throws Exception {
     Dictionary<?, ?> props = componentContext.getProperties();
     this.adminUsername = PropertiesUtil.toString(props.get(PROP_ADMIN_USERNAME), "admin");
     this.adminPassword = PropertiesUtil.toString(props.get(PROP_ADMIN_PASSWORD), "bedework");
-    this.calDavServerRoot = PropertiesUtil.toString(props.get(PROP_SERVER_ROOT), "http://test.media.berkeley.edu:8080");
-
+    this.calDavServerRoot = StringUtils.stripToNull(PropertiesUtil.toString(props.get(PROP_SERVER_ROOT), null));
+    if (this.calDavServerRoot == null) {
+      throw new ComponentException("Will not activate without " + PROP_SERVER_ROOT + " configuration");
+    }
   }
 
   public CalDavConnector getAdminConnector(String owner) throws URIException {
