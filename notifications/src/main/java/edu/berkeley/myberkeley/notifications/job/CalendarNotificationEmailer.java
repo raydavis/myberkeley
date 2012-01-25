@@ -143,44 +143,46 @@ public class CalendarNotificationEmailer {
     String type = "Task";
 
     // subject line
-    StringBuilder subject = new StringBuilder("[CalCentral");
+    StringBuilder subject = new StringBuilder("New CalCentral");
     if (isTask) {
-      subject.append(" task] You have a new task titled \"");
+      subject.append(" task: ");
     } else {
       type = "Event";
-      subject.append(" event] You have a new event titled \"");
+      subject.append(" event: ");
     }
 
     subject.append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue());
-    subject.append("\"");
     email.setSubject(subject.toString());
 
     // email body
-    StringBuilder msg = new StringBuilder("This is an automated message from CalCentral.\n\n");
+    StringBuilder msg = new StringBuilder("");
     if (isTask) {
-      msg.append("A new task has been added to your My Tasks widget:\n\n");
+      msg.append("You have a new task in CalCentral: \n\n");
     } else {
-      msg.append("A new event has been added to your My Events widget:\n\n");
+      msg.append("You have a new event in CalCentral: \n\n");
     }
+    
+    String divider = "-------------------------------------------------------";
 
-    msg.append(type).append(" Subject: ").append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue()).append("\n");
-    msg.append(type).append(" Body: ").append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue()).append("\n\n");
+    // add divider 
+    msg.append(divider).append("\n\n");
+    // add Subject to email 
+    msg.append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.SUMMARY).getValue()).append("\n\n");
+    // add Body to email
+    msg.append(notification.getWrapper().getComponent().getProperty(net.fortuna.ical4j.model.Property.DESCRIPTION).getValue()).append("\n\n");
+    // add divider     
+    msg.append(divider).append("\n\n");
+    
+    msg.append("See your My ").append(type).append(" widget for details. If your My ").append(type).append(" widget is not visible, click the Add Widget button on My Dashboard. \n\n");
 
-    msg.append("To view this ").append(type).append(" in CalCentral:\n\n");
-    msg.append("* Log on to CalCentral at http://calcentral.berkeley.edu \n");
+    msg.append("You can use the enclosed .ics file to add this task to your calendar. \n\n");
 
-    if (isTask) {
-      msg.append("* If necessary, scroll down to see your My Tasks widget. \n" +
-              "* Click on a task's title to see details about that task.\n\n");
-      msg.append("If you have a standards-compliant calendar system, you can add this " +
-              "task by opening the enclosed file whose name ends with \".ics.\" ");
-      msg.append(" You can keep your task list current by checking off tasks in your CalCentral My Tasks widget as you complete them.");
-    } else {
-      msg.append("* If necessary, scroll down to see your My Events widget. \n" +
-              "* Click on an event's title to see details about that event.\n\n");
-      msg.append("If you have a standards-compliant calendar system, you can add this " +
-              "event by opening the enclosed file whose name ends with \".ics.\" ");
-    }
+    msg.append("Your dashboard: \n");
+    msg.append("https://calcentral.berkeley.edu/me#l=dashboard \n\n");
+
+    msg.append("Help for tasks and events: \n");
+    msg.append("https://calcentral.berkeley.edu/~Help-and-Support#l=Tasks-and-Events \n\n");
+
     msg.append("\n\n");
 
     email.setMsg(msg.toString());

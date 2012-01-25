@@ -71,9 +71,7 @@ module MyBerkeleyData
     end
 
     def get_all_ucb_accounts
-      res = @sling.execute_get(@sling.url_for("system/myberkeley/userIds.json"), {
-        "filter" => "integrated"
-      })
+      res = @sling.execute_get(@sling.url_for("system/myberkeley/userIds.json"))
       if (res.code != "200")
         @log.error("Could not get existing integrated users: #{res.code} / #{res.body}")
         return nil
