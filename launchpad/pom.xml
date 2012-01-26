@@ -3,7 +3,7 @@
   <parent>
     <artifactId>edu.berkeley.myberkeley.base</artifactId>
     <groupId>edu.berkeley.myberkeley</groupId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
@@ -39,7 +39,7 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.ojdbc6</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>1</startLevel>
             </bundle>
             <bundle>
@@ -51,7 +51,7 @@
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
@@ -63,31 +63,31 @@
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.caldav</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.dynamiclist</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.notifications</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.foreignprincipal</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>
               <artifactId>edu.berkeley.myberkeley.provision</artifactId>
-              <version>1.1</version>
+              <version>1.2-SNAPSHOT</version>
               <startLevel>30</startLevel>
             </bundle>
             <!-- MYB-597 -->
