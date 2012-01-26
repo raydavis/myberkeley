@@ -23,11 +23,13 @@ cd ../3akai-ux/
 git fetch -p origin
 git checkout dev
 git pull
+git checkout calcentral-1.1
 cd ../myberkeley/
 git fetch -p origin
 git checkout .
 git checkout dev
 git pull
+git checkout calcentral-1.1
 
 3. Blow away some old sling directories:
 
