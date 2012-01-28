@@ -264,12 +264,8 @@ module MyBerkeleyData
   end
 
   class Student < ActiveRecord::Base
-    set_table_name "BSPACE_STUDENT_INFO_VW"
-    set_primary_key "student_ldap_uid"
-  end
-  class Person < ActiveRecord::Base
-    set_table_name "BSPACE_PERSON_INFO_VW"
-    set_primary_key "ldap_uid"
+    self.table_name = "BSPACE_STUDENT_INFO_VW"
+    self.primary_key = "student_ldap_uid"
   end
 end
 
