@@ -9,7 +9,7 @@
   <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
   <name>MyBerkeley executable</name>
   <properties>
-    <nakamura.version>1.1</nakamura.version>
+    <nakamura.version>1.2-SNAPSHOT</nakamura.version>
   </properties>
   <packaging>jar</packaging>
   <build>

@@ -234,7 +234,7 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
     User user = (User) authorizableManager.findAuthorizable(userId);
     Map<String, Object[]> postProcessProperties = Maps.newHashMap(USER_PROPERTY_DEFAULTS);
     try {
-      authorizablePostProcessService.process(null, user, session, ModificationType.CREATE, postProcessProperties);
+      authorizablePostProcessService.process(user, session, ModificationType.CREATE, postProcessProperties);
     } catch (Exception e) {
       LOGGER.error("Unknown exception in post-processing for user " + userId, e);
     }
