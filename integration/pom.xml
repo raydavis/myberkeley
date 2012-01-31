@@ -273,7 +273,7 @@
             <configuration>
               <tasks name="sling-start" if="sling.start">
                 <mkdir dir="${sakai3.home}"/>
-                <java classname="org.apache.sling.launchpad.app.Main"
+                <java classname="org.sakaiproject.nakamura.app.NakamuraMain"
                   fork="true" spawn="true"
                   dir="${sakai3.home}"
                   classpathref="maven.runtime.classpath">

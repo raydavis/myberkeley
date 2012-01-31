@@ -113,6 +113,19 @@
               <goal>prepare-package</goal>
             </goals>
           </execution>
+          <execution>
+            <id>create-karaf-descriptor</id>
+            <goals>
+              <goal>create-karaf-descriptor</goal>
+            </goals>
+            <configuration>
+              <includeDefaultBundles>false</includeDefaultBundles>
+              <exclusions>
+                <exclusion>org.apache.felix:org.apache.felix.configadmin</exclusion>
+                <exclusion>org.apache.felix:org.apache.felix.webconsole</exclusion>
+              </exclusions>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 
@@ -134,7 +147,7 @@
                   <artifactId>org.sakaiproject.nakamura.app</artifactId>
                   <version>${nakamura.version}</version>
                   <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-                  <includes>*.properties</includes>
+                  <includes>*.properties,**\/*.class</includes>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -148,10 +161,21 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
             <manifest>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultImplementationEntries>
+                true
+              </addDefaultImplementationEntries>
             </manifest>
+            <manifestEntries>
+              <Specification-Title>Nakamura Server</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>The Sakai Foundation</Specification-Vendor>
+              <Implementation-Title>Nakamura Server</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+              <Implementation-Vendor>The Sakai Foundation</Implementation-Vendor>
+              <Main-Class>org.sakaiproject.nakamura.app.NakamuraMain</Main-Class>
+            </manifestEntries>
           </archive>
         </configuration>
       </plugin>
