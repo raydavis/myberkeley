@@ -23,6 +23,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +44,8 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.lite.authorizable.Authorizable;
+import org.sakaiproject.nakamura.api.lite.authorizable.AuthorizableManager;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.profile.ProfileService;
 import org.sakaiproject.nakamura.api.user.LiteAuthorizablePostProcessService;
@@ -50,6 +53,7 @@ import org.sakaiproject.nakamura.lite.BaseMemoryRepository;
 import org.sakaiproject.nakamura.util.LitePersonalUtils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,13 +65,12 @@ public class CalOaeAuthorizableServiceTest {
   private LiteAuthorizablePostProcessService authorizablePostProcessService;
   @Mock
   private ProfileService profileService;
-  private Repository repository;
   private CalOaeAuthorizableService calOaeAuthorizableService;
 
   @Before
-  public void setup() throws ClientPoolException, StorageClientException, AccessDeniedException, ClassNotFoundException, IOException {
+  public void setup() throws StorageClientException, AccessDeniedException, ClassNotFoundException, IOException {
     BaseMemoryRepository baseMemoryRepository = new BaseMemoryRepository();
-    repository = baseMemoryRepository.getRepository();
+    Repository repository = baseMemoryRepository.getRepository();
     calOaeAuthorizableService = new CalOaeAuthorizableService();
     calOaeAuthorizableService.repository = repository;
     calOaeAuthorizableService.authorizablePostProcessService = authorizablePostProcessService;
@@ -79,7 +82,7 @@ public class CalOaeAuthorizableServiceTest {
   public void testProfileSetup() throws Exception {
     final String userId = "joe";
     Map<String, Object> attributes = new ImmutableMap.Builder<String, Object>()
-        .put("firstName", (Object) "Joe")
+        .put("firstName", "Joe")
         .put("lastName", "Student")
         .put("email", "joe@example.edu")
         .put("college", "L & S")
@@ -117,7 +120,27 @@ public class CalOaeAuthorizableServiceTest {
     ProvisionResult provisionResult = calOaeAuthorizableService.loadUser(userId, attributes);
     User user = provisionResult.getUser();
     assertNotNull(user);
-    assertNotNull(user);
     verify(dynamicListService).setDemographics(any(Session.class), eq(userId), eq(demographics));
   }
+
+  @Test
+  public void htmlEntities() throws Exception {
+    String firstNameUtf8 = "Français &tc.";
+    String lastNameUtf8 = "à Côté";
+    final String userId = "fancy";
+    Map<String, Object> attributes = new ImmutableMap.Builder<String, Object>()
+        .put("firstName", "Fran&ccedil;ais &tc.")
+        .put("lastName", "&agrave; C&ocirc;t&eacute;")
+        .put("email", "fancy@example.edu")
+        .build();
+    ProvisionResult provisionResult = calOaeAuthorizableService.loadUser(userId, attributes);
+    User user = provisionResult.getUser();
+    assertNotNull(user);
+    ArgumentCaptor<JSONObject> argument = ArgumentCaptor.forClass(JSONObject.class);
+    verify(profileService, atLeastOnce()).update(any(Session.class), eq(LitePersonalUtils.getProfilePath(userId)), argument.capture(), eq(true), eq(true), eq(false));
+    JSONObject jsonObject = argument.getValue();
+    assertEquals(firstNameUtf8, jsonObject.getJSONObject("basic").getJSONObject("elements").getJSONObject("firstName").getString("value"));
+    assertEquals(lastNameUtf8, jsonObject.getJSONObject("basic").getJSONObject("elements").getJSONObject("lastName").getString("value"));
+  }
+
 }

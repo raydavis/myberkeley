@@ -33,6 +33,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
@@ -202,7 +203,13 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
         JSONObject elementsJson = new JSONObject();
         for (String key : profileProps) {
           JSONObject itemJson = new JSONObject();
-          itemJson.put("value", attributes.get(key));
+          
+          // Some clever people have managed to inject HTML entities (rather than UTF-8
+          // strings) into campus data sources. For functional compatibility with
+          // bSpace and CalNet directory displays, try to decode them.
+          final String value = StringEscapeUtils.unescapeHtml((String) attributes.get(key));
+          
+          itemJson.put("value", value);
           elementsJson.put(key, itemJson);
         }
         JSONObject sectionJson = new JSONObject();
