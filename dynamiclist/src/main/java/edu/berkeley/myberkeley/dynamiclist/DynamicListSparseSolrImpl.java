@@ -18,8 +18,10 @@
  */
 package edu.berkeley.myberkeley.dynamiclist;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 
+import com.google.common.collect.Iterables;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListContext;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 
@@ -50,6 +52,7 @@ import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
 import org.sakaiproject.nakamura.api.solr.SolrServerService;
+import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.sakaiproject.nakamura.util.PathUtils;
 import org.slf4j.Logger;
@@ -87,9 +90,14 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
       "ANY", "OR"
   );
   private static final String PERSONAL_DEMOGRAPHIC_STORE_NAME = "_myberkeley-demographic";
+  private static final Map<String, Object> ALL_USER_HOMES_QUERY_MAP = ImmutableMap.of(
+      JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
+      (Object) UserConstants.USER_HOME_RESOURCE_TYPE,
+      "_items", new Long(20000)
+  );
 
   @Reference
-  private SolrServerService solrSearchService;
+  SolrServerService solrSearchService;
 
   @Reference
   SlingRepository slingRepository;
@@ -263,5 +271,19 @@ public class DynamicListSparseSolrImpl implements DynamicListService {
     LOGGER.info("Set {} demographics to {}", storePath, demographicSet);
     contentManager.update(content);
   }
+
+  @Override
+  public Iterable<String> getAllUserIds(Session session) throws StorageClientException, AccessDeniedException {
+    ContentManager contentManager = session.getContentManager();
+    Iterable<Content> userHomes = contentManager.find(ALL_USER_HOMES_QUERY_MAP);
+    return Iterables.transform(userHomes, HOME_TO_AUTHORIZABLE_ID);
+  }
+
+  public static Function<Content, String> HOME_TO_AUTHORIZABLE_ID = new Function<Content, String>() {
+    @Override
+    public String apply(Content content) {
+      return PathUtils.getAuthorizableId(content.getPath());
+    }
+  };
 
 }

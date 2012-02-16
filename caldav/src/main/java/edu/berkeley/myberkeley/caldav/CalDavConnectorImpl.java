@@ -401,7 +401,6 @@ public class CalDavConnectorImpl implements CalDavConnector {
   /**
    * All that's required to create an account is to log in once and
    * make any request.
-   * @see edu.berkeley.myberkeley.caldav.api.CalDavConnector#ensureCalendarAccount()
    */
   @Override
   public void ensureCalendarStore() {
@@ -412,9 +411,7 @@ public class CalDavConnectorImpl implements CalDavConnector {
     } catch (IOException e) {
       LOGGER.error("Error running " + getMethod.getName() + ": " + e.getMessage());
     } finally {
-      if (getMethod != null) {
-        getMethod.releaseConnection();
-      }
+      getMethod.releaseConnection();
     }
   }
 

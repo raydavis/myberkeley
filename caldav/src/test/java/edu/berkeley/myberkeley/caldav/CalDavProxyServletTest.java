@@ -20,10 +20,6 @@
 
 package edu.berkeley.myberkeley.caldav;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
@@ -39,6 +35,7 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -49,14 +46,16 @@ import org.sakaiproject.nakamura.util.parameters.ContainerRequestParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+
+import static org.mockito.Mockito.*;
 
 public class CalDavProxyServletTest extends CalDavTests {
 
@@ -66,11 +65,12 @@ public class CalDavProxyServletTest extends CalDavTests {
 
   @Before
   public void setUp() throws Exception {
+    Assume.assumeTrue(initializeCalDavSource());
     this.servlet = new CalDavProxyServlet();
     CalDavConnectorProviderImpl provider = new CalDavConnectorProviderImpl();
     provider.adminUsername = "admin";
-    provider.adminPassword = "bedework";
-    provider.calDavServerRoot = "http://test.media.berkeley.edu:8080";
+    provider.adminPassword = calDavPassword;
+    provider.calDavServerRoot = calDavServer;
     this.servlet.calDavConnectorProvider = provider;
   }
 

@@ -18,7 +18,8 @@
     <sling.tmpdir>/tmp</sling.tmpdir>
     <loaddata.server>http://localhost:8080/</loaddata.server>
     <loaddata.password>admin</loaddata.password>
-    <caldav.skiptests>true</caldav.skiptests>
+    <caldav.server></caldav.server>
+    <caldav.password></caldav.password>
   </properties>
   <scm>
     <connection>scm:git:git://github.com/ets-berkeley-edu/myberkeley.git</connection>
@@ -375,6 +376,18 @@
         <artifactId>org.apache.sling.servlets.post</artifactId>
         <version>2.1.0</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mnode.ical4j</groupId>
+        <artifactId>ical4j</artifactId>
+        <version>1.0.3</version>
+        <scope>compile</scope>
+      </dependency>
+      <!-- ical4j requires this package -->
+      <dependency>
+        <groupId>backport-util-concurrent</groupId>
+        <artifactId>backport-util-concurrent</artifactId>
+        <version>3.1</version>
       </dependency>
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>

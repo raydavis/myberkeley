@@ -40,6 +40,7 @@ import org.sakaiproject.nakamura.util.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 
 public class CalendarWrapperTest extends CalDavTests {
@@ -74,7 +75,7 @@ public class CalendarWrapperTest extends CalDavTests {
   }
 
   @Test
-  public void toJSON() throws URIException, ParseException, CalDavException, JSONException {
+  public void toJSON() throws IOException, ParseException, CalDavException, JSONException, URISyntaxException {
     CalendarWrapper wrapper = getWrapper();
     assertNotNull(wrapper.toJSON());
   }
@@ -87,7 +88,7 @@ public class CalendarWrapperTest extends CalDavTests {
   }
 
   @Test
-  public void vtodoFromJSON() throws CalDavException, IOException, JSONException {
+  public void vtodoFromJSON() throws CalDavException, IOException, JSONException, URISyntaxException, ParseException {
     InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vtodo.json");
     String json = IOUtils.readFully(in, "utf-8");
     JSONObject jsonObject = new JSONObject(json);
@@ -101,7 +102,7 @@ public class CalendarWrapperTest extends CalDavTests {
   }
 
   @Test
-  public void veventFromJSON() throws CalDavException, IOException, JSONException {
+  public void veventFromJSON() throws CalDavException, IOException, JSONException, URISyntaxException, ParseException {
     InputStream in = getClass().getClassLoader().getResourceAsStream("calendarWrapper_vevent.json");
     String json = IOUtils.readFully(in, "utf-8");
     JSONObject jsonObject = new JSONObject(json);
@@ -116,7 +117,7 @@ public class CalendarWrapperTest extends CalDavTests {
   }
 
   @Test
-  public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException, InterruptedException {
+  public void verifyFromJSONIdempotent() throws CalDavException, IOException, JSONException, ParseException, InterruptedException, URISyntaxException {
     CalendarWrapper original = getWrapper();
     JSONObject json = original.toJSON();
     // ical4j sets the DTSTAMP of new Calendar instances to the datetime of the instance's creation.
@@ -137,7 +138,7 @@ public class CalendarWrapperTest extends CalDavTests {
     assertFalse(originalUID.equals(newUID));
   }
 
-  private CalendarWrapper getWrapper() throws URIException, ParseException, CalDavException {
+  private CalendarWrapper getWrapper() throws URIException, CalDavException {
     Calendar c = buildVTodo("a todo");
     URI uri = new URI("foo", false);
     return new CalendarWrapper(c, uri, RANDOM_ETAG);

@@ -110,10 +110,7 @@
         <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
-            <scope>provided</scope>
         </dependency>
-
-        <!-- commons -->
 
         <!-- commons -->
         <dependency>
@@ -142,17 +139,14 @@
 
         <!-- calendar -->
         <dependency>
-            <groupId>net.fortuna.ical4j</groupId>
+            <groupId>org.mnode.ical4j</groupId>
             <artifactId>ical4j</artifactId>
-            <version>1.0-rc3</version>
-            <scope>compile</scope>
         </dependency>
-        <!-- ical4j requires this package -->
-        <dependency>
-            <groupId>backport-util-concurrent</groupId>
-            <artifactId>backport-util-concurrent</artifactId>
-            <version>3.1</version>
-        </dependency>
+       <!-- ical4j requires this package -->
+       <dependency>
+         <groupId>backport-util-concurrent</groupId>
+         <artifactId>backport-util-concurrent</artifactId>
+       </dependency>
 
         <!-- java -->
         <dependency>

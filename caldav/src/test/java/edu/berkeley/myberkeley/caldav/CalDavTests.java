@@ -32,11 +32,16 @@ import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.component.VToDo;
 import net.fortuna.ical4j.model.property.CalScale;
+import net.fortuna.ical4j.model.property.Categories;
 import net.fortuna.ical4j.model.property.Description;
+import net.fortuna.ical4j.model.property.Location;
 import net.fortuna.ical4j.model.property.ProdId;
 import net.fortuna.ical4j.model.property.Status;
+import net.fortuna.ical4j.model.property.StreetAddress;
 import net.fortuna.ical4j.model.property.Uid;
 import net.fortuna.ical4j.model.property.Version;
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Assert;
 import org.slf4j.LoggerFactory;
@@ -56,6 +61,8 @@ public abstract class CalDavTests extends Assert {
   protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CalDavConnectorImplTest.class);
 
   protected CalDavConnector adminConnector;
+  protected String calDavServer = null;
+  protected String calDavPassword = null;
 
   protected void deleteAll() throws CalDavException {
     try {
@@ -79,11 +86,18 @@ public abstract class CalDavTests extends Assert {
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     c.getComponents().add(tz);
     DateTime start = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
+    start.setUtc(true);
+    LOGGER.info("New start time = {}", start);
+
     VEvent vevent = new VEvent(start,
             new Dur(0, 1, 0, 0), summary);
     vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
             "specified standard 75th column"));
     vevent.getProperties().add(new Uid(UUID.randomUUID().toString()));
+    vevent.getProperties().add(new Categories("LOLCAT"));
+    vevent.getProperties().add(new Categories("FATCAT"));
+    vevent.getProperties().add(new Location("Zellerbach Hall"));
+    vevent.getProperties().add(new StreetAddress("Somewhere on campus"));
     c.getComponents().add(vevent);
     return c;
   }
@@ -98,7 +112,7 @@ public abstract class CalDavTests extends Assert {
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     calendar.getComponents().add(tz);
     DateTime due = new DateTime(DateUtils.addDays(new Date(), new Random().nextInt(28)));
-    due.setTimeZone(registry.getTimeZone("Europe/London"));
+    due.setUtc(true);
     VToDo vtodo = new VToDo(due, due, summary);
     vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
     vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
@@ -119,6 +133,7 @@ public abstract class CalDavTests extends Assert {
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     calendar.getComponents().add(tz);
     DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
+    due.setUtc(true);
     VToDo vtodo = new VToDo(due, due, summary);
     vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
     vtodo.getProperties().add(CalDavConnector.MYBERKELEY_REQUIRED);
@@ -139,6 +154,7 @@ public abstract class CalDavTests extends Assert {
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     c.getComponents().add(tz);
     DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * new Random().nextInt(28)));
+    start.setUtc(true);
     VEvent vevent = new VEvent(start,
             new Dur(0, 1, 0, 0), summary);
     vevent.getProperties().add(new Description("this is the description, it is long enough to wrap at the ical " +
@@ -149,4 +165,18 @@ public abstract class CalDavTests extends Assert {
     return c;
   }
 
+  protected boolean doesEntryExist(URI uri) throws CalDavException, IOException {
+    for (CalendarURI thisURI : this.adminConnector.getCalendarUris()) {
+      if ((thisURI.toString()).equals(uri.toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  protected boolean initializeCalDavSource() {
+    this.calDavServer = StringUtils.trimToNull(System.getProperty("caldav.server"));
+    this.calDavPassword = StringUtils.trimToNull(System.getProperty("caldav.password"));
+    return ((this.calDavServer != null) && (this.calDavPassword != null));
+  }
 }

@@ -23,8 +23,10 @@ package edu.berkeley.myberkeley.caldav.api;
 import edu.berkeley.myberkeley.caldav.CalDavConnectorImpl;
 import org.apache.commons.httpclient.URIException;
 
-public interface CalDavConnectorProvider {
-  CalDavConnector getAdminConnector(String owner) throws URIException;
+import java.io.IOException;
 
-  CalDavConnector getConnector(String username, String password) throws URIException;
+public interface CalDavConnectorProvider {
+  CalDavConnector getAdminConnector(String owner) throws IOException;
+
+  CalDavConnector getConnector(String username) throws IOException;
 }

@@ -17,27 +17,18 @@
  */
 package edu.berkeley.myberkeley.provision;
 
-import static edu.berkeley.myberkeley.api.dynamiclist.DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
 import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
 import edu.berkeley.myberkeley.api.provision.ProvisionResult;
 import edu.berkeley.myberkeley.api.provision.SynchronizationState;
-import edu.berkeley.myberkeley.caldav.api.CalDavConnector;
-import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
-
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
@@ -60,6 +51,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+
+import static edu.berkeley.myberkeley.api.dynamiclist.DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP;
 
 @Component(metatype = true,
 label = "CalCentral :: OAE User Service", description = "Create and update valid CalCentral user accounts in a single request")
@@ -105,8 +98,6 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
    */
   public static final String PASSWORD_PROPERTY_NAME = "pwd";
 
-  @Reference(policy=ReferencePolicy.DYNAMIC, cardinality=ReferenceCardinality.OPTIONAL_UNARY)
-  CalDavConnectorProvider calDavConnectorProvider;
   @Reference
   DynamicListService dynamicListService;
   @Reference
@@ -250,19 +241,6 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
     final String jsonContentString = INITIAL_PROFILE_CONTENT.replaceAll("%USER_ID%", userId);
     JSONObject jsonContent = new JSONObject(jsonContentString);
     profileService.update(session, LitePersonalUtils.getProfilePath(userId), jsonContent, true, true, false);
-
-    // Ensure the user has a calendar store.
-    LOGGER.info("calDavConnectorProvider = {}", calDavConnectorProvider);
-    if (calDavConnectorProvider != null) {
-      try {
-        CalDavConnector calDavConnector = calDavConnectorProvider.getConnector(userId, userId);
-        calDavConnector.ensureCalendarStore();
-      } catch (URIException e) {
-        LOGGER.info("Error ensuring calendar store for new user " + userId, e);
-      }
-    } else {
-      LOGGER.info("No CalDavConnectorProvider; will not create calendar store for new user {}", userId);
-    }
 
     return user;
   }

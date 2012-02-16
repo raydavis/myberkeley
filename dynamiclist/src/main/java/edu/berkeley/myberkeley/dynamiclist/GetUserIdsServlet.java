@@ -17,10 +17,7 @@
  */
 package edu.berkeley.myberkeley.dynamiclist;
 
-import com.google.common.collect.ImmutableMap;
-
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
-
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -28,7 +25,6 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.io.JSONWriter;
-import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.StorageClientUtils;
@@ -36,18 +32,15 @@ import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.api.lite.content.ContentManager;
-import org.sakaiproject.nakamura.api.user.UserConstants;
-import org.sakaiproject.nakamura.util.PathUtils;
+import org.sakaiproject.nakamura.util.LitePersonalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * After a user account has been loaded into MyBerkeley, it must be
@@ -70,12 +63,6 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
   private static final long serialVersionUID = 7368025436453141350L;
   private static final Logger LOGGER = LoggerFactory.getLogger(GetUserIdsServlet.class);
 
-  private static final Map<String, Object> SPARSE_QUERY_MAP = ImmutableMap.of(
-      JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY,
-      (Object) UserConstants.USER_HOME_RESOURCE_TYPE,
-      "_items", new Long(20000)
-  );
-
   @Reference
   protected transient DynamicListService dynamicListService;
 
@@ -93,11 +80,10 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
     List<String> participants = new ArrayList<String>();
     List<String> dropped = new ArrayList<String>();
     try {
+      Iterable<String> userIds = dynamicListService.getAllUserIds(session);
       ContentManager contentManager = session.getContentManager();
-      Iterable<Content> homeNodes = contentManager.find(SPARSE_QUERY_MAP);
-      for (Content homeNode : homeNodes) {
-        String path = homeNode.getPath();
-        String userId = PathUtils.getAuthorizableId(path);
+      for (String userId : userIds) {
+        String path = LitePersonalUtils.getHomeResourcePath(userId);
         String participantStatusPath = path + "/public/authprofile/myberkeley/elements/participant";
         String demographicPath = path + "/_myberkeley-demographic";
         boolean isParticipant = contentManager.exists(participantStatusPath);

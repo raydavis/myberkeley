@@ -58,4 +58,6 @@ public interface DynamicListService {
    */
   void setDemographics(Session session, String userId, Set<String> demographicSet) throws StorageClientException, AccessDeniedException;
 
+  Iterable<String> getAllUserIds(Session session) throws StorageClientException, AccessDeniedException;
+
 }

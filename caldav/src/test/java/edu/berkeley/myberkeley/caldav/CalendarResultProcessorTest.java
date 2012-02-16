@@ -62,7 +62,7 @@ public class CalendarResultProcessorTest extends CalDavTests {
     new CalendarResultProcessor(getWrappers(), criteria).processResults();
   }
 
-  private List<CalendarWrapper> getWrappers() throws URIException, ParseException, CalDavException {
+  private List<CalendarWrapper> getWrappers() throws URIException, CalDavException {
     List<CalendarWrapper> wrappers = new ArrayList<CalendarWrapper>();
     Calendar c1 = buildVTodo("c1");
     wrappers.add(new CalendarWrapper(c1, new URI("/c1", false), RANDOM_ETAG));

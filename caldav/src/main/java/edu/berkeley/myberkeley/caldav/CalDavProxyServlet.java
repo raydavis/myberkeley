@@ -44,15 +44,15 @@ import org.sakaiproject.nakamura.api.user.UserConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 @Service(value = Servlet.class)
 @SlingServlet(paths = {"/system/myberkeley/caldav"}, methods = {"GET", "POST"}, generateComponent = true, generateService = true)
@@ -200,8 +200,8 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
 
       response.getWriter().write(json.toString(2));
 
-    } catch (JSONException je) {
-      LOGGER.error("Failed to convert calendar to JSON", je);
+    } catch (JSONException e) {
+      LOGGER.error("Failed to convert calendar to JSON", e);
     }
 
   }

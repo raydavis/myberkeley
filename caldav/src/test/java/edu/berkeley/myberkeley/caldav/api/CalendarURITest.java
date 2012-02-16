@@ -21,7 +21,6 @@
 package edu.berkeley.myberkeley.caldav.api;
 
 import edu.berkeley.myberkeley.caldav.CalDavTests;
-import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import net.fortuna.ical4j.model.Date;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
