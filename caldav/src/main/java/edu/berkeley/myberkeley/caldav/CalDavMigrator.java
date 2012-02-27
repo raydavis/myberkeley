@@ -121,7 +121,7 @@ public class CalDavMigrator extends SlingAllMethodsServlet {
       }
       for (String userId : userIds) {
         final long migrationCount = migrateCalDav(userId, calDavConnectorProvider);
-        writeToResponse("User " + userId + " migrated " + migrationCount + " calendars", response);
+        writeToResponse("User " + userId + " migrated " + migrationCount + " tasks and events", response);
         totalMigrationCount += migrationCount;
       }
     } catch (StorageClientException e) {
