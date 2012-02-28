@@ -98,6 +98,12 @@
               <startLevel>30</startLevel>
             </bundle>
           </additionalBundles>
+          <bundleExclusions>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.derby-driver</artifactId>
+            </bundle>
+          </bundleExclusions>
           <!-- Needs to be copied from nakamura.app -->
           <jarWebSupport>
             <groupId>org.sakaiproject.nakamura</groupId>
