@@ -161,7 +161,9 @@ public class EmbeddedCalDav implements CalDavConnector {
 
   @Override
   public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
-    return Lists.newArrayList(getCalendarIterator(criteria));
+    List<CalendarWrapper> calendarWrappers = Lists.newArrayList(getCalendarIterator(criteria));
+    criteria.sortCalendarWrappers(calendarWrappers);
+    return calendarWrappers;
   }
 
   @Override

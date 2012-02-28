@@ -28,7 +28,10 @@ import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.component.VToDo;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class CalendarSearchCriteria {
 
@@ -225,6 +228,10 @@ public class CalendarSearchCriteria {
             ", start=" + this.start +
             ", end=" + this.end +
             '}';
+  }
+  
+  public void sortCalendarWrappers(List<CalendarWrapper> calendarWrappers) {
+    Collections.sort(calendarWrappers, this.getSort().getComparator());
   }
 
 }

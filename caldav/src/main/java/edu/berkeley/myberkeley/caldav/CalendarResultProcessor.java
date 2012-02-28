@@ -75,7 +75,7 @@ public class CalendarResultProcessor {
   }
 
   private void sort() {
-    Collections.sort(this.results, this.criteria.getSort().getComparator());
+    this.criteria.sortCalendarWrappers(this.results);
   }
 
 }
