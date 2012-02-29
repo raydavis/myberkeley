@@ -25,9 +25,7 @@ import edu.berkeley.myberkeley.caldav.api.CalDavConnectorProvider;
 import edu.berkeley.myberkeley.caldav.api.CalDavException;
 import edu.berkeley.myberkeley.caldav.api.CalendarURI;
 import edu.berkeley.myberkeley.caldav.api.CalendarWrapper;
-import net.fortuna.ical4j.model.Component;
 import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.property.Status;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.felix.scr.annotations.Reference;
@@ -237,28 +235,7 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
       String uriString = thisItem.getString("uri");
       CalendarURI uri = new CalendarURI(new URI(uriString, false), new DateTime());
       CalendarWrapper wrapper = wrapperMap.get(uri);
-
-      Component component = wrapper.getComponent();
-
-      boolean isArchived = thisItem.getBoolean("isArchived");
-      boolean isCompleted = thisItem.getBoolean("isCompleted");
-      boolean isRead = thisItem.getBoolean("isRead");
-      if (isArchived) {
-        component.getProperties().add(CalDavConnector.MYBERKELEY_ARCHIVED);
-      } else {
-        component.getProperties().remove(CalDavConnector.MYBERKELEY_ARCHIVED);
-      }
-      if (isCompleted) {
-        component.getProperties().remove(Status.VTODO_NEEDS_ACTION);
-        component.getProperties().add(Status.VTODO_COMPLETED);
-      } else {
-        component.getProperties().remove(Status.VTODO_COMPLETED);
-      }
-      if (isRead) {
-        component.getProperties().add(CalDavConnector.MYBERKELEY_READ);
-      } else {
-        component.getProperties().remove(CalDavConnector.MYBERKELEY_READ);
-      }
+      wrapper.applyJsonState(thisItem);
       connector.modifyCalendar(wrapper.getUri(), wrapper.getCalendar());
     }
   }

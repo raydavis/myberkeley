@@ -20,6 +20,7 @@
 
 package edu.berkeley.myberkeley.caldav.api;
 
+import com.google.common.collect.ImmutableList;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
@@ -266,6 +267,44 @@ public class CalendarWrapper implements Serializable {
     json.put(JSON_PROPERTY_NAMES.isRead.toString(), isRead);
     json.put(JSON_PROPERTY_NAMES.icalData.toString(), icalData);
     return json;
+  }
+
+  /**
+   * Apply specified settings to the wrapped Component.
+   * @param jsonState in a format similar to that produced by the toJSON method
+   * @throws org.apache.sling.commons.json.JSONException
+   */
+  public void applyJsonState(JSONObject jsonState) throws JSONException {
+    PropertyList propertyList = this.component.getProperties();
+    if (jsonState.has(JSON_PROPERTY_NAMES.isCompleted.toString())) {
+      boolean isCompleted = jsonState.getBoolean(JSON_PROPERTY_NAMES.isCompleted.toString());
+      if (this.component instanceof VToDo) {
+        // Enforce only one Status.
+        PropertyList statusProperties = propertyList.getProperties(Property.STATUS);
+        propertyList.removeAll(statusProperties);
+        if (isCompleted) {
+          propertyList.add(Status.VTODO_COMPLETED);
+        } else {
+          propertyList.add(Status.VTODO_NEEDS_ACTION);
+        }
+      }
+    }
+    if (jsonState.has(JSON_PROPERTY_NAMES.isArchived.toString())) {
+      boolean isArchived = jsonState.getBoolean(JSON_PROPERTY_NAMES.isArchived.toString());
+      // At most one.
+      propertyList.removeAll(ImmutableList.of(CalDavConnector.MYBERKELEY_ARCHIVED));
+      if (isArchived) {
+        propertyList.add(CalDavConnector.MYBERKELEY_ARCHIVED);
+      }
+    }
+    if (jsonState.has(JSON_PROPERTY_NAMES.isRead.toString())) {
+      boolean isRead = jsonState.getBoolean(JSON_PROPERTY_NAMES.isRead.toString());
+      // At most one.
+      propertyList.removeAll(ImmutableList.of(CalDavConnector.MYBERKELEY_READ));
+      if (isRead) {
+        propertyList.add(CalDavConnector.MYBERKELEY_READ);
+      }
+    }
   }
 
   public void generateNewUID() {
