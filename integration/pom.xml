@@ -10,7 +10,8 @@
   <name>MyBerkeley integration runner and data loader</name>
   <packaging>pom</packaging>
   <properties>
-   <sling.include.nakamura>${project.parent.basedir}/working/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
+    <sakai3.home>${project.basedir}/../working</sakai3.home>
+    <sling.include.nakamura>${sakai3.home}/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
   </properties>
   <profiles>
     <profile>
@@ -246,14 +247,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <!-- maven-antrun-plugin v. 1.1 does not handle unset properties correctly -->
-        <version>1.3</version>
         <executions>
           <execution>
             <id>config-sling</id>
             <phase>pre-integration-test</phase>
             <configuration>
-              <tasks name="sling-config" if="myb.sling.config">
+              <target name="sling-config" if="myb.sling.config">
                 <mkdir dir="${sakai3.home}"/>
                 <copy verbose="true" file="${myb.sling.config}/repository.xml"
                   todir="${sakai3.home}/sling" overwrite="false"/>
@@ -261,7 +260,7 @@
                   todir="${sakai3.home}/sling" overwrite="false"/>
                 <copy verbose="true" file="${myb.sling.config}/JDBCStorageClientPool.config"
                   todir="${sakai3.home}/sling/config/org/sakaiproject/nakamura/lite/storage/jdbc" overwrite="true"/>
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>
@@ -271,7 +270,7 @@
             <id>start-sling</id>
             <phase>pre-integration-test</phase>
             <configuration>
-              <tasks name="sling-start" if="sling.start">
+              <target name="sling-start" if="sling.start">
                 <mkdir dir="${sakai3.home}"/>
                 <java classname="org.sakaiproject.nakamura.app.NakamuraMain"
                   fork="true" spawn="true"
@@ -291,14 +290,14 @@
 				  <sysproperty key="org.sakaiproject.nakamura.core.port" value="${sling.port}"/>
 				  <sysproperty key="org.mortbay.jetty.ajp.port" value="8010"/>
 				  <sysproperty key="java.io.tmpdir" value="${sling.tmpdir}"/>
-                  <sysproperty key="myberkeley.home" value="${project.parent.basedir}"/>
+                  <sysproperty key="myberkeley.home" value="${sakai3.home}"/>
                   <sysproperty key="sling.include.nakamura" value="${sling.include.nakamura}"/>
                   <arg value="-p"/>
                   <arg value="${sling.port}"/>
                   <arg value="start"/>
                 </java>
                 <echo message="Server has started; log at ${sakai3.home}/sling/logs/error.log"/>
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>
@@ -308,13 +307,13 @@
             <id>stop-sling</id>
             <phase>post-integration-test</phase>
             <configuration>
-              <tasks name="sling-stop" if="sling.stop">
+              <target name="sling-stop" if="sling.stop">
                 <java classname="org.apache.sling.launchpad.app.Main"
                   fork="true"
                   classpathref="maven.runtime.classpath">
                   <arg value="stop"/>
                 </java>
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>

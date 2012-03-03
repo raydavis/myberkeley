@@ -13,7 +13,6 @@
   </issueManagement>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sakai3.home>${project.parent.basedir}/working</sakai3.home>
     <sling.port>8080</sling.port>
     <sling.tmpdir>/tmp</sling.tmpdir>
     <loaddata.server>http://localhost:8080/</loaddata.server>
@@ -40,6 +39,7 @@
         <module>ojdbc6</module>
         <module>provision</module>
         <module>foreignprincipal</module>
+        <module>solrconf</module>
       </modules>
     </profile>
     <profile>
@@ -217,6 +217,11 @@
               <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             </instructions>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
         </plugin>
         <!-- maven-clean-plugin v. 2.2 ignores "excludes" -->
         <plugin>

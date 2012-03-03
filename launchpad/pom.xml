@@ -49,16 +49,22 @@
               <startLevel>15</startLevel>
             </bundle>
             <bundle>
-              <groupId>org.sakaiproject.nakamura</groupId>
-              <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-              <version>1.2-SNAPSHOT</version>
-              <startLevel>30</startLevel>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.solrconf</artifactId>
+              <version>${project.version}</version>
+              <startLevel>20</startLevel>
             </bundle>
             <bundle>
               <groupId>org.apache.sling</groupId>
               <artifactId>org.apache.sling.jcr.contentloader</artifactId>
               <version>2.1.3.9999.1141252</version>
               <startLevel>20</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
+              <version>1.2-SNAPSHOT</version>
+              <startLevel>30</startLevel>
             </bundle>
             <bundle>
               <groupId>edu.berkeley.myberkeley</groupId>

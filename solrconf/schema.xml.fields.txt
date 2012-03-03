@@ -1,0 +1,5 @@
+
+   <!-- MyBerkeley additions -->
+   <field name="myb-demographics" type="string" indexed="true" stored="false" multiValued="true"/>
+   <field name="myb-context" type="string" indexed="true" stored="false" multiValued="false"/>
+   <dynamicField name="*_tdt" type="tdate"  indexed="true"  stored="true"/>
