@@ -146,6 +146,40 @@
       </releases>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>apache-plugin-snapshot</id>
+      <name>Apache Snapshots Plugins</name>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <url>http://repository.apache.org/snapshots/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>sakai-plugin</id>
+      <name>Sakai Plugins</name>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <url>http://source.sakaiproject.org/maven2/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>myberkeley-plugin</id>
+      <url>http://svn.media.berkeley.edu/nexus/content/repositories/myberkeley</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
   <build>
     <plugins>
       <plugin>
