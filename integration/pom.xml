@@ -235,7 +235,7 @@
       <dependency>
         <groupId>edu.berkeley.myberkeley</groupId>
         <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>${project.version}</version>
         <scope>runtime</scope>
       </dependency>
     </dependencies>
@@ -328,7 +328,7 @@
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
       <artifactId>edu.berkeley.myberkeley.launchpad</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
   </dependencies>
