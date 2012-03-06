@@ -132,7 +132,7 @@ public abstract class CalDavTests extends Assert {
     TimeZoneRegistry registry = builder.getRegistry();
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     calendar.getComponents().add(tz);
-    DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * new Random().nextInt(28)));
+    DateTime due = new DateTime(DateUtils.addDays(new java.util.Date(), -1 * (new Random().nextInt(28) + 1)));
     due.setUtc(true);
     VToDo vtodo = new VToDo(due, due, summary);
     vtodo.getProperties().add(new Uid(UUID.randomUUID().toString()));
@@ -153,7 +153,7 @@ public abstract class CalDavTests extends Assert {
     TimeZoneRegistry registry = builder.getRegistry();
     VTimeZone tz = registry.getTimeZone("America/Los_Angeles").getVTimeZone();
     c.getComponents().add(tz);
-    DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * new Random().nextInt(28)));
+    DateTime start = new DateTime(DateUtils.addDays(new Date(), -1 * (new Random().nextInt(28) + 1)));
     start.setUtc(true);
     VEvent vevent = new VEvent(start,
             new Dur(0, 1, 0, 0), summary);
