@@ -33,11 +33,11 @@ TRIES=0
 LOGFILE=working/sling/logs/error.log
 while ! [ $TRIES -gt $MAXTRIES ] && ! [ -e $LOGFILE ] ;do sleep 30; TRIES=$((TRIES+1)); done
 while ! [ $TRIES -gt $MAXTRIES ] && ! grep "org.sakaiproject.nakamura.world BundleEvent STARTED" $LOGFILE > /dev/null  2>&1;do sleep 30; TRIES=$((TRIES+1)); done
-while ! [ $TRIES -gt $MAXTRIES ] && ! grep "edu.berkeley.myberkeley.provision BundleEvent STARTED" $LOGFILE > /dev/null  2>&1;do sleep 30; TRIES=$((TRIES+1)); done
+while ! [ $TRIES -gt $MAXTRIES ] && ! grep -E 'ParameterizedProvisionServlet.+ ServiceEvent REGISTERED' $LOGFILE > /dev/null  2>&1;do sleep 30; TRIES=$((TRIES+1)); done
 if [ $TRIES -gt $MAXTRIES ]
 then
     echo "Startup did not complete for a long time. Giving up."
-    exit 1
+    stopAndExit
 fi
 
 # run myberkeley dataloader
