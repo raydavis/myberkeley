@@ -175,9 +175,9 @@ public class CalendarSearchCriteria {
 
   private SORT sort = SORT.DATE_ASC;
 
-  private Date start = new DateTime();
+  private DateTime start = new DateTime();
 
-  private Date end = new DateTime();
+  private DateTime end = new DateTime();
 
   public TYPE getType() {
     return this.type;
@@ -187,19 +187,19 @@ public class CalendarSearchCriteria {
     this.type = type;
   }
 
-  public Date getStart() {
+  public DateTime getStart() {
     return this.start;
   }
 
-  public void setStart(Date start) {
+  public void setStart(DateTime start) {
     this.start = start;
   }
 
-  public Date getEnd() {
+  public DateTime getEnd() {
     return this.end;
   }
 
-  public void setEnd(Date end) {
+  public void setEnd(DateTime end) {
     this.end = end;
   }
 

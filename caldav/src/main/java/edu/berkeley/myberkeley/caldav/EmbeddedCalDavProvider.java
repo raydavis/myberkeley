@@ -26,6 +26,7 @@ import org.sakaiproject.nakamura.api.lite.Repository;
 import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
+import org.sakaiproject.nakamura.api.solr.SolrServerService;
 
 import java.io.IOException;
 
@@ -37,6 +38,9 @@ public class EmbeddedCalDavProvider implements CalDavConnectorProvider {
   @Reference
   Repository repository;
 
+  @Reference
+  SolrServerService solrSearchService;
+
   @Override
   public CalDavConnector getAdminConnector(String owner) throws IOException {
     final Session adminSession;
@@ -47,7 +51,7 @@ public class EmbeddedCalDavProvider implements CalDavConnectorProvider {
     } catch (AccessDeniedException e) {
       throw new IOException(e);
     }
-    return new EmbeddedCalDav(owner, adminSession);
+    return new EmbeddedCalDavSolr(owner, adminSession, solrSearchService);
   }
 
   @Override
@@ -60,6 +64,6 @@ public class EmbeddedCalDavProvider implements CalDavConnectorProvider {
     } catch (AccessDeniedException e) {
       throw new IOException(e);
     }
-    return new EmbeddedCalDav(username, session);
+    return new EmbeddedCalDavSolr(username, session, solrSearchService);
   }
 }

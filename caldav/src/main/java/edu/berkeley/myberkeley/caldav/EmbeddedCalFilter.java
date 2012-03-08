@@ -74,32 +74,11 @@ public class EmbeddedCalFilter implements Iterator<CalendarWrapper> {
   private void fetchNext() {
     next = null;
     while (contentIterator.hasNext() && (next == null)) {
-      final CalendarWrapper candidate = toCalendarWrapper(contentIterator.next());
+      final CalendarWrapper candidate = new CalendarWrapper(contentIterator.next());
       if (isMatch(candidate, criteria)) {
         next = candidate;
       }
     }
-  }
-
-  public static CalendarWrapper toCalendarWrapper(Content content) {
-    if (content.getProperty(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY).equals(EmbeddedCalDav.RESOURCETYPE)) {
-      Map<String, Object> props = content.getProperties();
-      LOGGER.debug("Content {} props = {}", content, props);
-      Object calendarWrapperJson = props.get(EmbeddedCalDav.JSON_PROPERTIES.calendarWrapper.toString());
-      if (calendarWrapperJson != null) {
-        try {
-          CalendarWrapper calendarWrapper = new CalendarWrapper(new JSONObject((String) calendarWrapperJson));
-          return calendarWrapper;
-        } catch (JSONException e) {
-          LOGGER.error(e.getMessage(), e);
-        } catch (CalDavException e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      } else {
-        LOGGER.warn("No calendarWrapper found for {}", content.getPath());
-      }
-    }
-    return null;
   }
 
   public static boolean isMatch(CalendarWrapper calendarWrapper, CalendarSearchCriteria criteria) {

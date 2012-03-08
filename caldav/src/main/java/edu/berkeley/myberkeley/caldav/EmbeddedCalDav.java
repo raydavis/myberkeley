@@ -68,10 +68,10 @@ public class EmbeddedCalDav implements CalDavConnector {
     calendarWrapper
   }
 
-  private final String userId;
-  private final Session session;
-  private final String storePath;
-  private final String storeResourcePath;
+  protected final String userId;
+  protected final Session session;
+  protected final String storePath;
+  protected final String storeResourcePath;
 
   public EmbeddedCalDav(String userId, Session session) {
     this.userId = userId;
@@ -144,7 +144,7 @@ public class EmbeddedCalDav implements CalDavConnector {
         if (contentManager.exists(contentPath)) {
           final Content content = contentManager.get(contentPath);
           if (content != null) {
-            final CalendarWrapper calendarWrapper = EmbeddedCalFilter.toCalendarWrapper(content);
+            final CalendarWrapper calendarWrapper = new CalendarWrapper(content);
             if (calendarWrapper != null) {
               calendarWrappers.add(calendarWrapper);
             }

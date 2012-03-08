@@ -110,7 +110,7 @@ public class EmbeddedCalDavIndexingHandler implements IndexingHandler {
   private SolrInputDocument getSolrInputFromContent(Content content) {
     SolrInputDocument doc = new SolrInputDocument();
     doc.addField(_DOC_SOURCE_OBJECT, content);
-    final CalendarWrapper calendarWrapper = EmbeddedCalFilter.toCalendarWrapper(content);
+    final CalendarWrapper calendarWrapper = new CalendarWrapper(content);
     if (calendarWrapper != null) {
       net.fortuna.ical4j.model.Component component = calendarWrapper.getComponent();
       doc.addField(INDEXED_FIELDS.content.toString(), component.toString());

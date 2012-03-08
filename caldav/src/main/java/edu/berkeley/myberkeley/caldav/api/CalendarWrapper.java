@@ -21,6 +21,7 @@
 package edu.berkeley.myberkeley.caldav.api;
 
 import com.google.common.collect.ImmutableList;
+import edu.berkeley.myberkeley.caldav.EmbeddedCalDav;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Component;
@@ -47,6 +48,8 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
+import org.apache.sling.jcr.resource.JcrResourceConstants;
+import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.sakaiproject.nakamura.util.DateUtils;
 import org.sakaiproject.nakamura.util.ISO8601Date;
 import org.slf4j.Logger;
@@ -57,6 +60,7 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 
 public class CalendarWrapper implements Serializable {
@@ -94,6 +98,9 @@ public class CalendarWrapper implements Serializable {
 
   private PropertyFactory propertyFactory = new PropertyFactoryRegistry();
 
+  private CalendarWrapper() {
+  }
+
   public CalendarWrapper(Calendar calendar, URI uri, String etag) throws CalDavException {
     this.calendar = calendar;
     this.component = calendar.getComponent(Component.VEVENT);
@@ -118,6 +125,29 @@ public class CalendarWrapper implements Serializable {
   }
 
   public CalendarWrapper(JSONObject json) throws CalDavException {
+    jsonToCalendarWrapper(json);
+  }
+
+  public CalendarWrapper(Content content) {
+    if (content.getProperty(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY).equals(EmbeddedCalDav.RESOURCETYPE)) {
+      Map<String, Object> props = content.getProperties();
+      LOGGER.debug("Content {} props = {}", content, props);
+      Object calendarWrapperJson = props.get(EmbeddedCalDav.JSON_PROPERTIES.calendarWrapper.toString());
+      if (calendarWrapperJson != null) {
+        try {
+          jsonToCalendarWrapper(new JSONObject((String) calendarWrapperJson));
+        } catch (JSONException e) {
+          LOGGER.error(e.getMessage(), e);
+        } catch (CalDavException e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      } else {
+        LOGGER.warn("No calendarWrapper found for {}", content.getPath());
+      }
+    }
+  }
+
+  private void jsonToCalendarWrapper(JSONObject json) throws CalDavException {
     String uri;
     String etag;
     String componentName;

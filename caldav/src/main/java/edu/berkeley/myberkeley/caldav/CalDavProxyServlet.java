@@ -167,13 +167,13 @@ public class CalDavProxyServlet extends SlingAllMethodsServlet {
       long begin = System.currentTimeMillis();
       calendars = connector.searchByDate(criteria);
       long end = System.currentTimeMillis();
-      LOGGER.info("Got " + calendars.size() + " calendar records from Bedework in " + (end - begin) + "ms");
+      LOGGER.info("Got " + calendars.size() + " calendar records in " + (end - begin) + "ms");
 
       if (criteria.getType().equals(CalendarSearchCriteria.TYPE.VTODO)) {
         begin = System.currentTimeMillis();
         hasOverdue = connector.hasOverdueTasks();
         end = System.currentTimeMillis();
-        LOGGER.info("Got overdue-task result from Bedework in " + (end - begin) + "ms");
+        LOGGER.info("Got overdue-task result in " + (end - begin) + "ms");
       }
 
     } catch (CalDavException e) {
