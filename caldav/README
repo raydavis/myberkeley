@@ -1,36 +1,11 @@
 
-==============================================================================
+This module handles storage and retrieval of CalCentral Tasks and Events.
 
-Loading students into Bedework:
+Currently, delivered Tasks and Events are stored in the recipient's home folder,
+but with significant restrictions on write access. (For example, the recipient
+cannot modify the is-required status or description of the Task or Event.)
 
-First we'll enable simple authentication in JBoss, which means you can log in as anyone by providing a username
-and the same value as the password.
-
-On the Bedework server, as Bedework user:
-    cd ~/bedework/quickstart_3.7/jboss-5.1.0.GA/server/default/conf
-    cp login-config.xml login-config.xml.orig
-    cp login-config.unsecureLogin login-config.xml
-    ~/killBedework.sh
-    ~/startBedework.sh
-
-Then doing an OPTIONS as each user is enough to make Bedework create its necessary rows for the user:
-
-    curl -u 300849:testuser http://test.media.berkeley.edu:8080/ucaldav/principals/users/300849/ -X OPTIONS
-
-If provided its optional 3rd and 4th arguments, the sling data loader script will do an OPTIONS request
-for every user it loads. Example command line for the TEST data loader:
-
-    sling_data_loader.rb http://localhost:8080/ admin test.media.berkeley.edu 8080
-
-The Oracle (real) data loader syntax is different:
-
-    ruby oracle_data_loader.rb -i $db_instance -u $db_user -p $db_password -a $app_server -q $app_server_admin_password --bedeworkserver test.media.berkeley.edu --bedeworkport 8080
-
-Once the sling data loader runs, reset the jboss login config to its original state:
-
-    cd ~/bedework/quickstart_3.7/jboss-5.1.0.GA/server/default/conf
-    cp login-config.xml.orig login-config.xml
-    ~/killBedework.sh
-    ~/startBedework.sh
-
-==============================================================================
+Much of the code here reflects an earlier implementation which relied on storage
+in an external Bedework server. It still runs and is still testable, and we'll
+keep it in place at least until all servers have migrated to the new storage
+approach.
