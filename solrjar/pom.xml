@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>edu.berkeley.myberkeley.base</artifactId>
+    <groupId>edu.berkeley.myberkeley</groupId>
+    <version>1.2-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>edu.berkeley.myberkeley.solrjar</artifactId>
+  <name>JAR wrapper of org.apache.solr/example</name>
+  <packaging>jar</packaging>
+  <properties>
+    <solr.scm.url>scm:svn:http://svn.apache.org/repos/asf/lucene/dev/trunk</solr.scm.url>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <classesDirectory>${project.build.directory}/solr-trunk/solr/example</classesDirectory>
+          <archive>
+            <manifestEntries>
+              <SCM-URL>${solr.scm.url}</SCM-URL>
+              <SCM-Revision>${solr.revision}</SCM-Revision>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>checkout-solr</id>
+            <goals><goal>checkout</goal></goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <connectionUrl>${solr.scm.url}</connectionUrl>
+              <checkoutDirectory>${project.build.directory}/solr-trunk</checkoutDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-solr-example</id>
+            <phase>process-resources</phase>
+            <configuration>
+              <exportAntProperties>true</exportAntProperties>
+              <target>
+                <exec dir="${project.build.directory}/solr-trunk" executable="svnversion" outputproperty="solr.revision">
+                </exec>
+                <echo message="solr revision = ${solr.revision}"/>
+                <ant target="example" dir="${project.build.directory}/solr-trunk/solr"/>
+                <!--
+                <jar basedir="${project.build.directory}/solr-trunk/solr/example"
+                     destfile="${project.build.directory}/generated-resources/solr-example-4.0.${solr.revision}.jar"
+                     excludes=".svn"/>
+                -->
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+  </dependencies>
+</project>
