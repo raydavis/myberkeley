@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<!DOCTYPE Repository
+          PUBLIC "-//The Apache Software Foundation//DTD Jackrabbit 2.0//EN"
+          "http://jackrabbit.apache.org/dtd/repository-2.0.dtd">
+<Repository>
+    <FileSystem class="org.apache.jackrabbit.core.fs.local.LocalFileSystem">
+        <param name="path" value="${rep.home}/repository"/>
+    </FileSystem>
+
+    <DataStore class="org.apache.jackrabbit.core.data.FileDataStore"/>
+
+  <Security appName="Jackrabbit">
+
+    <SecurityManager class="org.apache.jackrabbit.core.DynamicSecurityManager"
+      workspaceName="security">
+
+          <UserManager class="org.sakaiproject.nakamura.lite.jackrabbit.SparseMapUserManager">
+          </UserManager>
+    </SecurityManager>
+
+      <AccessManager
+      class="org.apache.jackrabbit.core.security.DefaultAccessManager">
+    <!-- 
+    <AccessManager
+      class="org.apache.sling.jcr.jackrabbit.server.impl.security.PluggableDefaultAccessManager">
+     -->
+  
+    </AccessManager>
+
+
+        <LoginModule class="org.sakaiproject.nakamura.lite.jackrabbit.SparseLoginModule">
+            <param name="anonymousId" value="anonymous"/>
+            <param name="adminId" value="admin"/>
+        </LoginModule>
+  </Security>
+
+    <Workspaces rootPath="${rep.home}/workspaces" defaultWorkspace="default"/>
+
+
+
+
+    <Workspace name="${wsp.name}">
+        <FileSystem class="org.apache.jackrabbit.core.fs.local.LocalFileSystem">
+            <param name="path" value="${wsp.home}"/>
+        </FileSystem>
+
+    <!-- Use Oracle for Jackrabbit storage -->
+    <PersistenceManager
+      class="org.apache.jackrabbit.core.persistence.bundle.OraclePersistenceManager">
+      <param name="driver" value="oracle.jdbc.OracleDriver" />
+      <param name="url"
+        value="jdbc:oracle:thin:@ORACLE_OAE_DB" />
+      <param name="user" value="ORACLE_OAE_USERNAME" />
+      <param name="password" value="ironchef" />
+      <param name="schema" value="oracle" />
+      <param name="schemaObjectPrefix" value="${wsp.name}_"/>
+      <param name="externalBLOBs" value="false" />
+    </PersistenceManager>
+
+        <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
+            <param name="path" value="${wsp.home}/index"/>
+            <!-- this is the batch size of the initial search get, we probably only want 100 items at any one time -->
+            <!-- but we need to allow at least 2 more for pre-fetching by the iterators. -->
+            <param name="resultFetchSize" value="102" />
+        </SearchIndex>
+    </Workspace>
+
+    <Versioning rootPath="${rep.home}/version">
+        <FileSystem class="org.apache.jackrabbit.core.fs.local.LocalFileSystem">
+            <param name="path" value="${rep.home}/version" />
+        </FileSystem>
+
+    <!-- Use Oracle for Jackrabbit storage -->
+    <PersistenceManager
+      class="org.apache.jackrabbit.core.persistence.bundle.OraclePersistenceManager">
+      <param name="driver" value="oracle.jdbc.OracleDriver" />
+      <param name="url"
+        value="jdbc:oracle:thin:@ORACLE_OAE_DB" />
+      <param name="user" value="ORACLE_OAE_USERNAME" />
+      <param name="password" value="ironchef" />
+      <param name="schema" value="oracle" />
+      <param name="schemaObjectPrefix" value="versioning_"/>
+      <param name="externalBLOBs" value="false" />
+    </PersistenceManager>
+
+    </Versioning>
+
+    <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
+        <param name="path" value="${rep.home}/repository/index"/>
+    </SearchIndex>
+
+</Repository>

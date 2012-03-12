@@ -33,7 +33,7 @@ module MyBerkeleyData
   COLLEGES = "'ENV DSGN', 'NAT RES'"
   CALCENTRAL_TEAM_GROUP = "CalCentral-Team"
   class OracleDataLoader
-    attr_reader :ucb_data_loader
+    attr_reader :ucb_data_loader, :log
 
     def initialize(options)
       @log = Logger.new(STDOUT)
@@ -425,14 +425,16 @@ if ($PROGRAM_NAME.include? 'oracle_data_loader.rb')
   end
 
   optparser.parse ARGV
-
   odl = MyBerkeleyData::OracleDataLoader.new options
-
+  start = Time.now
+  odl.log.info("loading started at #{start}")
   odl.collect_integrated_accounts
   odl.load_all_students
   odl.load_additional_accounts
   odl.check_stale_accounts
   odl.drop_stale_accounts
   odl.report_activity
-
+  finish = Time.now
+  odl.log.info("loading finised at #{finish}")
+  odl.log.info("loading took #{finish - start} seconds")
 end
