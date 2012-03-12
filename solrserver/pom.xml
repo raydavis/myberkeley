@@ -1,0 +1,113 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>edu.berkeley.myberkeley.base</artifactId>
+    <groupId>edu.berkeley.myberkeley</groupId>
+    <version>1.2-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>edu.berkeley.myberkeley.solrserver</artifactId>
+  <name>MyBerkeley Solr server runner</name>
+  <packaging>pom</packaging>
+  <properties>
+    <working.dir>${project.basedir}/../working/solr</working.dir>
+  </properties>
+  <profiles>
+  </profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-solrjar</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>edu.berkeley.myberkeley.solrjar</includeArtifactIds>
+              <outputDirectory>${working.dir}</outputDirectory>
+              <overWriteIfNewer>false</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <id>unpack-solrconf</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>edu.berkeley.myberkeley.solrconf</includeArtifactIds>
+              <outputDirectory>${working.dir}</outputDirectory>
+              <includes>solr/conf/*.xml</includes>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>process-resources</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target>
+                <copy todir="${working.dir}">
+                  <fileset dir="${basedir}/src/main/resources"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>start-solr</id>
+            <phase>pre-integration-test</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target if="start.solr">
+                <java jar="${working.dir}/start.jar"
+                      fork="true" spawn="true"
+                      dir="${working.dir}">
+                  <sysproperty key="solr.solr.home" value="${working.dir}/solr"/>
+                  <sysproperty key="jetty.port" value="8983"/>
+                  <arg value="etc/jetty-logging.xml"/>
+                  <arg value="etc/jetty.xml"/>
+                </java>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- Sorry, Windows users... -->
+            <id>stop-solr</id>
+            <phase>post-integration-test</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target if="stop.solr">
+                <exec executable="${basedir}/src/main/bin/stop-solr.sh"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>edu.berkeley.myberkeley</groupId>
+      <artifactId>edu.berkeley.myberkeley.solrconf</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>edu.berkeley.myberkeley</groupId>
+      <artifactId>edu.berkeley.myberkeley.solrjar</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+</project>

@@ -49,8 +49,15 @@
                   <groupId>org.sakaiproject.nakamura</groupId>
                   <artifactId>org.sakaiproject.nakamura.search.impl</artifactId>
                   <version>${nakamura.version}</version>
-                  <outputDirectory>${project.build.directory}/extracted-resources</outputDirectory>
-                  <includes>SLING-INF/home/solr/schema.xml</includes>
+                  <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                  <includes>SLING-INF/home/solr/schema.xml,SLING-INF/home/solr/solrconfig.xml</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.sakaiproject.nakamura</groupId>
+                  <artifactId>org.sakaiproject.nakamura.solr</artifactId>
+                  <version>1.4</version>
+                  <outputDirectory>${project.build.directory}/generated-resources/SLING-INF/home/solr</outputDirectory>
+                  <includes>solr.xml</includes>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -73,14 +80,21 @@
             <phase>process-resources</phase>
             <configuration>
               <target>
-                <mkdir dir="${project.build.directory}/processed-resources/SLING-INF/home/solr"/>
                 <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpathref="maven.plugin.classpath"/>
                 <xmltask
-                  source="${project.build.directory}/extracted-resources/SLING-INF/home/solr/schema.xml"
-                  dest="${project.build.directory}/processed-resources/SLING-INF/home/solr/schema.xml"
+                  source="${project.build.directory}/generated-resources/SLING-INF/home/solr/schema.xml"
+                  dest="${project.build.directory}/generated-resources/SLING-INF/home/solr/schema.xml"
                   preservetype="true">
                   <insert path="/schema/fields/field[last()]" position="after" file="schema.xml.fields.txt"/>
                 </xmltask>
+                <!-- For embedded Solr -->
+                <copy todir="${project.build.directory}/processed-resources">
+                  <fileset dir="${project.build.directory}/generated-resources"/>
+                </copy>
+                <!-- For remote Solr -->
+                <copy todir="${project.build.directory}/processed-resources/solr/conf">
+                  <fileset dir="${project.build.directory}/generated-resources/SLING-INF/home/solr"/>
+                </copy>
               </target>
             </configuration>
             <goals>

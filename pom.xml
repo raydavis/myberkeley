@@ -79,6 +79,18 @@
        </plugins>
       </build>
     </profile>
+    <profile>
+      <id>solrjar</id>
+      <modules>
+        <module>solrjar</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>solr</id>
+      <modules>
+        <module>solrserver</module>
+      </modules>
+    </profile>
   </profiles>
   <repositories>
     <repository>
