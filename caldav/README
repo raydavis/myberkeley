@@ -9,3 +9,10 @@ Much of the code here reflects an earlier implementation which relied on storage
 in an external Bedework server. It still runs and is still testable, and we'll
 keep it in place at least until all servers have migrated to the new storage
 approach.
+
+MIGRATING TASKS & EVENTS FROM BEDEWORK
+
+curl -e http://localhost:8080 -u admin:'PWD' -N -
+  http://localhost:8080/system/myberkeley/calDavMigrator -
+  -F userIds=ALL -F calDavServer="http://XXX" -
+  -F calDavPassword='YYY'
