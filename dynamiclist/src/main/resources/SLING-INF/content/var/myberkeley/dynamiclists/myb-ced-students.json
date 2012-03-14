@@ -1,4 +1,10 @@
 {
+  "security:principals" : [
+    {
+      "name" : "myb-ced-students-Advisers",
+      "isgroup" :"true"
+    }
+  ],
   "sling:resourceType": "myberkeley/dynamicListContext",
   "myb-clauses": [
     "/colleges/ENV DSGN/*",
@@ -17,6 +23,12 @@
       "principal" : "anonymous",
       "denied" : [
         "jcr:all"
+      ]
+    },
+    {
+      "principal" : "myb-ced-students-Advisers",
+      "granted" : [
+        "jcr:read"
       ]
     }
   ]

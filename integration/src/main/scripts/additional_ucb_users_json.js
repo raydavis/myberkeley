@@ -9,8 +9,8 @@
     "163402": {
     },
     "6576": {
-      "contexts" : [ "myb-ced-students", "myb-cnr-students"],
-      "groups" : [ "myb-staff"],
+      "groups" : [ "myb-ced-students-Advisers", "myb-cnr-students-Advisers",
+        "myb-staff"],
       "demographics" : ["/colleges/ETS TEST/standings/undergrad", "/colleges/ETS TEST/standings/undergrad/majors/TONY"]
     },
     "592722": {
@@ -86,7 +86,7 @@
     "80818": {
     },
     "12005": {
-      "contexts" : ["myb-ced-students"]
+      "groups" : ["myb-ced-students-Advisers"]
     },
     "760063": {
     },
@@ -137,38 +137,38 @@
     "758428": {
     },
     "324838": {
-      "contexts" : ["myb-cnr-students"]
+      "groups" : ["myb-cnr-students-Advisers"]
     },
     "4790": {
-      "contexts" : ["myb-cnr-students"]
+      "groups" : ["myb-cnr-students-Advisers"]
     },
     "4818": {
-      "contexts" : ["myb-cnr-students"]
+      "groups" : ["myb-cnr-students-Advisers"]
     },
     "233219": {
-      "contexts" : ["myb-cnr-students"]
+      "groups" : ["myb-cnr-students-Advisers"]
     },
     "106391": {
-      "contexts" : ["myb-cnr-students"]
+      "groups" : ["myb-cnr-students-Advisers"]
     },
-    "8579":  {"contexts": ["myb-cnr-students"]},
-    "970218":  {"contexts": ["myb-ced-students"]},
-    "973751":  {"contexts": ["myb-ced-students"]},
-    "246868":  {"contexts": ["myb-ced-students"]},
-    "2527":  {"contexts": ["myb-ced-students"]},
-    "89651":  {"contexts": ["myb-ced-students"]},
-    "83436":  {"contexts": ["myb-ced-students"]},
-    "929976":  {"contexts": ["myb-ced-students"]},
-    "301787":  {"contexts": ["myb-cnr-students"]},
-    "116972":  {"contexts": ["myb-ced-students"]},
-    "241104":  {"contexts": ["myb-cnr-students"]},
-    "4818":  {"contexts": ["myb-cnr-students"]},
-    "246872":  {"contexts": ["myb-cnr-students"]},
-    "233219":  {"contexts": ["myb-cnr-students"]},
-    "213201":  {"contexts": ["myb-cnr-students"]},
-    "2491":  {"contexts": ["myb-cnr-students"]},
-    "220352":  {"contexts": ["myb-cnr-students"]},
-    "892973":  {"contexts": ["myb-ced-students"]},
+    "8579":  {"groups": ["myb-cnr-students-Advisers"]},
+    "970218":  {"groups": ["myb-ced-students-Advisers"]},
+    "973751":  {"groups": ["myb-ced-students-Advisers"]},
+    "246868":  {"groups": ["myb-ced-students-Advisers"]},
+    "2527":  {"groups": ["myb-ced-students-Advisers"]},
+    "89651":  {"groups": ["myb-ced-students-Advisers"]},
+    "83436":  {"groups": ["myb-ced-students-Advisers"]},
+    "929976":  {"groups": ["myb-ced-students-Advisers"]},
+    "301787":  {"groups": ["myb-cnr-students-Advisers"]},
+    "116972":  {"groups": ["myb-ced-students-Advisers"]},
+    "241104":  {"groups": ["myb-cnr-students-Advisers"]},
+    "4818":  {"groups": ["myb-cnr-students-Advisers"]},
+    "246872":  {"groups": ["myb-cnr-students-Advisers"]},
+    "233219":  {"groups": ["myb-cnr-students-Advisers"]},
+    "213201":  {"groups": ["myb-cnr-students-Advisers"]},
+    "2491":  {"groups": ["myb-cnr-students-Advisers"]},
+    "220352":  {"groups": ["myb-cnr-students-Advisers"]},
+    "892973":  {"groups": ["myb-ced-students-Advisers"]},
     "409005":  {},
     "163082":  {},
     "755671":  {},
@@ -176,7 +176,7 @@
     "206538":  {},
     "161702":  {},
     "4887":  {},
-    "973803":  {"contexts": ["myb-cnr-students"]},
+    "973803":  {"groups": ["myb-cnr-students-Advisers"]},
     "537510": {},
     "11372": {},
     "972943": {},

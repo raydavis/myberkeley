@@ -190,12 +190,6 @@ module MyBerkeleyData
               @ucb_data_loader.add_user_to_group(user_id, group_id)
             end
           end
-          contexts = user_extras["contexts"]
-          if (!contexts.nil?)
-            contexts.each do |context_id|
-              @ucb_data_loader.add_reader_to_context(user_id, context_id)
-            end
-          end
         end
       end
     end

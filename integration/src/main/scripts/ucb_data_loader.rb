@@ -24,8 +24,8 @@ module MyBerkeleyData
   ENV_PROD = 'prod'
 
   # Test data for development environments
-  TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-students", "myb-cnr-students",
-    "myb-ets-test"]
+  TEST_DYNAMIC_LIST_CONTEXTS = ["myb-ced-students-Advisers", "myb-cnr-students-Advisers",
+    "myb-staff"]
   TEST_DEMOGRAPHICS = [{
       "college" => "ENV DSGN",
       "undergradMajors" => [ "ARCHITECTURE", "INDIVIDUAL", "LIMITED", "LANDSCAPE ARCH", "URBAN STUDIES" ],
@@ -100,14 +100,6 @@ module MyBerkeleyData
       @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
     end
 
-    def add_reader_to_context(user_id, context_id)
-      result = @sling.execute_post(@sling.url_for("/var/myberkeley/dynamiclists/#{context_id}.modifyAce.html"), {
-        "principalId" => user_id,
-        "privilege@jcr:read" => "granted"
-      })
-      @log.error("#{result.code} / #{result.body}") if (result.code.to_i > 299)
-    end
-
     def load_dev_advisers
       all_data = JSON.load(File.open "dev_advisers_json.js", "r")
       users = all_data['users']
@@ -117,7 +109,7 @@ module MyBerkeleyData
         puts "loaded user: #{loaded_user.inspect}"
         if (loaded_user)
           TEST_DYNAMIC_LIST_CONTEXTS.each do |context_id|
-            add_reader_to_context(loaded_user.name, context_id)
+            add_user_to_group(loaded_user.name, context_id)
           end
           loaded_users << loaded_user
         end
