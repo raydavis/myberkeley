@@ -173,7 +173,7 @@
               <artifactItem>
                 <groupId>org.sakaiproject.nakamura</groupId>
                 <artifactId>org.sakaiproject.nakamura.uxloader-myberkeley</artifactId>
-                <version>1.2-SNAPSHOT</version>
+                <version>${project.parent.version}</version>
                 <outputDirectory>${project.build.directory}/ux</outputDirectory>
               </artifactItem>
             </artifactItems>
@@ -194,7 +194,7 @@
             </execution>
           </executions>
           <configuration>
-            <bundleFileName>${project.build.directory}/ux/org.sakaiproject.nakamura.uxloader-myberkeley-1.2-SNAPSHOT.jar</bundleFileName>
+            <bundleFileName>${project.build.directory}/ux/org.sakaiproject.nakamura.uxloader-myberkeley-${project.parent.version}.jar</bundleFileName>
           </configuration>
         </plugin>
       </plugins>
