@@ -12,7 +12,7 @@ approach.
 
 MIGRATING TASKS & EVENTS FROM BEDEWORK
 
-curl -e http://localhost:8080 -u admin:'PWD' -N -
-  http://localhost:8080/system/myberkeley/calDavMigrator -
-  -F userIds=ALL -F calDavServer="http://XXX" -
+curl -e http://localhost:8080 -u admin:'PWD' -N \
+  http://localhost:8080/system/myberkeley/calDavMigrator \
+  -F userIds=ALL -F calDavServer="http://XXX" \
   -F calDavPassword='YYY'
