@@ -127,7 +127,7 @@ loading the users defined in ./myberkeley/integration/src/main/scripts/json_data
 and ucb_data_loader.rb.
 
 or to load data to another server, run
-mvn -Dsling.loaddata -Dloaddata.server=${server} -Dloaddata.password=${password} integration-test
+mvn -P runner -Dsling.loaddata -Dloaddata.server=${server} -Dloaddata.password=${password} integration-test
 where ${server} should be replaced with a full server URL such as https://calcentral-dev.berkeley.edu/
 NOTE: the trailing slash on the server URL is required
 
