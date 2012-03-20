@@ -83,7 +83,7 @@ public class GetUserIdsServlet extends SlingSafeMethodsServlet {
       Iterable<String> userIds = dynamicListService.getAllUserIds(session);
       ContentManager contentManager = session.getContentManager();
       for (String userId : userIds) {
-        String path = LitePersonalUtils.getHomeResourcePath(userId);
+        String path = LitePersonalUtils.getHomePath(userId);
         String participantStatusPath = path + "/public/authprofile/myberkeley/elements/participant";
         String demographicPath = path + "/_myberkeley-demographic";
         boolean isParticipant = contentManager.exists(participantStatusPath);
