@@ -61,7 +61,7 @@ public class EmbeddedCalDavSolr extends EmbeddedCalDav {
   }
 
   @Override
-  public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
+  protected List<CalendarWrapper> internalFetchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
     List<CalendarWrapper> matches = new ArrayList<CalendarWrapper>();
     try {
       String solrQueryString = getSolrQueryForCriteria(criteria);

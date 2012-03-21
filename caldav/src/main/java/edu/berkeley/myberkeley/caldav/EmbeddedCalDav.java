@@ -161,7 +161,7 @@ public class EmbeddedCalDav implements CalDavConnector {
 
   @Override
   public List<CalendarWrapper> searchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
-    List<CalendarWrapper> calendarWrappers = Lists.newArrayList(getCalendarIterator(criteria));
+    List<CalendarWrapper> calendarWrappers = internalFetchByDate(criteria);
     criteria.sortCalendarWrappers(calendarWrappers);
     return calendarWrappers;
   }
@@ -214,6 +214,10 @@ public class EmbeddedCalDav implements CalDavConnector {
     } catch (AccessDeniedException e) {
       LOGGER.error(e.getMessage(), e);
     }
+  }
+
+  protected List<CalendarWrapper> internalFetchByDate(CalendarSearchCriteria criteria) throws CalDavException, IOException {
+    return Lists.newArrayList(getCalendarIterator(criteria));
   }
 
   private void ensureCalendarStoreInternal() throws StorageClientException, AccessDeniedException {
