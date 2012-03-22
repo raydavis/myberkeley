@@ -10,7 +10,8 @@
   <name>MyBerkeley Solr server runner</name>
   <packaging>pom</packaging>
   <properties>
-    <working.dir>${project.basedir}/../working/solr</working.dir>
+    <working.dir>${project.basedir}/../working</working.dir>
+    <server.dir>${working.dir}/solr</server.dir>
   </properties>
   <profiles>
   </profiles>
@@ -59,11 +60,11 @@
             <goals><goal>run</goal></goals>
             <configuration>
               <target>
-                <mkdir dir="${working.dir}"/>
-                <copy verbose="true" todir="${working.dir}" overwrite="false">
+                <mkdir dir="${server.dir}"/>
+                <copy verbose="true" todir="${server.dir}" overwrite="false">
                     <fileset dir="${project.build.directory}/solrjar"/>
                 </copy>
-                <copy verbose="true" todir="${working.dir}" overwrite="true">
+                <copy verbose="true" todir="${server.dir}" overwrite="true">
                   <fileset dir="${project.build.directory}/solrconf"/>
                 </copy>
                 <copy todir="${working.dir}">
@@ -78,10 +79,10 @@
             <goals><goal>run</goal></goals>
             <configuration>
               <target if="start.solr">
-                <java jar="${working.dir}/start.jar"
+                <java jar="${server.dir}/start.jar"
                       fork="true" spawn="true"
-                      dir="${working.dir}">
-                  <sysproperty key="solr.solr.home" value="${working.dir}/solr"/>
+                      dir="${server.dir}">
+                  <sysproperty key="solr.solr.home" value="${server.dir}/solr"/>
                   <sysproperty key="jetty.port" value="8983"/>
                   <arg value="etc/jetty-logging.xml"/>
                   <arg value="etc/jetty.xml"/>
