@@ -97,7 +97,7 @@
             <goals><goal>run</goal></goals>
             <configuration>
               <target if="stop.solr">
-                <exec executable="${basedir}/src/main/bin/stop-solr.sh"/>
+                <exec executable="${basedir}/src/main/scripts/stop-solr.sh"/>
               </target>
             </configuration>
           </execution>
