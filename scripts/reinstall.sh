@@ -24,10 +24,14 @@ if [ -f $INPUT_FILE ]; then
   ORACLE_OAE_USERNAME=`awk -F"=" '/^ORACLE_OAE_USERNAME=/ {print $2}' $INPUT_FILE`
   ORACLE_OAE_PASSWORD=`awk -F"=" '/^ORACLE_OAE_PASSWORD=/ {print $2}' $INPUT_FILE`
   MYSQL_PASSWORD=`awk -F"=" '/^MYSQL_PASSWORD=/ {print $2}' $INPUT_FILE`
+  SOLR=`awk -F"=" '/^SOLR=/ {print $2}' $INPUT_FILE`
 else
   SLING_PASSWORD='admin'
   SHARED_SECRET='SHARED_SECRET_CHANGE_ME_IN_PRODUCTION'
   CONFIG_FILE_DIR=''
+fi
+if [ -z $SOLR ]; then
+  SOLR='embedded'
 fi
 
 LOG=$2
@@ -44,6 +48,13 @@ echo | $LOGIT
 cd $SRC_LOC/myberkeley
 echo "`date`: Stopping sling..." | $LOGIT
 mvn -B -e -Dsling.stop -P runner verify >>$LOG 2>&1 | $LOGIT
+
+if [ $SOLR == 'remote' ]; then
+  sleep 5
+  echo "`date`: Stopping Solr server..." | $LOGIT
+  mvn -e -P solr -Dstop.solr verify
+fi
+
 echo "`date`: Cleaning sling directories..." | $LOGIT
 mvn -B -e -P runner -Dsling.purge clean >>$LOG 2>&1 | $LOGIT
 rm -rf ~/.m2/repository/edu/berkeley
@@ -142,7 +153,7 @@ else
         sed "s/ironchef/$MYSQL_PASSWORD/g" $JCR_CONFIG > $JCR_CONFIG.new
         mv $JCR_CONFIG.new $JCR_CONFIG
       fi
-    fi  
+    fi
   else
     echo "unknown database $OAE_DATABASE" | $LOGIT
   fi
@@ -153,6 +164,12 @@ fi
 
 echo "`date`: Doing clean..." | $LOGIT
 mvn -B -e clean >>$LOG 2>&1
+
+if [ $SOLR == 'remote' ]; then
+  echo "`date`: Starting Solr server..." | $LOGIT
+  mvn -e -P solr -Dstart.solr verify
+  sleep 10
+fi
 
 echo "`date`: Starting sling..." | $LOGIT
 mvn -B -e -Dsling.start -Dmyb.sling.config=$STORAGE_FILES -P runner verify >>$LOG 2>&1
