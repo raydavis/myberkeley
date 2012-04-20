@@ -280,7 +280,7 @@
                   <jvmarg value="-Xnoagent"/>
                   <jvmarg value="-Xrunjdwp:transport=dt_socket,address=9001,server=y,suspend=n"/>
                   <jvmarg value="-Xms512m"/>
-                  <jvmarg value="-Xmx1024m"/>
+                  <jvmarg value="-Xmx2048m"/>
                   <jvmarg value="-XX:MaxPermSize=256m"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="felix.fileinstall.noInitialDelay" value="true"/>
