@@ -9,7 +9,7 @@
   <name>MyBerkeley Solr configuration bundle</name>
   <packaging>bundle</packaging>
   <properties>
-    <nakamura.version>1.2-SNAPSHOT</nakamura.version>
+    <nakamura.version>1.2.0</nakamura.version>
   </properties>
   <build>
     <resources>

@@ -361,7 +361,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>r09</version>
+        <version>10.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -450,31 +450,31 @@
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.core</artifactId>
-        <version>1.3.3</version>
+        <version>1.3.4</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.doc</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.profile.api</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.solr</artifactId>
-        <version>1.4.1</version>
+        <version>1.4.2</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.sakaiproject.nakamura</groupId>
         <artifactId>org.sakaiproject.nakamura.user</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2.0</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
