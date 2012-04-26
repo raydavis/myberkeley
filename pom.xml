@@ -35,7 +35,9 @@
         <module>dynamiclist</module>
         <module>caldav</module>
         <module>notifications</module>
+        <!--
         <module>migrators</module>
+        -->
         <module>ojdbc6</module>
         <module>provision</module>
         <module>foreignprincipal</module>
