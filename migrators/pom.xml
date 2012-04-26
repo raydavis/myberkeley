@@ -20,7 +20,7 @@
   </parent>
   <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
   <packaging>bundle</packaging>
-  <name>MyBerkeley: Migrators</name>
+  <name>MyBerkeley Migrators bundle</name>
   <description>Bundle of components that will convert old content to new schemas.</description>
   <build>
     <plugins>

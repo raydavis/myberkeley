@@ -96,6 +96,12 @@
               <version>${project.version}</version>
               <startLevel>30</startLevel>
             </bundle>
+            <bundle>
+              <groupId>edu.berkeley.myberkeley</groupId>
+              <artifactId>edu.berkeley.myberkeley.migrators</artifactId>
+              <version>${project.version}</version>
+              <startLevel>30</startLevel>
+            </bundle>
             <!-- MYB-597 -->
             <bundle>
               <groupId>org.apache.felix</groupId>
