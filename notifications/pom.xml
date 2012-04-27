@@ -22,7 +22,6 @@
                         <DynamicImport-Package>sun.misc.*</DynamicImport-Package>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>backport-util-concurrent</Embed-Dependency>
-                        <Export-Package>net.fortuna.ical4j.*,zoneinfo.*</Export-Package>
                         <Include-Resource>{maven-resources}</Include-Resource>
                         <Sling-Initial-Content>
                             SLING-INF/content/var/notifications;path:=/var/notifications;overwrite:=true;uninstall:=true

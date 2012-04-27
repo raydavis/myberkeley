@@ -171,23 +171,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.2</version>
         <configuration>
           <archive>
             <manifest>
-              <addDefaultImplementationEntries>
-                true
-              </addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
-            <manifestEntries>
-              <Specification-Title>Nakamura Server</Specification-Title>
-              <Specification-Version>${project.version}</Specification-Version>
-              <Specification-Vendor>The Sakai Foundation</Specification-Vendor>
-              <Implementation-Title>Nakamura Server</Implementation-Title>
-              <Implementation-Version>${project.version}</Implementation-Version>
-              <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
-              <Implementation-Vendor>The Sakai Foundation</Implementation-Vendor>
-              <Main-Class>org.sakaiproject.nakamura.app.NakamuraMain</Main-Class>
-            </manifestEntries>
           </archive>
         </configuration>
       </plugin>
