@@ -18,10 +18,11 @@
 package edu.berkeley.myberkeley.migrators;
 
 import static org.sakaiproject.nakamura.lite.content.InternalContent.PATH_FIELD;
-import static org.sakaiproject.nakamura.lite.content.InternalContent.STRUCTURE_UUID_FIELD;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.Map;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
@@ -43,29 +44,35 @@ public class MissingContentMigrator implements PropertyMigrator {
   @Reference
   private Repository repository;
 
+  private Collection knownPathsCache = new CircularFifoBuffer(5000);
+
   @Override
   public boolean migrate(String rowId, Map<String, Object> properties) {
-    if (properties.containsKey(PATH_FIELD) && !properties.containsKey(STRUCTURE_UUID_FIELD)) {
+    if (properties.containsKey(PATH_FIELD)) {
       String path = properties.get(PATH_FIELD).toString();
-      Session session = null;
-      try {
-        session = repository.loginAdministrative();
-        Content content = session.getContentManager().get(path);
-        if (content == null) {
-          LOGGER.warn("Null content for {}", path);
-        }
-      } catch (AccessDeniedException e) {
-        LOGGER.error(e.getMessage(), e);
-      } catch (ClientPoolException e) {
-        LOGGER.error(e.getMessage(), e);
-      } catch (StorageClientException e) {
-        LOGGER.error(e.getMessage(), e);
-      } finally {
-        if (session != null) {
-          try {
-            session.logout();
-          } catch (ClientPoolException e) {
-            LOGGER.error("Unexpected exception logging out of session", e);
+      if (!knownPathsCache.contains(path)) {
+        Session session = null;
+        try {
+          session = repository.loginAdministrative();
+          Content content = session.getContentManager().get(path);
+          if (content == null) {
+            LOGGER.warn("Null content for {}", properties);
+          } else {
+            knownPathsCache.add(path);
+          }
+        } catch (AccessDeniedException e) {
+          LOGGER.error(e.getMessage(), e);
+        } catch (ClientPoolException e) {
+          LOGGER.error(e.getMessage(), e);
+        } catch (StorageClientException e) {
+          LOGGER.error(e.getMessage(), e);
+        } finally {
+          if (session != null) {
+            try {
+              session.logout();
+            } catch (ClientPoolException e) {
+              LOGGER.error("Unexpected exception logging out of session", e);
+            }
           }
         }
       }
