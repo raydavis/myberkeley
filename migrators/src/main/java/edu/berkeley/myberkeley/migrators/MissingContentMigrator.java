@@ -47,6 +47,29 @@ import org.sakaiproject.nakamura.api.lite.content.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Checks each SparseMapContent row for a path with no associated content. These
+ * are records which should have been removed from storage but were not. Currently
+ * four types are known:
+ * <ul>
+ *   <li>Records marked for deletion with a "_deleted" property. These should not
+ *   be delivered to any clients, including PropertyMigrator services, but may be
+ *   because of SparseMapContent bugs.</li>
+ *   <li>Structure records which were not marked for deletion when the corresponding
+ *   content records were.</li>
+ *   <li>Older versions of deleted versioned content which were mistakenly left
+ *   untouched.</li>
+ *   <li>Other. On CalCentral 1.1.1 production data, we have a number of dead records
+ *   whose paths are of the form "/~211159/private/path" rather than the correct
+ *   "a:211159/private/path". We do not know how they appeared.</li>
+ * </ul>
+ * With "dryRun=true", this service collects stats. The results can then be checked
+ * at "http://localhost:8080/system/myberkeley/missingContent.json".
+ * With "dryRun=false", the service will mark dangling structure records and
+ * orphaned version records for deletion. The "other" category will be left alone
+ * for further analysis. (In initial tests, marking the bad "/~211159/private/path"
+ * for deletion had the side-effect of deleting the good "a:211159/private/path".)
+ */
 @SlingServlet(methods = { "GET" }, paths = {"/system/myberkeley/missingContent"},
     generateService = false, generateComponent = true)
 @Service({Servlet.class, PropertyMigrator.class})
@@ -58,12 +81,14 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
 
   private Set<String> nullPathsWithDeleteY = Sets.newHashSet();
   private Set<String> nullPathsWithCid = Sets.newHashSet();
+  private Set<String> nullPathsWithNewerVersion = Sets.newHashSet();
   private Set<String> nullPathsOther = Sets.newHashSet();
 
   private Collection knownPathsCache = new CircularFifoBuffer(10000);
 
   @Override
   public boolean migrate(String rowId, Map<String, Object> properties) {
+    boolean handled = false;
     if (properties.containsKey(PATH_FIELD)) {
       String path = properties.get(PATH_FIELD).toString();
       if (!knownPathsCache.contains(path)) {
@@ -75,6 +100,12 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
             LOGGER.warn("Null content for {}", properties);
             if (properties.containsKey("_:cid")) {
               nullPathsWithCid.add(path);
+              markForDeletion(properties);
+              handled = true;
+            } else if (properties.get("_nextVersion") != null) {
+              nullPathsWithNewerVersion.add(path);
+              markForDeletion(properties);
+              handled = true;
             } else if ("Y".equals(properties.get("_deleted"))) {
               nullPathsWithDeleteY.add(path);
             } else {
@@ -100,7 +131,11 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
         }
       }
     }
-    return false;
+    return handled;
+  }
+
+  private void markForDeletion(Map<String, Object> properties) {
+    properties.put("_deleted", "Y");
   }
 
   @Override
@@ -127,13 +162,18 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
       write.object();
       write.key("nullContentCount")
           .value(Sets.union(nullPathsOther, Sets.union(nullPathsWithCid, nullPathsWithDeleteY)).size());
-      write.key("structureWithoutDeletedContent").array();
+      write.key("deletedContentWithStructure").array();
       for (String path : Sets.difference(nullPathsWithCid, nullPathsWithDeleteY)) {
         write.value(path);
       }
       write.endArray();
       write.key("deletedContentWithoutStructure").array();
       for (String path : Sets.difference(nullPathsWithDeleteY, nullPathsWithCid)) {
+        write.value(path);
+      }
+      write.endArray();
+      write.key("deletedContentWithNewerVersion").array();
+      for (String path : nullPathsWithNewerVersion) {
         write.value(path);
       }
       write.endArray();

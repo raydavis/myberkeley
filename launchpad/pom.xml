@@ -32,6 +32,12 @@
           <additionalBundles>
             <bundle>
               <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.core</artifactId>
+              <version>1.3.4.1-SNAPSHOT</version>
+              <startLevel>1</startLevel>
+            </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
               <artifactId>org.sakaiproject.nakamura.mysqljdbc</artifactId>
               <version>${nakamura.version}</version>
               <startLevel>1</startLevel>
