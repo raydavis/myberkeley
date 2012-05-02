@@ -14,7 +14,7 @@
   <build>
     <resources>
       <resource>
-        <directory>${project.build.directory}/processed-resources</directory>
+        <directory>${project.build.directory}/packaged-resources</directory>
       </resource>
     </resources>
     <plugins>
@@ -81,19 +81,24 @@
             <configuration>
               <target>
                 <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask" classpathref="maven.plugin.classpath"/>
-                <xmltask
-                  source="${project.build.directory}/generated-resources/SLING-INF/home/solr/schema.xml"
-                  dest="${project.build.directory}/generated-resources/SLING-INF/home/solr/schema.xml"
-                  preservetype="true">
-                  <insert path="/schema/fields/field[last()]" position="after" file="schema.xml.fields.txt"/>
-                </xmltask>
-                <!-- For embedded Solr -->
+                <!-- Copy the original configuration files for processing -->
                 <copy todir="${project.build.directory}/processed-resources">
                   <fileset dir="${project.build.directory}/generated-resources"/>
                 </copy>
-                <!-- For remote Solr -->
-                <copy todir="${project.build.directory}/processed-resources/solr/conf">
-                  <fileset dir="${project.build.directory}/generated-resources/SLING-INF/home/solr"/>
+                <!-- Customize configuration files as needed -->
+                <xmltask
+                  source="${project.build.directory}/generated-resources/SLING-INF/home/solr/schema.xml"
+                  dest="${project.build.directory}/processed-resources/SLING-INF/home/solr/schema.xml"
+                  preservetype="true">
+                  <insert path="/schema/fields/field[last()]" position="after" file="schema.xml.fields.txt"/>
+                </xmltask>
+                <!-- Package the configuration files for embedded Solr -->
+                <copy todir="${project.build.directory}/packaged-resources">
+                  <fileset dir="${project.build.directory}/processed-resources"/>
+                </copy>
+                <!-- Package the configuration files for remote Solr -->
+                <copy todir="${project.build.directory}/packaged-resources/solr/conf">
+                  <fileset dir="${project.build.directory}/processed-resources/SLING-INF/home/solr"/>
                 </copy>
               </target>
             </configuration>
