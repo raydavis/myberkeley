@@ -1,0 +1,98 @@
+#!/bin/sh -e
+# Startup script for myberkeley
+# chkconfig: 2345 80 05
+# description: start script for sling launchpad
+# processname: myberkeley
+
+RUN_AS_USER=myberkeley
+MYBERKELEY_HOME=/home/myberkeley/myberkeley
+PROXY_HOME=/home/proxy
+NIGHTLY_HTML=$PROXY_HOME/www/htdocs/index_nightly.html
+MAINT_HTML=$PROXY_HOME/www/htdocs/index_maintenance.html
+EMERGENCY_HTML=$PROXY_HOME/www/htdocs/index_emergency.html
+INDEX_HTML=$PROXY_HOME/www/htdocs/index.html
+
+start() {
+        echo -n "Starting Solr..."
+        /bin/su - $RUN_AS_USER -c "cd $MYBERKELEY_HOME && /usr/bin/mvn -e -P solr -Dstart.solr verify &> /dev/null &"
+        sleep 5
+        echo -n "Starting MyBerkeley..."
+        /bin/su - $RUN_AS_USER -c "cd $MYBERKELEY_HOME && /usr/bin/mvn -e -P runner -Dsling.start verify &> /dev/null &"
+        echo "done."
+}
+
+stop() {
+        echo -n "Shutting down MyBerkeley..."
+        /bin/su - $RUN_AS_USER -c "cd $MYBERKELEY_HOME && /usr/bin/mvn -e -P runner -Dsling.stop verify &> /dev/null"
+        sleep 5
+        echo -n "Stopping Solr..."
+        /bin/su - $RUN_AS_USER -c "cd $MYBERKELEY_HOME && /usr/bin/mvn -e -P solr -Dstop.solr verify &> /dev/null &"
+        echo "done."
+}
+
+status() {
+    # check if calcentral is already running
+    PID=`ps aux | awk '/java/ && /myberkeley/ && !/awk/ {print $2}'`
+    if [ ! -z "$PID" ]; then
+      echo "running"
+    fi
+
+    if [ -z "$PID" ]; then
+      echo "stopped"
+    fi
+}
+
+online() {
+    if [ -f $PROXY_HOME/calcentral-in-maintenance ];
+    then
+      /bin/rm $PROXY_HOME/calcentral-in-maintenance
+    fi
+}
+
+offline () {
+    /bin/cp -p $NIGHTLY_HTML $INDEX_HTML
+    /bin/su - proxy -c "/bin/touch $PROXY_HOME/calcentral-in-maintenance"
+}
+
+maint () {
+    /bin/cp -p $MAINT_HTML $INDEX_HTML
+    /bin/su - proxy -c "/bin/touch $PROXY_HOME/calcentral-in-maintenance"
+}
+
+emergency () {
+    /bin/cp -p $EMERGENCY_HTML $INDEX_HTML
+    /bin/su - proxy -c "/bin/touch $PROXY_HOME/calcentral-in-maintenance"
+}
+
+case "$1" in
+  offline)
+        offline
+        ;;
+  maint)
+        maint
+        ;;
+  emergency)
+        emergency
+        ;;
+  online)
+        online
+        ;;
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        stop
+        sleep 10
+        start
+        ;;
+  status)
+        status
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|status|online|offline|maint|emergency}"
+esac
+
+exit 0
