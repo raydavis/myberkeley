@@ -17,7 +17,10 @@
  */
 package edu.berkeley.myberkeley.migrators;
 
+import static org.sakaiproject.nakamura.lite.content.InternalContent.DELETED_FIELD;
+import static org.sakaiproject.nakamura.lite.content.InternalContent.NEXT_VERSION_FIELD;
 import static org.sakaiproject.nakamura.lite.content.InternalContent.PATH_FIELD;
+import static org.sakaiproject.nakamura.lite.content.InternalContent.STRUCTURE_UUID_FIELD;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -44,13 +47,14 @@ import org.sakaiproject.nakamura.api.lite.Session;
 import org.sakaiproject.nakamura.api.lite.StorageClientException;
 import org.sakaiproject.nakamura.api.lite.accesscontrol.AccessDeniedException;
 import org.sakaiproject.nakamura.api.lite.content.Content;
+import org.sakaiproject.nakamura.lite.content.InternalContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Checks each SparseMapContent row for a path with no associated content. These
  * are records which should have been removed from storage but were not. Currently
- * four types are known:
+ * three types are known:
  * <ul>
  *   <li>Records marked for deletion with a "_deleted" property. These should not
  *   be delivered to any clients, including PropertyMigrator services, but may be
@@ -59,9 +63,6 @@ import org.slf4j.LoggerFactory;
  *   content records were.</li>
  *   <li>Older versions of deleted versioned content which were mistakenly left
  *   untouched.</li>
- *   <li>Other. On CalCentral 1.1.1 production data, we have a number of dead records
- *   whose paths are of the form "/~211159/private/path" rather than the correct
- *   "a:211159/private/path". We do not know how they appeared.</li>
  * </ul>
  * With "dryRun=true", this service collects stats. The results can then be checked
  * at "http://localhost:8080/system/myberkeley/missingContent.json".
@@ -69,6 +70,10 @@ import org.slf4j.LoggerFactory;
  * orphaned version records for deletion. The "other" category will be left alone
  * for further analysis. (In initial tests, marking the bad "/~211159/private/path"
  * for deletion had the side-effect of deleting the good "a:211159/private/path".)
+ * <p>
+ * After an upgrade run, a summary of the results can be found at:
+ *   http://localhost:8080/system/myberkeley/missingContent.json
+ * </p>
  */
 @SlingServlet(methods = { "GET" }, paths = {"/system/myberkeley/missingContent"},
     generateService = false, generateComponent = true)
@@ -77,13 +82,12 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
   private static final Logger LOGGER = LoggerFactory.getLogger(MissingContentMigrator.class);
 
   @Reference
-  private Repository repository;
+  transient protected Repository repository;
 
   private Set<String> nullPathsWithDeleteY = Sets.newHashSet();
   private Set<String> nullPathsWithCid = Sets.newHashSet();
   private Set<String> nullPathsWithNewerVersion = Sets.newHashSet();
   private Set<String> nullPathsOther = Sets.newHashSet();
-
   private Collection knownPathsCache = new CircularFifoBuffer(10000);
 
   @Override
@@ -98,15 +102,15 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
           Content content = session.getContentManager().get(path);
           if (content == null) {
             LOGGER.warn("Null content for {}", properties);
-            if (properties.containsKey("_:cid")) {
+            if (properties.containsKey(STRUCTURE_UUID_FIELD)) {
               nullPathsWithCid.add(path);
               markForDeletion(properties);
               handled = true;
-            } else if (properties.get("_nextVersion") != null) {
+            } else if (properties.get(NEXT_VERSION_FIELD) != null) {
               nullPathsWithNewerVersion.add(path);
               markForDeletion(properties);
               handled = true;
-            } else if ("Y".equals(properties.get("_deleted"))) {
+            } else if (InternalContent.TRUE.equals(properties.get(DELETED_FIELD))) {
               nullPathsWithDeleteY.add(path);
             } else {
               nullPathsOther.add(path);
@@ -135,7 +139,7 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
   }
 
   private void markForDeletion(Map<String, Object> properties) {
-    properties.put("_deleted", "Y");
+    properties.put(DELETED_FIELD, InternalContent.TRUE);
   }
 
   @Override
@@ -187,6 +191,5 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
       LOGGER.warn(e.getMessage(), e);
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to create the proper JSON structure.");
     }
-
   }
 }
