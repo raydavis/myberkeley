@@ -17,8 +17,6 @@
  */
 package edu.berkeley.myberkeley.migrators;
 
-import static org.sakaiproject.nakamura.lite.content.InternalContent.PATH_FIELD;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import java.io.IOException;
@@ -50,7 +48,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Checks each SparseMapContent row for a path with no associated content. These
  * are records which should have been removed from storage but were not. Currently
- * four types are known:
+ * three types are known:
  * <ul>
  *   <li>Records marked for deletion with a "_deleted" property. These should not
  *   be delivered to any clients, including PropertyMigrator services, but may be
@@ -59,9 +57,6 @@ import org.slf4j.LoggerFactory;
  *   content records were.</li>
  *   <li>Older versions of deleted versioned content which were mistakenly left
  *   untouched.</li>
- *   <li>Other. On CalCentral 1.1.1 production data, we have a number of dead records
- *   whose paths are of the form "/~211159/private/path" rather than the correct
- *   "a:211159/private/path". We do not know how they appeared.</li>
  * </ul>
  * With "dryRun=true", this service collects stats. The results can then be checked
  * at "http://localhost:8080/system/myberkeley/missingContent.json".
@@ -69,6 +64,10 @@ import org.slf4j.LoggerFactory;
  * orphaned version records for deletion. The "other" category will be left alone
  * for further analysis. (In initial tests, marking the bad "/~211159/private/path"
  * for deletion had the side-effect of deleting the good "a:211159/private/path".)
+ * <p>
+ * After an upgrade run, a summary of the results can be found at:
+ *   http://localhost:8080/system/myberkeley/missingContent.json
+ * </p>
  */
 @SlingServlet(methods = { "GET" }, paths = {"/system/myberkeley/missingContent"},
     generateService = false, generateComponent = true)
@@ -77,7 +76,7 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
   private static final Logger LOGGER = LoggerFactory.getLogger(MissingContentMigrator.class);
 
   @Reference
-  private Repository repository;
+  transient protected Repository repository;
 
   private Set<String> nullPathsWithDeleteY = Sets.newHashSet();
   private Set<String> nullPathsWithCid = Sets.newHashSet();
@@ -89,8 +88,8 @@ public class MissingContentMigrator extends SlingSafeMethodsServlet implements P
   @Override
   public boolean migrate(String rowId, Map<String, Object> properties) {
     boolean handled = false;
-    if (properties.containsKey(PATH_FIELD)) {
-      String path = properties.get(PATH_FIELD).toString();
+    if (properties.containsKey("_path")) {
+      String path = properties.get("_path").toString();
       if (!knownPathsCache.contains(path)) {
         Session session = null;
         try {

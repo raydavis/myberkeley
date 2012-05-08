@@ -115,6 +115,12 @@
               <version>3.1.11-20110216</version>
               <startLevel>30</startLevel>
             </bundle>
+            <bundle>
+              <groupId>org.sakaiproject.nakamura</groupId>
+              <artifactId>org.sakaiproject.nakamura.forcemigration</artifactId>
+              <version>${nakamura.version}</version>
+              <startLevel>30</startLevel>
+            </bundle>
           </additionalBundles>
           <!-- Needs to be copied from nakamura.app -->
           <jarWebSupport>
