@@ -172,7 +172,7 @@ if [ $SOLR == 'remote' ]; then
 fi
 
 echo "`date`: Starting sling..." | $LOGIT
-mvn -B -e -Dsling.start -Dmyb.sling.config=$STORAGE_FILES -P runner verify >>$LOG 2>&1
+mvn -B -e -Dsling.start -Dmyb.sling.config=$STORAGE_FILES -Dsling.memory=2048m -P runner verify >>$LOG 2>&1
 
 # wait 2 minutes so sling can get going
 sleep 120;

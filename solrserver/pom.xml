@@ -82,6 +82,8 @@
                 <java jar="${server.dir}/start.jar"
                       fork="true" spawn="true"
                       dir="${server.dir}">
+                  <jvmarg value="-Xmx512m"/>
+                  <jvmarg value="-server"/>
                   <sysproperty key="solr.solr.home" value="${server.dir}/solr"/>
                   <sysproperty key="jetty.port" value="8983"/>
                   <arg value="etc/jetty-logging.xml"/>
