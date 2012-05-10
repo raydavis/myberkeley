@@ -12,6 +12,8 @@
   <properties>
     <sakai3.home>${project.basedir}/../working</sakai3.home>
     <sling.include.nakamura>${sakai3.home}/sling/nakamura.properties</sling.include.nakamura> <!-- the default location -->
+    <!-- Set to sling.memory=2048m for upgrades -->
+    <sling.memory>1024m</sling.memory>
   </properties>
   <profiles>
     <profile>
@@ -239,8 +241,9 @@
                   <jvmarg value="-Xnoagent"/>
                   <jvmarg value="-Xrunjdwp:transport=dt_socket,address=9001,server=y,suspend=n"/>
                   <jvmarg value="-Xms512m"/>
-                  <jvmarg value="-Xmx2048m"/>
+                  <jvmarg value="-Xmx${sling.memory}"/>
                   <jvmarg value="-XX:MaxPermSize=256m"/>
+                  <jvmarg value="-server"/>
                   <sysproperty key="felix.fileinstall.dir" value="load"/>
                   <sysproperty key="felix.fileinstall.noInitialDelay" value="true"/>
                   <sysproperty key="felix.fileinstall.disableConfigSave" value="false"/>
