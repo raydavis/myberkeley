@@ -15,14 +15,14 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package edu.berkeley.myberkeley.provision;
+package org.sakaiproject.nakamura.accountprovider;
 
 import com.google.common.collect.Sets;
 
-import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
-import edu.berkeley.myberkeley.api.provision.PersonAttributeProvider;
-import edu.berkeley.myberkeley.api.provision.ProvisionResult;
-import edu.berkeley.myberkeley.api.provision.SynchronizationState;
+import org.sakaiproject.nakamura.api.accountprovider.OaeAuthorizableService;
+import org.sakaiproject.nakamura.api.accountprovider.PersonAttributeProvider;
+import org.sakaiproject.nakamura.api.accountprovider.ProvisionResult;
+import org.sakaiproject.nakamura.api.accountprovider.SynchronizationState;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -45,16 +45,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet to let administrators provision CalCentral user accounts from an external source
- * (Oracle, currently).
+ * Servlet to let administrators provision user accounts from an external source
  * A GET request will return the provided attributes of the specified users.
- * A POST request will create or update the CalCentral account.
+ * A POST request will create or update the user account.
  */
-@SlingServlet(methods = { "GET", "POST" }, paths = {"/system/myberkeley/personProvision"},
+@SlingServlet(methods = { "GET", "POST" }, paths = {"/system/accountProvider/fromExternal"},
     generateService = true, generateComponent = true)
 public class PersonProvisionServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 8837015974872136655L;
-  public static final String ACCOUNT_ADMINISTRATION_RESOURCE_PATH = "/var/accountprovision";
+  public static final String ACCOUNT_ADMINISTRATION_RESOURCE_PATH = "/var/accountProvider";
   public static final String SYSTEM_PROVIDED_USER_IDS_PARAM = "userIds";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PersonProvisionServlet.class);

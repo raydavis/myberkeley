@@ -15,15 +15,13 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package edu.berkeley.myberkeley.provision;
-
-import static edu.berkeley.myberkeley.api.dynamiclist.DynamicListService.DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP;
+package org.sakaiproject.nakamura.accountprovider;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
-import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
-import edu.berkeley.myberkeley.api.provision.ProvisionResult;
+import org.sakaiproject.nakamura.api.accountprovider.OaeAuthorizableService;
+import org.sakaiproject.nakamura.api.accountprovider.ProvisionResult;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -45,10 +43,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet to support CalCentral user creation on test and demo systems with no Oracle connection.
- * Only the admin account is permitted to create CalCentral users directly from request parameters.
+ * Servlet to support user account creation on test and demo systems without connecting to other systems.
+ * Only the admin account is permitted to create users directly from request parameters.
  */
-@SlingServlet(methods = { "POST" }, paths = {"/system/myberkeley/testPersonProvision"},
+@SlingServlet(methods = { "POST" }, paths = {"/system/accountProvider/parameters"},
     generateService = true, generateComponent = true)
 public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 8837015974872136655L;
@@ -71,10 +69,10 @@ public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
       return;
     }
     if (!"admin".equals(request.getRemoteUser())) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "YOU KIDS STAY OUT OF MY YARD!");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
       return;
     }
-    ProvisionResult result = createFromRequestParameters(userId, request, response);
+    ProvisionResult result = createFromRequestParameters(userId, request);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
     try {
@@ -97,7 +95,7 @@ public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
     }
   }
 
-  private ProvisionResult createFromRequestParameters(String userId, SlingHttpServletRequest request, SlingHttpServletResponse response) {
+  private ProvisionResult createFromRequestParameters(String userId, SlingHttpServletRequest request) {
     @SuppressWarnings("unchecked")
     Map<String, String[]> requestParameters = request.getParameterMap();
     Map<String, Object> personAttributes = Maps.newHashMap();
@@ -109,11 +107,7 @@ public class ParameterizedProvisionServlet extends SlingAllMethodsServlet {
         if (values.length == 0) {
           value = null;
         } else if (values.length == 1) {
-          if (DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP.equals(key)) {
-            value = ImmutableSet.of(values[0]);
-          } else {
-            value = values[0];
-          }
+          value = values[0];
         } else {
           value = ImmutableSet.copyOf(values);
         }

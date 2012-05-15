@@ -17,7 +17,7 @@
  */
 package edu.berkeley.myberkeley.provision;
 
-import edu.berkeley.myberkeley.api.provision.JdbcConnectionService;
+import org.sakaiproject.nakamura.api.accountprovider.JdbcConnectionService;
 import oracle.jdbc.pool.OracleDataSource;
 
 import org.apache.felix.scr.annotations.Activate;
@@ -49,10 +49,6 @@ public class OracleConnectionService implements JdbcConnectionService {
   private String dataSourceUrl;
   private OracleDataSource dataSource;
 
-  /**
-   * @throws SQLException
-   * @see edu.berkeley.myberkeley.api.provision.JdbcConnectionService#getConnection()
-   */
   @Override
   public Connection getConnection() throws SQLException {
     Connection connection = dataSource.getConnection();

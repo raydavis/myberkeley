@@ -15,13 +15,12 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package edu.berkeley.myberkeley.api.provision;
+package org.sakaiproject.nakamura.api.accountprovider;
+
 
 import java.util.Map;
 
-/**
- *
- */
-public interface PersonAttributeProvider {
-  public Map<String, Object> getPersonAttributes(String personId);
+public interface OaeAuthorizableService {
+  ProvisionResult loadUser(String userId, Map<String, Object> attributes);
+  void initializeParticipant(String userId);
 }

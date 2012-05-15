@@ -37,8 +37,11 @@
         <module>notifications</module>
         <module>migrators</module>
         <module>ojdbc6</module>
+        <module>accountprovider</module>
         <module>provision</module>
+        <!--
         <module>foreignprincipal</module>
+        -->
         <module>solrconf</module>
       </modules>
     </profile>

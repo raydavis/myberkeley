@@ -41,7 +41,7 @@
     </dependency>
     <dependency>
       <groupId>edu.berkeley.myberkeley</groupId>
-      <artifactId>edu.berkeley.myberkeley.foreignprincipal</artifactId>
+      <artifactId>org.sakaiproject.nakamura.accountprovider</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>

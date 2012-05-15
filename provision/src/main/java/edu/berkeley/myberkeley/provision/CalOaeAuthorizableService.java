@@ -22,9 +22,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
-import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
-import edu.berkeley.myberkeley.api.provision.ProvisionResult;
-import edu.berkeley.myberkeley.api.provision.SynchronizationState;
+import org.sakaiproject.nakamura.api.accountprovider.OaeAuthorizableService;
+import org.sakaiproject.nakamura.api.accountprovider.ProvisionResult;
+import org.sakaiproject.nakamura.api.accountprovider.SynchronizationState;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.felix.scr.annotations.Component;
@@ -214,6 +214,7 @@ public class CalOaeAuthorizableService implements OaeAuthorizableService {
 
     // Update demographic data.
     if (attributes.containsKey(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP)) {
+      // NEED TO HANDLE SET TRANSLATION HERE INSTEAD
       dynamicListService.setDemographics(session, userId, (Set<String>) attributes.get(DYNAMIC_LIST_DEMOGRAPHIC_DATA_PROP));
     }
   }

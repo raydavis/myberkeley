@@ -15,12 +15,12 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package edu.berkeley.myberkeley.provision;
+package org.sakaiproject.nakamura.accountprovider;
 
-import edu.berkeley.myberkeley.api.foreignprincipal.ForeignPrincipalService;
-import edu.berkeley.myberkeley.api.provision.OaeAuthorizableService;
-import edu.berkeley.myberkeley.api.provision.PersonAttributeProvider;
-import edu.berkeley.myberkeley.api.provision.ProvisionResult;
+import org.sakaiproject.nakamura.api.accountprovider.ForeignPrincipalService;
+import org.sakaiproject.nakamura.api.accountprovider.OaeAuthorizableService;
+import org.sakaiproject.nakamura.api.accountprovider.PersonAttributeProvider;
+import org.sakaiproject.nakamura.api.accountprovider.ProvisionResult;
 
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.sling.SlingServlet;
@@ -43,9 +43,9 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet to support self-registration of externally authenticated users.
  * A GET request will return the provided attributes of the new user.
- * A POST request will create the CalCentral account.
+ * A POST request will create the user account.
  */
-@SlingServlet(methods = { "GET", "POST" }, paths = {"/system/myberkeley/selfProvision"},
+@SlingServlet(methods = { "GET", "POST" }, paths = {"/system/accountProvider/self"},
     generateService = true, generateComponent = true)
 public class SelfProvisionServlet extends SlingAllMethodsServlet {
   private static final long serialVersionUID = 8837015974872136655L;

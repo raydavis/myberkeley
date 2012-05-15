@@ -15,7 +15,7 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package edu.berkeley.myberkeley.api.provision;
+package org.sakaiproject.nakamura.api.accountprovider;
 
 import org.sakaiproject.nakamura.api.lite.authorizable.User;
 

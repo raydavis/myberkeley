@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import edu.berkeley.myberkeley.api.dynamiclist.DynamicListService;
-import edu.berkeley.myberkeley.api.provision.ProvisionResult;
-import edu.berkeley.myberkeley.api.provision.SynchronizationState;
+import org.sakaiproject.nakamura.api.accountprovider.ProvisionResult;
+import org.sakaiproject.nakamura.api.accountprovider.SynchronizationState;
 
 import org.apache.sling.commons.json.JSONObject;
 import org.junit.Before;

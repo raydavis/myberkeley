@@ -20,8 +20,8 @@ package edu.berkeley.myberkeley.provision;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import edu.berkeley.myberkeley.api.provision.JdbcConnectionService;
-import edu.berkeley.myberkeley.api.provision.PersonAttributeProvider;
+import org.sakaiproject.nakamura.api.accountprovider.JdbcConnectionService;
+import org.sakaiproject.nakamura.api.accountprovider.PersonAttributeProvider;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.felix.scr.annotations.Component;

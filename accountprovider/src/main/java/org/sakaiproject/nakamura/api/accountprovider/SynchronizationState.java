@@ -1,4 +1,4 @@
-package edu.berkeley.myberkeley.api.provision;
+package org.sakaiproject.nakamura.api.accountprovider;
 
 public enum SynchronizationState {
   created,

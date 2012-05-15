@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 
-import edu.berkeley.myberkeley.api.provision.JdbcConnectionService;
+import org.sakaiproject.nakamura.api.accountprovider.JdbcConnectionService;
 
 import org.junit.Before;
 import org.junit.Test;

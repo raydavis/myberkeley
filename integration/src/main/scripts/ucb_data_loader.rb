@@ -231,7 +231,7 @@ module MyBerkeleyData
         provision_props["pwd"] = password
       end
       provision_props["userId"] = username
-      res = @sling.execute_post(@sling.url_for("system/myberkeley/testPersonProvision"), provision_props)
+      res = @sling.execute_post(@sling.url_for("system/accountProvider/parameters"), provision_props)
       @log.info("provision returned #{res.code}, #{res.body}")
       if (res.code.to_i > 299)
         @log.error("Could not load user #{username}: #{res.code}, #{res.body}")
